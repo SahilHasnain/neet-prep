@@ -1,0 +1,19 @@
+{
+  "name": "appwrite-functions",
+  "version": "1.0.0",
+  "description": "Appwrite serverless functions for flashcard app",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write .",
+    "install:functions": "npm install",
+    "build": "echo 'no build script'"
+  },
+  "dependencies": {
+    "groq-sdk": "^0.7.0",
+    "node-appwrite": "^21.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^3.2.0"
+  }
+}
