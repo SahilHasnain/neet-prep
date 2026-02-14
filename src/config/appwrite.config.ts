@@ -22,6 +22,7 @@ export const COLLECTIONS = {
 // Function IDs
 export const FUNCTIONS = {
   GENERATE_FLASHCARDS: "generate-flashcards",
+  GENERATE_FLASHCARDS_URL: process.env.EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL!,
 } as const;
 
 // Validation Constants
