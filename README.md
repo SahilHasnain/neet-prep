@@ -1,50 +1,102 @@
-# Welcome to your Expo app 👋
+# Naat Collection - Flashcard App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native flashcard application with AI-powered card generation using Appwrite backend and GROQ AI.
 
-## Get started
+## Features
 
-1. Install dependencies
+- 📚 Create and manage flashcard decks
+- 🤖 AI-powered flashcard generation using GROQ
+- 📊 Track learning progress with spaced repetition
+- 🎯 Multiple difficulty levels
+- 🏷️ Tag-based organization
+- 📱 Cross-platform (iOS, Android, Web)
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- **Frontend**: React Native (Expo), TypeScript, NativeWind
+- **Backend**: Appwrite (Database, Functions, Authentication)
+- **AI**: GROQ API
+- **State Management**: React Hooks
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Node.js 18+
+- Expo CLI
+- Appwrite account
+- GROQ API key
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Installation
 
-## Get a fresh project
-
-When you're ready, run:
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3. Configure environment variables in `.env.local`:
 
-## Learn more
+```env
+EXPO_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_APPWRITE_ENDPOINT=your_endpoint
+APPWRITE_API_KEY=your_api_key
+GROQ_API_KEY=your_groq_key
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Set up Appwrite database:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run setup:database
+```
 
-## Join the community
+5. Deploy Appwrite function (see `docs/phase1-setup-guide.md`)
 
-Join our community of developers creating universal apps.
+6. Start the development server:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm start
+```
+
+## Project Structure
+
+```
+├── app/                    # Expo Router pages
+├── src/
+│   ├── config/            # Configuration files
+│   ├── types/             # TypeScript type definitions
+│   ├── services/          # API services (Phase 3)
+│   ├── hooks/             # Custom React hooks (Phase 3)
+│   ├── components/        # Reusable components (Phase 3)
+│   └── utils/             # Utility functions (Phase 3)
+├── appwrite-functions/    # Appwrite serverless functions
+├── scripts/               # Setup and utility scripts
+└── docs/                  # Documentation
+```
+
+## Documentation
+
+- [Implementation Plan](docs/flashcard-feature-plan.md)
+- [Phase 1 Setup Guide](docs/phase1-setup-guide.md)
+- [Database Schema](docs/database-schema.md)
+- [Function Documentation](appwrite-functions/generate-flashcards/README.md)
+
+## Development Phases
+
+- ✅ Phase 1: Backend Infrastructure & Database Setup
+- ⏳ Phase 2: Appwrite Function & AI Integration
+- ⏳ Phase 3: Frontend Implementation
+
+## Scripts
+
+- `npm start` - Start Expo development server
+- `npm run android` - Run on Android
+- `npm run ios` - Run on iOS
+- `npm run web` - Run on web
+- `npm run setup:database` - Set up Appwrite database
+- `npm run lint` - Run ESLint
+
+## License
+
+Private
