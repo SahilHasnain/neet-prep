@@ -1,91 +1,134 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button } from '../../src/components/ui/Button';
-import { Input } from '../../src/components/ui/Input';
-import { useAI } from '../../src/hooks/useAI';
-import { useFlashcards } from '../../src/hooks/useFlashcards';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../../src/components/ui/Button";
+import { Input } from "../../src/components/ui/Input";
+import { useAI } from "../../src/hooks/useAI";
+import { useFlashcards } from "../../src/hooks/useFlashcards";
+import type { DifficultyLevel } from "../../src/types/flashcard.types";
 
-const TEMP_USER_ID = 'temp-user-123';
+const TEMP_USER_ID = "temp-user-123";
 
 export default function DeckDetailScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const router = useRouter();
-  const { flashcards, loading, createFlashcard, createFlashcardsBulk, deleteFlashcard, refresh } = useFlashcards(deckId);
+  const {
+    flashcards,
+    loading,
+    createFlashcard,
+    createFlashcardsBulk,
+    deleteFlashcard,
+    refresh,
+  } = useFlashcards(deckId);
   const { generateFlashcards, generating } = useAI(TEMP_USER_ID);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
-  const [frontContent, setFrontContent] = useState('');
-  const [backContent, setBackContent] = useState('');
-  const [aiTopic, setAiTopic] = useState('');
-  const [aiCount, setAiCount] = useState('10');
+  const [frontContent, setFrontContent] = useState("");
+  const [backContent, setBackContent] = useState("");
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState("10");
   const [creating, setCreating] = useState(false);
 
   const handleCreateCard = async () => {
     if (!frontContent.trim() || !backContent.trim()) {
-      Alert.alert('Error', 'Please fill in both front and back content');
+      Alert.alert("Error", "Please fill in both front and back content");
       return;
     }
 
-    setCreating(true);
-    const card = await createFlashcard({
-      deck_id: deckId,
-      front_content: frontContent.trim(),
-      back_content: backContent.trim(),
-      difficulty: 'medium',
-    });
+    try {
+      setCreating(true);
+      const card = await createFlashcard({
+        deck_id: deckId,
+        front_content: frontContent.trim(),
+        back_content: backContent.trim(),
+        difficulty: "medium" as DifficultyLevel,
+      });
 
-    setCreating(false);
-
-    if (card) {
-      setShowCreateModal(false);
-      setFrontContent('');
-      setBackContent('');
-      Alert.alert('Success', 'Flashcard created!');
-    } else {
-      Alert.alert('Error', 'Failed to create flashcard');
+      if (card) {
+        setShowCreateModal(false);
+        setFrontContent("");
+        setBackContent("");
+        Alert.alert("Success", "Flashcard created!");
+      } else {
+        Alert.alert("Error", "Failed to create flashcard. Please try again.");
+      }
+    } catch (error) {
+      console.error("Create card error:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to create flashcard",
+      );
+    } finally {
+      setCreating(false);
     }
   };
 
   const handleGenerateAI = async () => {
     if (!aiTopic.trim()) {
-      Alert.alert('Error', 'Please enter a topic');
+      Alert.alert("Error", "Please enter a topic");
       return;
     }
 
     const count = parseInt(aiCount);
     if (isNaN(count) || count < 5 || count > 50) {
-      Alert.alert('Error', 'Count must be between 5 and 50');
+      Alert.alert("Error", "Count must be between 5 and 50");
       return;
     }
 
     try {
-      const cards = await generateFlashcards({
+      const generatedCards = await generateFlashcards({
         topic: aiTopic.trim(),
         count,
-        difficulty: 'medium',
+        difficulty: "medium" as DifficultyLevel,
         deck_id: deckId,
       });
 
-      const success = await createFlashcardsBulk(cards);
+      // Map AI response to CreateFlashcardDTO format
+      const cardsToCreate = generatedCards.map((card) => ({
+        deck_id: deckId,
+        front_content: card.front_content,
+        back_content: card.back_content,
+        difficulty: card.difficulty as any,
+        tags: card.tags || [],
+      }));
+
+      const success = await createFlashcardsBulk(cardsToCreate);
 
       if (success) {
         setShowAIModal(false);
-        setAiTopic('');
-        setAiCount('10');
-        Alert.alert('Success', `Generated ${cards.length} flashcards!`);
+        setAiTopic("");
+        setAiCount("10");
+        Alert.alert(
+          "Success",
+          `Generated ${generatedCards.length} flashcards!`,
+        );
       } else {
-        Alert.alert('Error', 'Failed to save generated flashcards');
+        Alert.alert("Error", "Failed to save generated flashcards");
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to generate flashcards');
+      console.error("AI Generation Error:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to generate flashcards",
+      );
     }
   };
 
   const handleStudy = () => {
     if (flashcards.length === 0) {
-      Alert.alert('No Cards', 'Add some flashcards first!');
+      Alert.alert("No Cards", "Add some flashcards first!");
       return;
     }
     router.push(`/study/${deckId}`);
@@ -93,36 +136,49 @@ export default function DeckDetailScreen() {
 
   const handleDeleteCard = (cardId: string) => {
     Alert.alert(
-      'Delete Card',
-      'Are you sure you want to delete this flashcard?',
+      "Delete Card",
+      "Are you sure you want to delete this flashcard?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             const success = await deleteFlashcard(cardId);
             if (!success) {
-              Alert.alert('Error', 'Failed to delete flashcard');
+              Alert.alert("Error", "Failed to delete flashcard");
             }
           },
         },
-      ]
+      ],
     );
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["bottom","top"]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Flashcards ({flashcards.length})</Text>
-        
+
         <View style={styles.headerButtons}>
-          <Button title="Study" onPress={handleStudy} />
-          <Button title="+ Add Card" onPress={() => setShowCreateModal(true)} />
-          <Button title="🤖 AI Generate" onPress={() => setShowAIModal(true)} variant="secondary" />
+          <View style={styles.buttonWrapper}>
+            <Button title="Study" onPress={handleStudy} />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <Button title="+ Add" onPress={() => setShowCreateModal(true)} />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <Button
+              title="🤖 AI"
+              onPress={() => setShowAIModal(true)}
+              variant="secondary"
+            />
+          </View>
         </View>
       </View>
 
@@ -133,7 +189,9 @@ export default function DeckDetailScreen() {
       ) : flashcards.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyTitle}>No Flashcards Yet</Text>
-          <Text style={styles.emptyText}>Add flashcards manually or generate them with AI!</Text>
+          <Text style={styles.emptyText}>
+            Add flashcards manually or generate them with AI!
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -191,7 +249,11 @@ export default function DeckDetailScreen() {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <View style={styles.modalButton}>
-                <Button title="Create" onPress={handleCreateCard} loading={creating} />
+                <Button
+                  title="Create"
+                  onPress={handleCreateCard}
+                  loading={creating}
+                />
               </View>
             </View>
           </View>
@@ -227,31 +289,34 @@ export default function DeckDetailScreen() {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <View style={styles.modalButton}>
-                <Button title="Generate" onPress={handleGenerateAI} loading={generating} />
+                <Button
+                  title="Generate"
+                  onPress={handleGenerateAI}
+                  loading={generating}
+                />
               </View>
             </View>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
-    paddingTop: 60,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -262,48 +327,53 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#007AFF',
+    color: "#007AFF",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 16,
   },
   headerButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
+    flexWrap: "wrap",
+  },
+  buttonWrapper: {
+    flex: 1,
+    minWidth: 80,
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 32,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   listContent: {
     padding: 16,
   },
   cardItem: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -314,42 +384,42 @@ const styles = StyleSheet.create({
   },
   cardFront: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
   cardBack: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   deleteButton: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   deleteText: {
-    color: '#dc3545',
+    color: "#dc3545",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 24,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 24,
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 8,
   },
@@ -357,15 +427,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cancelButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     borderRadius: 8,
     paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
   },
 });

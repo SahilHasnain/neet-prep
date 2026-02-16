@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Modal,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { DeckCard } from "../src/components/flashcard/DeckCard";
 import { Button } from "../src/components/ui/Button";
 import { Input } from "../src/components/ui/Input";
@@ -97,7 +98,7 @@ export default function Index() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top","bottom"]}>
       <View style={styles.header}>
         <Text style={styles.appTitle}>NeuroPrep</Text>
         <Text style={styles.subtitle}>NEET Flashcards</Text>
@@ -268,7 +269,7 @@ export default function Index() {
           </ScrollView>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -283,7 +284,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#fff",
     padding: 16,
-    paddingTop: 60,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
