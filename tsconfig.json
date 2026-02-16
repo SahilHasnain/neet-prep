@@ -6,7 +6,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -14,7 +16,8 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "nativewind-env.d.ts"
   ],
   "ts-node": {
     "compilerOptions": {
