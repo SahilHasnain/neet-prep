@@ -36,7 +36,7 @@ export default function DeckDetailScreen() {
   const [frontContent, setFrontContent] = useState("");
   const [backContent, setBackContent] = useState("");
   const [aiTopic, setAiTopic] = useState("");
-  const [aiCount, setAiCount] = useState("10");
+  const [aiCount, setAiCount] = useState("5");
   const [creating, setCreating] = useState(false);
 
   const handleCreateCard = async () => {
@@ -80,8 +80,8 @@ export default function DeckDetailScreen() {
     }
 
     const count = parseInt(aiCount);
-    if (isNaN(count) || count < 5 || count > 50) {
-      Alert.alert("Error", "Count must be between 5 and 50");
+    if (isNaN(count) || count < 1 || count > 5) {
+      Alert.alert("Error", "Count must be between 1 and 5");
       return;
     }
 
@@ -107,7 +107,7 @@ export default function DeckDetailScreen() {
       if (success) {
         setShowAIModal(false);
         setAiTopic("");
-        setAiCount("10");
+        setAiCount("5");
         Alert.alert(
           "Success",
           `Generated ${generatedCards.length} flashcards!`,
@@ -155,7 +155,7 @@ export default function DeckDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom","top"]}>
+    <SafeAreaView style={styles.container} edges={["bottom", "top"]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -268,14 +268,14 @@ export default function DeckDetailScreen() {
 
             <Input
               label="Topic"
-              placeholder="e.g., JavaScript Promises"
+              placeholder="e.g., Cell Division"
               value={aiTopic}
               onChangeText={setAiTopic}
             />
 
             <Input
-              label="Number of Cards (5-50)"
-              placeholder="10"
+              label="Number of Cards (1-5)"
+              placeholder="5"
               value={aiCount}
               onChangeText={setAiCount}
               keyboardType="number-pad"
