@@ -28,6 +28,10 @@ export class AIService {
     data: GenerateFlashcardsDTO,
   ): Promise<ApiResponse<GenerateFlashcardsResponse>> {
     try {
+      // Create an AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
       const response = await fetch(FUNCTIONS.GENERATE_FLASHCARDS_URL, {
         method: "POST",
         headers: {
@@ -41,7 +45,10 @@ export class AIService {
           userId,
           deckId: data.deck_id,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Check if response has content
       const responseText = await response.text();
@@ -71,10 +78,29 @@ export class AIService {
       return result;
     } catch (error) {
       console.error("AI Service Error:", error);
+
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          return {
+            success: false,
+            error: "Request timeout",
+            message:
+              "The AI service took too long to respond. This might be due to a cold start. Please try again.",
+          };
+        }
+
+        return {
+          success: false,
+          error: "Failed to generate flashcards",
+          message: error.message,
+        };
+      }
+
       return {
         success: false,
         error: "Failed to generate flashcards",
-        message: error instanceof Error ? error.message : "Unknown error",
+        message: "Unknown error occurred",
       };
     }
   }

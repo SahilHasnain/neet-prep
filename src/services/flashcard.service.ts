@@ -23,13 +23,14 @@ export class FlashcardService {
     data: CreateDeckDTO,
   ): Promise<FlashcardDeck> {
     const now = new Date().toISOString();
+    const deckId = ID.unique();
 
     const deck = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.FLASHCARD_DECKS,
-      ID.unique(),
+      deckId,
       {
-        deck_id: ID.unique(),
+        deck_id: deckId,
         user_id: userId,
         title: data.title,
         description: data.description || "",
@@ -110,36 +111,52 @@ export class FlashcardService {
   static async createFlashcard(data: CreateFlashcardDTO): Promise<Flashcard> {
     const now = new Date().toISOString();
 
-    // Get current card count for order_index
-    const existingCards = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTIONS.FLASHCARDS,
-      [Query.equal("deck_id", data.deck_id)],
-    );
+    try {
+      // Get current card count for order_index
+      const existingCards = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.FLASHCARDS,
+        [Query.equal("deck_id", data.deck_id)],
+      );
 
-    const card = await databases.createDocument(
-      DATABASE_ID,
-      COLLECTIONS.FLASHCARDS,
-      ID.unique(),
-      {
-        card_id: ID.unique(),
-        deck_id: data.deck_id,
-        front_content: data.front_content,
-        back_content: data.back_content,
-        difficulty: data.difficulty || "medium",
-        tags: data.tags || [],
-        order_index: existingCards.total,
-        created_at: now,
-        updated_at: now,
-      },
-    );
+      const cardId = ID.unique();
 
-    // Update deck card count
-    await this.updateDeck(data.deck_id, {
-      card_count: existingCards.total + 1,
-    });
+      const card = await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.FLASHCARDS,
+        cardId,
+        {
+          card_id: cardId,
+          deck_id: data.deck_id,
+          front_content: data.front_content,
+          back_content: data.back_content,
+          difficulty: data.difficulty || "medium",
+          tags: data.tags || [],
+          order_index: existingCards.total,
+          created_at: now,
+          updated_at: now,
+        },
+      );
 
-    return card as unknown as Flashcard;
+      // Update deck card count - try to update using the deck_id
+      try {
+        // First, try to get the deck to ensure we have the right document ID
+        const deck = await this.getDeck(data.deck_id);
+        if (deck) {
+          await this.updateDeck(data.deck_id, {
+            card_count: existingCards.total + 1,
+          });
+        }
+      } catch (updateError) {
+        console.error("Failed to update deck card count:", updateError);
+        // Don't fail the whole operation if count update fails
+      }
+
+      return card as unknown as Flashcard;
+    } catch (error) {
+      console.error("Error creating flashcard:", error);
+      throw error;
+    }
   }
 
   static async listDeckCards(deckId: string): Promise<Flashcard[]> {

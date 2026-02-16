@@ -3,9 +3,13 @@
  * Manages flashcard state and operations for a specific deck
  */
 
-import { useEffect, useState } from 'react';
-import { FlashcardService } from '../services/flashcard.service';
-import type { CreateFlashcardDTO, Flashcard, UpdateFlashcardDTO } from '../types/flashcard.types';
+import { useEffect, useState } from "react";
+import { FlashcardService } from "../services/flashcard.service";
+import type {
+  CreateFlashcardDTO,
+  Flashcard,
+  UpdateFlashcardDTO,
+} from "../types/flashcard.types";
 
 export function useFlashcards(deckId: string) {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -19,33 +23,47 @@ export function useFlashcards(deckId: string) {
       const cards = await FlashcardService.listDeckCards(deckId);
       setFlashcards(cards);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load flashcards');
+      setError(
+        err instanceof Error ? err.message : "Failed to load flashcards",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const createFlashcard = async (data: CreateFlashcardDTO): Promise<Flashcard | null> => {
+  const createFlashcard = async (
+    data: CreateFlashcardDTO,
+  ): Promise<Flashcard | null> => {
     try {
       const card = await FlashcardService.createFlashcard({
         ...data,
         deck_id: deckId,
       });
-      setFlashcards(prev => [...prev, card]);
+      setFlashcards((prev) => [...prev, card]);
       return card;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create flashcard');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create flashcard";
+      console.error("Create flashcard error:", err);
+      setError(errorMessage);
       return null;
     }
   };
 
-  const updateFlashcard = async (cardId: string, data: UpdateFlashcardDTO): Promise<boolean> => {
+  const updateFlashcard = async (
+    cardId: string,
+    data: UpdateFlashcardDTO,
+  ): Promise<boolean> => {
     try {
       const updated = await FlashcardService.updateFlashcard(cardId, data);
-      setFlashcards(prev => prev.map(c => c.card_id === cardId ? updated : c));
+      setFlashcards((prev) =>
+        prev.map((c) => (c.card_id === cardId ? updated : c)),
+      );
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update flashcard');
+      setError(
+        err instanceof Error ? err.message : "Failed to update flashcard",
+      );
       return false;
     }
   };
@@ -53,21 +71,30 @@ export function useFlashcards(deckId: string) {
   const deleteFlashcard = async (cardId: string): Promise<boolean> => {
     try {
       await FlashcardService.deleteFlashcard(cardId, deckId);
-      setFlashcards(prev => prev.filter(c => c.card_id !== cardId));
+      setFlashcards((prev) => prev.filter((c) => c.card_id !== cardId));
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete flashcard');
+      setError(
+        err instanceof Error ? err.message : "Failed to delete flashcard",
+      );
       return false;
     }
   };
 
-  const createFlashcardsBulk = async (cards: CreateFlashcardDTO[]): Promise<boolean> => {
+  const createFlashcardsBulk = async (
+    cards: CreateFlashcardDTO[],
+  ): Promise<boolean> => {
     try {
-      const created = await FlashcardService.createFlashcardsBulk(deckId, cards);
-      setFlashcards(prev => [...prev, ...created]);
+      const created = await FlashcardService.createFlashcardsBulk(
+        deckId,
+        cards,
+      );
+      setFlashcards((prev) => [...prev, ...created]);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create flashcards');
+      setError(
+        err instanceof Error ? err.message : "Failed to create flashcards",
+      );
       return false;
     }
   };
