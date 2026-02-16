@@ -23,8 +23,11 @@ export default async ({ req, res, log, error }) => {
       return res.json({ success: false, error: "Method not allowed" }, 405);
     }
 
-    // Parse request body
-    const body = JSON.parse(req.body || "{}");
+    // Parse request body (req.body might already be an object or a string)
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : req.body || {};
     const {
       topic,
       count = 10,
@@ -99,7 +102,10 @@ export default async ({ req, res, log, error }) => {
 
     // Try to log the error
     try {
-      const body = JSON.parse(req.body || "{}");
+      const body =
+        typeof req.body === "string"
+          ? JSON.parse(req.body || "{}")
+          : req.body || {};
       const { userId, deckId, topic } = body;
 
       if (userId) {

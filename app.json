@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "naat-collection",
-    "slug": "naat-collection",
+    "name": "NeuroPrep",
+    "slug": "neuroprep",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -24,7 +24,7 @@
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-       "bundler": "metro"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",

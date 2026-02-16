@@ -4,11 +4,11 @@
  * Run with: npx ts-node scripts/setup-appwrite-database.ts
  */
 
-import { config } from 'dotenv';
+import { config } from "dotenv";
 import { Client, Databases, Permission, Role } from "node-appwrite";
 
 // Load environment variables from .env.local
-config({ path: '.env.local' });
+config({ path: ".env.local" });
 
 // Configuration
 const APPWRITE_ENDPOINT = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!;
@@ -71,10 +71,10 @@ async function createFlashcardDecksCollection() {
       COLLECTIONS.FLASHCARD_DECKS,
       "Flashcard Decks",
       [
-        Permission.read(Role.user("ID")),
-        Permission.create(Role.users()),
-        Permission.update(Role.user("ID")),
-        Permission.delete(Role.user("ID")),
+        Permission.read(Role.any()),
+        Permission.create(Role.any()),
+        Permission.update(Role.any()),
+        Permission.delete(Role.any()),
       ],
     );
 
@@ -183,10 +183,10 @@ async function createFlashcardsCollection() {
       COLLECTIONS.FLASHCARDS,
       "Flashcards",
       [
-        Permission.read(Role.user("ID")),
-        Permission.create(Role.users()),
-        Permission.update(Role.user("ID")),
-        Permission.delete(Role.user("ID")),
+        Permission.read(Role.any()),
+        Permission.create(Role.any()),
+        Permission.update(Role.any()),
+        Permission.delete(Role.any()),
       ],
     );
 
@@ -289,10 +289,10 @@ async function createUserProgressCollection() {
       COLLECTIONS.USER_PROGRESS,
       "User Progress",
       [
-        Permission.read(Role.user("ID")),
-        Permission.create(Role.users()),
-        Permission.update(Role.user("ID")),
-        Permission.delete(Role.user("ID")),
+        Permission.read(Role.any()),
+        Permission.create(Role.any()),
+        Permission.update(Role.any()),
+        Permission.delete(Role.any()),
       ],
     );
 
@@ -407,7 +407,7 @@ async function createAIGenerationLogsCollection() {
       DATABASE_ID,
       COLLECTIONS.AI_GENERATION_LOGS,
       "AI Generation Logs",
-      [Permission.read(Role.user("ID")), Permission.create(Role.users())],
+      [Permission.read(Role.any()), Permission.create(Role.any())],
     );
 
     // Create attributes
