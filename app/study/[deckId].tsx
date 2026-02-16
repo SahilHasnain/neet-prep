@@ -25,7 +25,7 @@ export default function StudyScreen() {
   const [showResult, setShowResult] = useState(false);
 
   const currentCard = flashcards[currentIndex];
-  const stats = getMasteryStats();
+  const stats = getMasteryStats(flashcards.length);
   const progress = ((currentIndex + 1) / flashcards.length) * 100;
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function StudyScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top","bottom"]}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -110,6 +110,7 @@ export default function StudyScreen() {
         <View style={styles.cardContainer}>
           {currentCard && (
             <FlashCard
+              key={currentCard.card_id}
               front={currentCard.front_content}
               back={currentCard.back_content}
               onFlip={handleFlip}
