@@ -17,12 +17,19 @@ export const COLLECTIONS = {
   FLASHCARDS: "flashcards",
   USER_PROGRESS: "user_progress",
   AI_GENERATION_LOGS: "ai_generation_logs",
+  FLASHCARD_LABELS: "flashcard_labels",
+} as const;
+
+// Storage Buckets
+export const BUCKETS = {
+  FLASHCARD_IMAGES: "flashcard_images",
 } as const;
 
 // Function IDs
 export const FUNCTIONS = {
   GENERATE_FLASHCARDS: "generate-flashcards",
-  GENERATE_FLASHCARDS_URL: process.env.EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL!,
+  GENERATE_FLASHCARDS_URL:
+    process.env.EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL!,
 } as const;
 
 // Validation Constants

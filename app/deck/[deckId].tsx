@@ -4,19 +4,31 @@ import {
   Alert,
   FlatList,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ImageUploader } from "../../src/components/diagram/ImageUploader";
+import { LabelEditor } from "../../src/components/diagram/LabelEditor";
 import { Button } from "../../src/components/ui/Button";
 import { Input } from "../../src/components/ui/Input";
 import { useAI } from "../../src/hooks/useAI";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
+import { useImageUpload } from "../../src/hooks/useImageUpload";
+import { LabelService } from "../../src/services/label.service";
 import type { DifficultyLevel } from "../../src/types/flashcard.types";
 
 const TEMP_USER_ID = "temp-user-123";
+
+interface LabelPosition {
+  x: number;
+  y: number;
+  text: string;
+  tempId: string;
+}
 
 export default function DeckDetailScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
@@ -30,34 +42,111 @@ export default function DeckDetailScreen() {
     refresh,
   } = useFlashcards(deckId);
   const { generateFlashcards, generating } = useAI(TEMP_USER_ID);
+  const { uploadImage, deleteImage, uploadedImage, uploading } =
+    useImageUpload();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [cardType, setCardType] = useState<"text" | "diagram">("text");
   const [frontContent, setFrontContent] = useState("");
   const [backContent, setBackContent] = useState("");
   const [aiTopic, setAiTopic] = useState("");
   const [aiCount, setAiCount] = useState("5");
   const [creating, setCreating] = useState(false);
+  const [labels, setLabels] = useState<LabelPosition[]>([]);
+
+  const handleImageSelected = async (asset: {
+    uri: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  }) => {
+    try {
+      // Use provided filename or generate one
+      const filename = asset.fileName || `diagram-${Date.now()}.jpg`;
+
+      const result = await uploadImage(
+        asset.uri,
+        filename,
+        asset.fileSize,
+        asset.mimeType,
+      );
+      if (!result) {
+        Alert.alert("Error", "Failed to upload image");
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      Alert.alert("Error", "Failed to upload image");
+    }
+  };
+
+  const handleImageRemoved = async () => {
+    if (uploadedImage) {
+      await deleteImage(uploadedImage.fileId);
+      setLabels([]);
+    }
+  };
 
   const handleCreateCard = async () => {
-    if (!frontContent.trim() || !backContent.trim()) {
-      Alert.alert("Error", "Please fill in both front and back content");
-      return;
+    if (cardType === "diagram") {
+      // Validate diagram card
+      if (!uploadedImage) {
+        Alert.alert("Error", "Please upload a diagram image");
+        return;
+      }
+      if (labels.length === 0) {
+        Alert.alert("Error", "Please add at least one label to the diagram");
+        return;
+      }
+      if (!backContent.trim()) {
+        Alert.alert("Error", "Please add explanation/notes");
+        return;
+      }
+    } else {
+      // Validate text card
+      if (!frontContent.trim() || !backContent.trim()) {
+        Alert.alert("Error", "Please fill in both front and back content");
+        return;
+      }
     }
 
     try {
       setCreating(true);
+
+      // Create the flashcard
       const card = await createFlashcard({
         deck_id: deckId,
-        front_content: frontContent.trim(),
+        front_content: cardType === "diagram" ? "Diagram" : frontContent.trim(),
         back_content: backContent.trim(),
         difficulty: "medium" as DifficultyLevel,
+        has_image: cardType === "diagram",
+        image_url: uploadedImage?.fileUrl,
+        image_id: uploadedImage?.fileId,
       });
 
       if (card) {
+        // If diagram card, save labels
+        if (cardType === "diagram" && labels.length > 0) {
+          const labelData = labels.map((label, index) => ({
+            card_id: card.card_id,
+            label_text: label.text,
+            x_position: label.x,
+            y_position: label.y,
+            order_index: index,
+          }));
+
+          await LabelService.createLabelsBulk(labelData);
+        }
+
+        // Reset form
         setShowCreateModal(false);
         setFrontContent("");
         setBackContent("");
+        setLabels([]);
+        setCardType("text");
+        if (uploadedImage) {
+          await deleteImage(uploadedImage.fileId);
+        }
         Alert.alert("Success", "Flashcard created!");
       } else {
         Alert.alert("Error", "Failed to create flashcard. Please try again.");
@@ -223,28 +312,119 @@ export default function DeckDetailScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Create Flashcard</Text>
 
-            <Input
-              label="Front (Question)"
-              placeholder="Enter the question or term"
-              value={frontContent}
-              onChangeText={setFrontContent}
-              multiline
-              numberOfLines={3}
-            />
+            {/* Card Type Selector */}
+            <View style={styles.cardTypeSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.cardTypeButton,
+                  cardType === "text" && styles.cardTypeButtonActive,
+                ]}
+                onPress={() => setCardType("text")}
+              >
+                <Text
+                  style={[
+                    styles.cardTypeButtonText,
+                    cardType === "text" && styles.cardTypeButtonTextActive,
+                  ]}
+                >
+                  📝 Text Card
+                </Text>
+              </TouchableOpacity>
 
-            <Input
-              label="Back (Answer)"
-              placeholder="Enter the answer or definition"
-              value={backContent}
-              onChangeText={setBackContent}
-              multiline
-              numberOfLines={3}
-            />
+              <TouchableOpacity
+                style={[
+                  styles.cardTypeButton,
+                  cardType === "diagram" && styles.cardTypeButtonActive,
+                ]}
+                onPress={() => setCardType("diagram")}
+              >
+                <Text
+                  style={[
+                    styles.cardTypeButtonText,
+                    cardType === "diagram" && styles.cardTypeButtonTextActive,
+                  ]}
+                >
+                  🖼️ Diagram Card
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalScroll}>
+              {cardType === "text" ? (
+                <>
+                  <Input
+                    label="Front (Question)"
+                    placeholder="Enter the question or term"
+                    value={frontContent}
+                    onChangeText={setFrontContent}
+                    multiline
+                    numberOfLines={3}
+                  />
+
+                  <Input
+                    label="Back (Answer)"
+                    placeholder="Enter the answer or definition"
+                    value={backContent}
+                    onChangeText={setBackContent}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </>
+              ) : (
+                <>
+                  {!uploadedImage ? (
+                    <ImageUploader
+                      onImageSelected={handleImageSelected}
+                      onImageRemoved={handleImageRemoved}
+                      disabled={uploading}
+                    />
+                  ) : (
+                    <>
+                      <LabelEditor
+                        imageUrl={uploadedImage.fileUrl}
+                        labels={labels}
+                        onLabelsChange={setLabels}
+                        editable={true}
+                      />
+
+                      <View style={styles.diagramActions}>
+                        <TouchableOpacity
+                          style={styles.changeImageButton}
+                          onPress={handleImageRemoved}
+                        >
+                          <Text style={styles.changeImageButtonText}>
+                            Change Image
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+
+                  <Input
+                    label="Explanation / Notes"
+                    placeholder="Add explanation or additional notes"
+                    value={backContent}
+                    onChangeText={setBackContent}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </>
+              )}
+            </ScrollView>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowCreateModal(false)}
+                onPress={() => {
+                  setShowCreateModal(false);
+                  setCardType("text");
+                  setFrontContent("");
+                  setBackContent("");
+                  setLabels([]);
+                  if (uploadedImage) {
+                    deleteImage(uploadedImage.fileId);
+                  }
+                }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
@@ -410,18 +590,65 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 24,
-    maxHeight: "80%",
+    maxHeight: "90%",
+  },
+  modalScroll: {
+    maxHeight: "70%",
   },
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  cardTypeSelector: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  cardTypeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  cardTypeButtonActive: {
+    borderColor: "#007AFF",
+    backgroundColor: "#E6F4FE",
+  },
+  cardTypeButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+  },
+  cardTypeButtonTextActive: {
+    color: "#007AFF",
+  },
+  diagramActions: {
+    marginVertical: 12,
+  },
+  changeImageButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dc3545",
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  changeImageButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#dc3545",
   },
   modalButtons: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 8,
+    marginTop: 16,
   },
   modalButton: {
     flex: 1,
