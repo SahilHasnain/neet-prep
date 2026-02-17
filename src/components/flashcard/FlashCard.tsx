@@ -80,75 +80,92 @@ export function FlashCard({
   });
 
   return (
-    <TouchableOpacity
-      onPress={handleFlip}
-      activeOpacity={0.9}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <View style={styles.card}>
-        <Animated.View
-          style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}
+        <TouchableOpacity
+          onPress={handleFlip}
+          activeOpacity={0.9}
+          style={StyleSheet.absoluteFill}
+          disabled={isFlipped}
         >
-          {hasImage && imageUrl ? (
-            <View style={styles.imageContainer}>
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{ uri: imageUrl }}
-                  style={styles.image}
-                  resizeMode="contain"
-                  onLayout={(event) => {
-                    const { width, height } = event.nativeEvent.layout;
-                    setImageSize({ width, height });
-                  }}
-                />
-                {labels.map((label, index) => (
-                  <View
-                    key={label.label_id}
-                    style={[
-                      styles.labelDot,
-                      {
-                        left: `${label.x_position}%`,
-                        top: `${label.y_position}%`,
-                      },
-                    ]}
-                  >
-                    <View style={styles.dotCircle}>
-                      <Text style={styles.dotNumber}>{index + 1}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-              {labels.length > 0 && (
-                <ScrollView
-                  style={styles.labelList}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                >
+          <Animated.View
+            style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}
+          >
+            {hasImage && imageUrl ? (
+              <View style={styles.imageContainer}>
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.image}
+                    resizeMode="contain"
+                    onLayout={(event) => {
+                      const { width, height } = event.nativeEvent.layout;
+                      setImageSize({ width, height });
+                    }}
+                  />
                   {labels.map((label, index) => (
-                    <View key={label.label_id} style={styles.labelItem}>
-                      <Text style={styles.labelItemText}>
-                        {index + 1}. {label.label_text}
-                      </Text>
+                    <View
+                      key={label.label_id}
+                      style={[
+                        styles.labelDot,
+                        {
+                          left: `${label.x_position}%`,
+                          top: `${label.y_position}%`,
+                        },
+                      ]}
+                    >
+                      <View style={styles.dotCircle}>
+                        <Text style={styles.dotNumber}>{index + 1}</Text>
+                      </View>
                     </View>
                   ))}
-                </ScrollView>
-              )}
-            </View>
-          ) : (
-            <Text style={styles.text}>{front}</Text>
-          )}
-          <Text style={styles.hint}>Tap to flip</Text>
-        </Animated.View>
+                </View>
+                {labels.length > 0 && (
+                  <ScrollView
+                    style={styles.labelList}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {labels.map((label, index) => (
+                      <View key={label.label_id} style={styles.labelItem}>
+                        <Text style={styles.labelItemText}>
+                          {index + 1}. {label.label_text}
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.text}>{front}</Text>
+            )}
+            <Text style={styles.hint}>Tap to flip</Text>
+          </Animated.View>
+        </TouchableOpacity>
 
         <Animated.View
           style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}
+          pointerEvents={isFlipped ? "auto" : "none"}
         >
-          <ScrollView contentContainerStyle={styles.backContent}>
-            <Text style={styles.text}>{back}</Text>
-          </ScrollView>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            onPress={handleFlip}
+            activeOpacity={1}
+          >
+            <ScrollView
+              contentContainerStyle={styles.backContent}
+              showsVerticalScrollIndicator={true}
+              bounces={true}
+            >
+              <Text style={styles.text}>{back}</Text>
+            </ScrollView>
+            <View style={styles.flipBackButton}>
+              <Text style={styles.hint}>Tap to flip back</Text>
+            </View>
+          </TouchableOpacity>
         </Animated.View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -166,33 +183,36 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 20,
+    padding: 28,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
     backfaceVisibility: "hidden",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   cardFront: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3b82f6",
   },
   cardBack: {
-    backgroundColor: "#34C759",
+    backgroundColor: "#10b981",
   },
   backContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingVertical: 20,
+    paddingHorizontal: 8,
   },
   text: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "600",
     color: "#fff",
     textAlign: "center",
+    lineHeight: 32,
   },
   imageContainer: {
     width: "100%",
@@ -208,52 +228,63 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 8,
+    borderRadius: 12,
   },
   labelDot: {
     position: "absolute",
-    transform: [{ translateX: -12 }, { translateY: -12 }],
+    transform: [{ translateX: -16 }, { translateY: -16 }],
   },
   dotCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#FFD700",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#f59e0b",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#fff",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
   },
   dotNumber: {
-    color: "#000",
-    fontSize: 12,
+    color: "#fff",
+    fontSize: 14,
     fontWeight: "bold",
   },
   labelList: {
-    maxHeight: 40,
-    marginTop: 8,
+    maxHeight: 44,
+    marginTop: 10,
   },
   labelItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   labelItemText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
   },
   hint: {
     position: "absolute",
-    bottom: 16,
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    bottom: 20,
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.8)",
+    fontWeight: "600",
+  },
+  flipBackButton: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 16,
+    alignItems: "center",
   },
 });

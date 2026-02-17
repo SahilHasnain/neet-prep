@@ -3,7 +3,7 @@
  * Shows quiz completion stats and weak areas
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 
 interface QuizResult {
   label_id: string;
@@ -32,66 +33,144 @@ export function QuizResults({
   onExit,
   hasMoreCards = false,
 }: QuizResultsProps) {
+  const scale = useSharedValue(0.3);
+  const opacity = useSharedValue(0);
+  const [showDetails, setShowDetails] = useState(false);
+
   const correctCount = results.filter((r) => r.is_correct).length;
   const totalCount = results.length;
   const accuracy = Math.round((correctCount / totalCount) * 100);
   const isPerfect = correctCount === totalCount;
+  const wrongAnswers = results.filter((r) => !r.is_correct);
+
+  useEffect(() => {
+    // Animate score reveal
+    scale.value = withSpring(1, { damping: 10, stiffness: 100 });
+    opacity.value = withSpring(1, { damping: 10, stiffness: 100 });
+
+    // Show details after animation
+    setTimeout(() => setShowDetails(true), 800);
+  }, []);
 
   const getScoreColor = () => {
-    if (accuracy >= 80) return "#34C759";
-    if (accuracy >= 60) return "#FFD700";
-    return "#dc3545";
+    if (accuracy >= 80) return "#10b981";
+    if (accuracy >= 60) return "#f59e0b";
+    return "#ef4444";
   };
+
+  const getPerformanceMessage = () => {
+    if (isPerfect) return "Outstanding! Perfect score! 🌟";
+    if (accuracy >= 80) return "Excellent work! Keep it up! 🎯";
+    if (accuracy >= 60) return "Good job! Room for improvement 📚";
+    return "Keep practicing! You'll get better 💪";
+  };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value,
+    };
+  });
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Quiz Complete!</Text>
-        {isPerfect && <Text style={styles.confetti}>🎉</Text>}
+        {isPerfect && <Text style={styles.confetti}>🎉 🎊 🎉</Text>}
       </View>
 
-      {/* Score Card */}
+      {/* Score Card with Animation */}
       <View style={styles.scoreCard}>
-        <View style={[styles.scoreCircle, { borderColor: getScoreColor() }]}>
-          <Text style={[styles.scoreText, { color: getScoreColor() }]}>
-            {accuracy}%
-          </Text>
-        </View>
+        <Animated.View style={[styles.scoreCircleContainer, animatedStyle]}>
+          <View style={[styles.scoreCircle, { borderColor: getScoreColor() }]}>
+            <Text style={[styles.scoreText, { color: getScoreColor() }]}>
+              {accuracy}%
+            </Text>
+          </View>
+        </Animated.View>
+
         <Text style={styles.scoreLabel}>
           {correctCount} out of {totalCount} correct
         </Text>
-        {isPerfect && <Text style={styles.perfectText}>Perfect Score! 🌟</Text>}
+        <Text style={[styles.performanceMessage, { color: getScoreColor() }]}>
+          {getPerformanceMessage()}
+        </Text>
       </View>
 
-      {/* Results List */}
-      <ScrollView style={styles.resultsList}>
-        <Text style={styles.sectionTitle}>Detailed Results</Text>
-        {results.map((result, index) => (
-          <View
-            key={result.label_id}
-            style={[
-              styles.resultItem,
-              result.is_correct ? styles.resultCorrect : styles.resultWrong,
-            ]}
-          >
-            <View style={styles.resultHeader}>
-              <Text style={styles.resultNumber}>Q{index + 1}</Text>
-              <Text style={styles.resultIcon}>
-                {result.is_correct ? "✅" : "❌"}
-              </Text>
-            </View>
-            <Text style={styles.resultAnswer}>
-              Correct: {result.correct_answer}
-            </Text>
-            {!result.is_correct && (
-              <Text style={styles.resultUserAnswer}>
-                Your answer: {result.user_answer}
-              </Text>
-            )}
+      {/* Performance Stats */}
+      {showDetails && (
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statIcon}>✅</Text>
+            <Text style={styles.statValue}>{correctCount}</Text>
+            <Text style={styles.statLabel}>Correct</Text>
           </View>
-        ))}
-      </ScrollView>
+          <View style={styles.statCard}>
+            <Text style={styles.statIcon}>❌</Text>
+            <Text style={styles.statValue}>{wrongAnswers.length}</Text>
+            <Text style={styles.statLabel}>Wrong</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statIcon}>📊</Text>
+            <Text style={styles.statValue}>{accuracy}%</Text>
+            <Text style={styles.statLabel}>Accuracy</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Weak Areas */}
+      {showDetails && wrongAnswers.length > 0 && (
+        <View style={styles.weakAreasContainer}>
+          <Text style={styles.weakAreasTitle}>
+            🎯 Areas to Review ({wrongAnswers.length})
+          </Text>
+          <ScrollView style={styles.weakAreasList}>
+            {wrongAnswers.map((result, index) => (
+              <View key={result.label_id} style={styles.weakAreaItem}>
+                <View style={styles.weakAreaHeader}>
+                  <Text style={styles.weakAreaNumber}>{index + 1}</Text>
+                  <Text style={styles.weakAreaAnswer}>
+                    {result.correct_answer}
+                  </Text>
+                </View>
+                <Text style={styles.weakAreaUserAnswer}>
+                  Your answer: {result.user_answer}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Detailed Results */}
+      {showDetails && (
+        <ScrollView style={styles.resultsList}>
+          <Text style={styles.sectionTitle}>All Questions</Text>
+          {results.map((result, index) => (
+            <View
+              key={result.label_id}
+              style={[
+                styles.resultItem,
+                result.is_correct ? styles.resultCorrect : styles.resultWrong,
+              ]}
+            >
+              <View style={styles.resultHeader}>
+                <Text style={styles.resultNumber}>Q{index + 1}</Text>
+                <Text style={styles.resultIcon}>
+                  {result.is_correct ? "✅" : "❌"}
+                </Text>
+              </View>
+              <Text style={styles.resultAnswer}>{result.correct_answer}</Text>
+              {!result.is_correct && (
+                <Text style={styles.resultUserAnswer}>
+                  Your answer: {result.user_answer}
+                </Text>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      )}
 
       {/* Action Buttons */}
       <View style={styles.footer}>
@@ -106,7 +185,7 @@ export function QuizResults({
           onPress={onExit}
         >
           <Text style={styles.exitButtonText}>
-            {hasMoreCards ? "Next Card →" : "Exit"}
+            {hasMoreCards ? "Next Card →" : "✓ Done"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -117,22 +196,22 @@ export function QuizResults({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9fafb",
   },
   header: {
     padding: 24,
     backgroundColor: "#fff",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomWidth: 2,
+    borderBottomColor: "#e5e7eb",
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
   },
   confetti: {
-    fontSize: 32,
+    fontSize: 36,
     marginTop: 8,
   },
   scoreCard: {
@@ -141,28 +220,121 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  scoreCircleContainer: {
+    marginBottom: 20,
+  },
   scoreCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 8,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   scoreText: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: "bold",
   },
   scoreLabel: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 8,
+    color: "#6b7280",
+    marginBottom: 12,
+    fontWeight: "500",
   },
-  perfectText: {
+  performanceMessage: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#34C759",
+    textAlign: "center",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 16,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
+  },
+  statIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    fontWeight: "600",
+  },
+  weakAreasContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: "#fecaca",
+    maxHeight: 200,
+  },
+  weakAreasTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ef4444",
+    marginBottom: 12,
+  },
+  weakAreasList: {
+    maxHeight: 140,
+  },
+  weakAreaItem: {
+    padding: 12,
+    backgroundColor: "#fef2f2",
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: "#ef4444",
+  },
+  weakAreaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    gap: 8,
+  },
+  weakAreaNumber: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#ef4444",
+    backgroundColor: "#fee2e2",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  weakAreaAnswer: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1f2937",
+    flex: 1,
+  },
+  weakAreaUserAnswer: {
+    fontSize: 13,
+    color: "#6b7280",
+    fontStyle: "italic",
+    marginLeft: 4,
   },
   resultsList: {
     flex: 1,
@@ -171,7 +343,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 12,
   },
   resultItem: {
@@ -181,12 +353,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   resultCorrect: {
-    backgroundColor: "#d4edda",
-    borderColor: "#34C759",
+    backgroundColor: "#d1fae5",
+    borderColor: "#10b981",
   },
   resultWrong: {
-    backgroundColor: "#f8d7da",
-    borderColor: "#dc3545",
+    backgroundColor: "#fee2e2",
+    borderColor: "#ef4444",
   },
   resultHeader: {
     flexDirection: "row",
@@ -197,36 +369,42 @@ const styles = StyleSheet.create({
   resultNumber: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
   },
   resultIcon: {
-    fontSize: 20,
+    fontSize: 22,
   },
   resultAnswer: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 4,
   },
   resultUserAnswer: {
     fontSize: 14,
-    color: "#666",
+    color: "#6b7280",
     fontStyle: "italic",
   },
   footer: {
     padding: 16,
     backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopWidth: 2,
+    borderTopColor: "#e5e7eb",
     gap: 12,
   },
   button: {
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+    minHeight: 52,
   },
   retryButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3b82f6",
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   retryButtonText: {
     color: "#fff",
@@ -234,10 +412,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   exitButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#10b981",
+    shadowColor: "#10b981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   exitButtonText: {
-    color: "#666",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },

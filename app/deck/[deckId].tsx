@@ -264,13 +264,16 @@ export default function DeckDetailScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["bottom", "top"]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Flashcards</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Flashcards</Text>
+          <View style={styles.headerSpacer} />
+        </View>
 
         {flashcards.length > 0 && (
           <View style={styles.statsRow}>
@@ -600,15 +603,23 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#fff",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  backButton: {
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 8,
+  },
+  backButton: {
+    paddingVertical: 4,
   },
   backText: {
     fontSize: 16,
@@ -616,32 +627,36 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#1f2937",
-    marginBottom: 12,
+    flex: 1,
+    textAlign: "center",
+  },
+  headerSpacer: {
+    width: 60,
   },
   statsRow: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   statBadge: {
     backgroundColor: "#f3f4f6",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
     alignItems: "center",
   },
   statBadgeValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#3b82f6",
   },
   statBadgeLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: "#6b7280",
-    marginTop: 2,
+    marginTop: 1,
   },
   headerButtons: {
     flexDirection: "row",
@@ -650,22 +665,22 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     backgroundColor: "#f3f4f6",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 10,
     alignItems: "center",
-    minHeight: 60,
+    minHeight: 52,
     justifyContent: "center",
   },
   actionButtonPrimary: {
     backgroundColor: "#3b82f6",
   },
   actionButtonIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: 18,
+    marginBottom: 2,
   },
   actionButtonText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: "#374151",
   },
