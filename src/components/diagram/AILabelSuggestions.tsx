@@ -63,11 +63,20 @@ export function AILabelSuggestions({
     return "Low";
   };
 
+  const getConfidencePercentage = (confidence: number) => {
+    return Math.round(confidence * 100);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Analyzing diagram...</Text>
+        <View style={styles.loadingAnimation}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+        </View>
+        <Text style={styles.loadingText}>🤖 AI Analyzing Diagram...</Text>
+        <Text style={styles.loadingSubtext}>
+          Detecting labels and positions
+        </Text>
       </View>
     );
   }
@@ -75,10 +84,16 @@ export function AILabelSuggestions({
   if (suggestions.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No labels detected</Text>
+        <View style={styles.emptyIllustration}>
+          <Text style={styles.emptyIcon}>🔍</Text>
+        </View>
+        <Text style={styles.emptyText}>No Labels Detected</Text>
         <Text style={styles.emptySubtext}>
-          Try a clearer image or add labels manually
+          Try a clearer image with visible labels or add them manually
         </Text>
+        <TouchableOpacity style={styles.emptyButton} onPress={onReject}>
+          <Text style={styles.emptyButtonText}>Add Manually</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -87,10 +102,11 @@ export function AILabelSuggestions({
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>
-          AI Detected {suggestions.length} Labels
+          🎯 AI Detected {suggestions.length} Label
+          {suggestions.length !== 1 ? "s" : ""}
         </Text>
         <Text style={styles.subtitle}>
-          Select labels to add ({selectedIndices.length} selected)
+          Review and select labels to add • {selectedIndices.length} selected
         </Text>
       </View>
 
@@ -98,6 +114,9 @@ export function AILabelSuggestions({
         {suggestions.map((suggestion, index) => {
           const isSelected = selectedIndices.includes(index);
           const confidenceColor = getConfidenceColor(suggestion.confidence);
+          const confidencePercent = getConfidencePercentage(
+            suggestion.confidence,
+          );
 
           return (
             <TouchableOpacity
@@ -109,19 +128,15 @@ export function AILabelSuggestions({
               onPress={() => toggleSelection(index)}
               activeOpacity={0.7}
             >
+              <View style={styles.suggestionNumber}>
+                <Text style={styles.suggestionNumberText}>{index + 1}</Text>
+              </View>
+
               <View style={styles.suggestionContent}>
                 <View style={styles.suggestionHeader}>
-                  <Text style={styles.labelText}>{suggestion.label_text}</Text>
-                  <View
-                    style={[
-                      styles.confidenceBadge,
-                      { backgroundColor: confidenceColor },
-                    ]}
-                  >
-                    <Text style={styles.confidenceText}>
-                      {getConfidenceLabel(suggestion.confidence)}
-                    </Text>
-                  </View>
+                  <Text style={styles.labelText} numberOfLines={1}>
+                    {suggestion.label_text}
+                  </Text>
                 </View>
 
                 {suggestion.description && (
@@ -130,8 +145,33 @@ export function AILabelSuggestions({
                   </Text>
                 )}
 
+                <View style={styles.metaRow}>
+                  <View style={styles.confidenceContainer}>
+                    <View style={styles.confidenceBar}>
+                      <View
+                        style={[
+                          styles.confidenceFill,
+                          {
+                            width: `${confidencePercent}%`,
+                            backgroundColor: confidenceColor,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.confidenceLabel,
+                        { color: confidenceColor },
+                      ]}
+                    >
+                      {confidencePercent}%{" "}
+                      {getConfidenceLabel(suggestion.confidence)}
+                    </Text>
+                  </View>
+                </View>
+
                 <Text style={styles.position}>
-                  Position: ({Math.round(suggestion.x_position)}%,{" "}
+                  📍 Position: ({Math.round(suggestion.x_position)}%,{" "}
                   {Math.round(suggestion.y_position)}%)
                 </Text>
               </View>
@@ -180,17 +220,33 @@ export function AILabelSuggestions({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f9fafb",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
+    backgroundColor: "#fff",
+  },
+  loadingAnimation: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#eff6ff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1f2937",
+  },
+  loadingSubtext: {
+    marginTop: 8,
+    fontSize: 14,
     color: "#6b7280",
   },
   emptyContainer: {
@@ -198,32 +254,60 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
+    backgroundColor: "#fff",
+  },
+  emptyIllustration: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#fef3c7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  emptyIcon: {
+    fontSize: 48,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#374151",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1f2937",
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
     color: "#6b7280",
     textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  emptyButton: {
+    backgroundColor: "#3b82f6",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   header: {
-    padding: 16,
-    borderBottomWidth: 1,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderBottomWidth: 2,
     borderBottomColor: "#e5e7eb",
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 4,
+    color: "#1f2937",
+    marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
     color: "#6b7280",
+    fontWeight: "500",
   },
   list: {
     flex: 1,
@@ -232,12 +316,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 12,
     backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
   },
   suggestionItemSelected: {
     backgroundColor: "#eff6ff",
+    borderColor: "#3b82f6",
+  },
+  suggestionNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#3b82f6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  suggestionNumberText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
   },
   suggestionContent: {
     flex: 1,
@@ -246,43 +348,58 @@ const styles = StyleSheet.create({
   suggestionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   labelText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: "#1f2937",
     flex: 1,
   },
-  confidenceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  confidenceText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#fff",
-  },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#6b7280",
-    marginBottom: 4,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  metaRow: {
+    marginBottom: 6,
+  },
+  confidenceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  confidenceBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  confidenceFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  confidenceLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    minWidth: 70,
   },
   position: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#9ca3af",
+    fontWeight: "500",
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: "#d1d5db",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
   checkboxSelected: {
     backgroundColor: "#3b82f6",
@@ -290,40 +407,50 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
   },
   actions: {
     flexDirection: "row",
     padding: 16,
     gap: 12,
-    borderTopWidth: 1,
+    backgroundColor: "#fff",
+    borderTopWidth: 2,
     borderTopColor: "#e5e7eb",
   },
   rejectButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
     alignItems: "center",
+    backgroundColor: "#fff",
+    minHeight: 48,
   },
   rejectButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#374151",
+    color: "#6b7280",
   },
   applyButton: {
     flex: 2,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: "#3b82f6",
     alignItems: "center",
+    minHeight: 48,
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   applyButtonDisabled: {
     backgroundColor: "#9ca3af",
+    shadowOpacity: 0,
   },
   applyButtonText: {
     fontSize: 16,

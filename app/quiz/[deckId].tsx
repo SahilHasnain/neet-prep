@@ -202,6 +202,7 @@ export default function QuizModeScreen() {
               ? handleNextCard
               : handleExit
           }
+          hasMoreCards={currentCardIndex < diagramCards.length - 1}
         />
       </SafeAreaView>
     );

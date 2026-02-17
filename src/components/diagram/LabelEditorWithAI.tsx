@@ -147,7 +147,7 @@ export function LabelEditorWithAI({
     try {
       await analyzeDiagram(imageId, imageUrl, diagramType);
       setShowAISuggestions(true);
-    } catch (err) {
+    } catch (error) {
       Alert.alert("Error", "Failed to analyze diagram. Please try again.");
     }
   };
@@ -156,7 +156,7 @@ export function LabelEditorWithAI({
     try {
       await assessQuality(imageId, imageUrl);
       setShowQualityCheck(true);
-    } catch (err) {
+    } catch (error) {
       Alert.alert("Error", "Failed to check quality. Please try again.");
     }
   };
@@ -178,7 +178,7 @@ export function LabelEditorWithAI({
       clearSuggestions();
 
       Alert.alert("Success", `Applied ${selectedIndices.length} labels!`);
-    } catch (err) {
+    } catch (error) {
       Alert.alert("Error", "Failed to apply labels. Please try again.");
     }
   };
@@ -403,15 +403,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   instructions: {
-    backgroundColor: "#E6F4FE",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#eff6ff",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: "#3b82f6",
   },
   instructionsText: {
     fontSize: 14,
-    color: "#007AFF",
+    color: "#1e40af",
     textAlign: "center",
+    fontWeight: "500",
   },
   aiActions: {
     flexDirection: "row",
@@ -424,19 +427,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#3b82f6",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     gap: 8,
+    minHeight: 48,
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   aiButtonDisabled: {
     backgroundColor: "#9ca3af",
+    shadowOpacity: 0,
   },
   qualityButton: {
     backgroundColor: "#10b981",
+    shadowColor: "#10b981",
   },
   aiButtonIcon: {
-    fontSize: 18,
+    fontSize: 20,
   },
   aiButtonText: {
     color: "#fff",
@@ -444,22 +455,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   errorContainer: {
-    backgroundColor: "#fee2e2",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#fef2f2",
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: "#ef4444",
   },
   errorText: {
     color: "#dc2626",
     fontSize: 14,
     textAlign: "center",
+    fontWeight: "500",
   },
   imageContainer: {
     position: "relative",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9fafb",
     borderRadius: 12,
     overflow: "hidden",
     minHeight: 300,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
   },
   image: {
     width: "100%",
@@ -467,55 +483,62 @@ const styles = StyleSheet.create({
   },
   labelDot: {
     position: "absolute",
-    transform: [{ translateX: -12 }, { translateY: -12 }],
+    transform: [{ translateX: -18 }, { translateY: -18 }],
   },
   dotCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#007AFF",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3b82f6",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#fff",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
   },
   dotNumber: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "bold",
   },
   labelTextContainer: {
     position: "absolute",
-    top: 28,
-    left: -40,
-    backgroundColor: "rgba(0, 122, 255, 0.9)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    minWidth: 80,
+    top: 40,
+    left: -50,
+    backgroundColor: "rgba(59, 130, 246, 0.95)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    minWidth: 100,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   labelText: {
     color: "#fff",
-    fontSize: 11,
-    fontWeight: "500",
+    fontSize: 12,
+    fontWeight: "600",
     textAlign: "center",
   },
   labelList: {
     marginTop: 16,
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
   labelListTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
+    color: "#1f2937",
+    marginBottom: 12,
   },
   labelListScroll: {
     maxHeight: 150,
@@ -523,30 +546,33 @@ const styles = StyleSheet.create({
   labelListItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#f3f4f6",
   },
   labelListNumber: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#007AFF",
-    width: 30,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#3b82f6",
+    width: 35,
   },
   labelListText: {
     flex: 1,
     fontSize: 14,
-    color: "#333",
+    color: "#374151",
+    fontWeight: "500",
   },
   labelListActions: {
     flexDirection: "row",
     gap: 8,
   },
   labelListButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: "#007AFF",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#3b82f6",
+    minHeight: 32,
+    justifyContent: "center",
   },
   labelListButtonText: {
     color: "#fff",
@@ -554,38 +580,44 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   deleteButton: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "#ef4444",
   },
   deleteButtonText: {
     color: "#fff",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     width: "100%",
     maxWidth: 400,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 16,
   },
   modalInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 20,
+    backgroundColor: "#f9fafb",
   },
   modalButtons: {
     flexDirection: "row",
@@ -593,20 +625,26 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: "center",
+    minHeight: 48,
   },
   cancelButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f3f4f6",
   },
   cancelButtonText: {
-    color: "#666",
+    color: "#6b7280",
     fontSize: 16,
     fontWeight: "600",
   },
   saveButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3b82f6",
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   saveButtonText: {
     color: "#fff",

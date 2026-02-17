@@ -1,8 +1,10 @@
+import { LabelEditorWithAI } from "@/src/components/diagram/LabelEditorWithAI";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
   FlatList,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -19,7 +21,6 @@ import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useImageUpload } from "../../src/hooks/useImageUpload";
 import { LabelService } from "../../src/services/label.service";
 import type { DifficultyLevel } from "../../src/types/flashcard.types";
-import { LabelEditorWithAI } from "@/src/components/diagram/LabelEditorWithAI";
 
 const TEMP_USER_ID = "temp-user-123";
 
@@ -257,6 +258,9 @@ export default function DeckDetailScreen() {
     );
   };
 
+  const diagramCount = flashcards.filter((c) => c.has_image).length;
+  const textCount = flashcards.length - diagramCount;
+
   return (
     <SafeAreaView style={styles.container} edges={["bottom", "top"]}>
       <View style={styles.header}>
@@ -266,38 +270,83 @@ export default function DeckDetailScreen() {
         >
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Flashcards ({flashcards.length})</Text>
+        <Text style={styles.title}>Flashcards</Text>
+
+        {flashcards.length > 0 && (
+          <View style={styles.statsRow}>
+            <View style={styles.statBadge}>
+              <Text style={styles.statBadgeValue}>{flashcards.length}</Text>
+              <Text style={styles.statBadgeLabel}>Total</Text>
+            </View>
+            <View style={styles.statBadge}>
+              <Text style={styles.statBadgeValue}>{textCount}</Text>
+              <Text style={styles.statBadgeLabel}>Text</Text>
+            </View>
+            <View style={styles.statBadge}>
+              <Text style={styles.statBadgeValue}>{diagramCount}</Text>
+              <Text style={styles.statBadgeLabel}>Diagram</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.headerButtons}>
-          <View style={styles.buttonWrapper}>
-            <Button title="Study" onPress={handleStudy} />
-          </View>
-          <View style={styles.buttonWrapper}>
-            <Button title="🎯 Quiz" onPress={handleQuiz} variant="secondary" />
-          </View>
-          <View style={styles.buttonWrapper}>
-            <Button title="+ Add" onPress={() => setShowCreateModal(true)} />
-          </View>
-          <View style={styles.buttonWrapper}>
-            <Button
-              title="🤖 AI"
-              onPress={() => setShowAIModal(true)}
-              variant="secondary"
-            />
-          </View>
+          <TouchableOpacity style={styles.actionButton} onPress={handleStudy}>
+            <Text style={styles.actionButtonIcon}>📖</Text>
+            <Text style={styles.actionButtonText}>Study</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleQuiz}>
+            <Text style={styles.actionButtonIcon}>🎯</Text>
+            <Text style={styles.actionButtonText}>Quiz</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.actionButtonPrimary]}
+            onPress={() => setShowCreateModal(true)}
+          >
+            <Text style={styles.actionButtonIcon}>+</Text>
+            <Text
+              style={[styles.actionButtonText, styles.actionButtonTextPrimary]}
+            >
+              Add
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => setShowAIModal(true)}
+          >
+            <Text style={styles.actionButtonIcon}>🤖</Text>
+            <Text style={styles.actionButtonText}>AI</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
       {loading && flashcards.length === 0 ? (
         <View style={styles.centerContainer}>
+          <Text style={styles.loadingIcon}>⏳</Text>
           <Text style={styles.loadingText}>Loading flashcards...</Text>
         </View>
       ) : flashcards.length === 0 ? (
         <View style={styles.emptyContainer}>
+          <View style={styles.emptyIllustration}>
+            <Text style={styles.emptyIcon}>📇</Text>
+          </View>
           <Text style={styles.emptyTitle}>No Flashcards Yet</Text>
           <Text style={styles.emptyText}>
-            Add flashcards manually or generate them with AI!
+            Create your first flashcard to start learning!
           </Text>
+          <View style={styles.emptyActions}>
+            <TouchableOpacity
+              style={styles.primaryCTA}
+              onPress={() => setShowCreateModal(true)}
+            >
+              <Text style={styles.primaryCTAText}>+ Create Card</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.secondaryCTA}
+              onPress={() => setShowAIModal(true)}
+            >
+              <Text style={styles.secondaryCTAText}>🤖 Generate with AI</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <FlatList
@@ -305,15 +354,42 @@ export default function DeckDetailScreen() {
           keyExtractor={(item) => item.card_id}
           renderItem={({ item }) => (
             <View style={styles.cardItem}>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardFront}>{item.front_content}</Text>
-                <Text style={styles.cardBack}>{item.back_content}</Text>
+              <View style={styles.cardItemContent}>
+                {item.has_image && item.image_url ? (
+                  <View style={styles.cardWithImage}>
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.cardThumbnail}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.cardTextContent}>
+                      <View style={styles.cardTypeBadge}>
+                        <Text style={styles.cardTypeBadgeText}>🖼️ Diagram</Text>
+                      </View>
+                      <Text style={styles.cardBack} numberOfLines={2}>
+                        {item.back_content}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.cardTextOnly}>
+                    <View style={styles.cardTypeBadge}>
+                      <Text style={styles.cardTypeBadgeText}>📝 Text</Text>
+                    </View>
+                    <Text style={styles.cardFront} numberOfLines={1}>
+                      {item.front_content}
+                    </Text>
+                    <Text style={styles.cardBack} numberOfLines={2}>
+                      {item.back_content}
+                    </Text>
+                  </View>
+                )}
               </View>
               <TouchableOpacity
                 onPress={() => handleDeleteCard(item.card_id)}
                 style={styles.deleteButton}
               >
-                <Text style={styles.deleteText}>Delete</Text>
+                <Text style={styles.deleteIcon}>🗑️</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -507,12 +583,20 @@ export default function DeckDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9fafb",
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#6b7280",
   },
   header: {
     backgroundColor: "#fff",
@@ -528,26 +612,65 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: "#007AFF",
+    color: "#3b82f6",
+    fontWeight: "600",
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
+    marginBottom: 12,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 8,
     marginBottom: 16,
+  },
+  statBadge: {
+    backgroundColor: "#f3f4f6",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  statBadgeValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3b82f6",
+  },
+  statBadgeLabel: {
+    fontSize: 11,
+    color: "#6b7280",
+    marginTop: 2,
   },
   headerButtons: {
     flexDirection: "row",
     gap: 8,
-    flexWrap: "wrap",
   },
-  buttonWrapper: {
+  actionButton: {
     flex: 1,
-    minWidth: 80,
+    backgroundColor: "#f3f4f6",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    alignItems: "center",
+    minHeight: 60,
+    justifyContent: "center",
   },
-  loadingText: {
-    fontSize: 16,
-    color: "#666",
+  actionButtonPrimary: {
+    backgroundColor: "#3b82f6",
+  },
+  actionButtonIcon: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  actionButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  actionButtonTextPrimary: {
+    color: "#fff",
   },
   emptyContainer: {
     flex: 1,
@@ -555,16 +678,65 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 32,
   },
+  emptyIllustration: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#e0f2fe",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  emptyIcon: {
+    fontSize: 48,
+  },
   emptyTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: "#666",
+    color: "#6b7280",
     textAlign: "center",
+    marginBottom: 24,
+  },
+  emptyActions: {
+    gap: 12,
+    width: "100%",
+    maxWidth: 300,
+  },
+  primaryCTA: {
+    backgroundColor: "#3b82f6",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryCTAText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  secondaryCTA: {
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#3b82f6",
+  },
+  secondaryCTAText: {
+    color: "#3b82f6",
+    fontSize: 16,
+    fontWeight: "600",
   },
   listContent: {
     padding: 16,
@@ -572,34 +744,68 @@ const styles = StyleSheet.create({
   cardItem: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 16,
     marginBottom: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
+    overflow: "hidden",
   },
-  cardContent: {
-    marginBottom: 12,
+  cardItemContent: {
+    padding: 12,
+  },
+  cardWithImage: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  cardThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: "#f3f4f6",
+  },
+  cardTextContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  cardTextOnly: {
+    paddingVertical: 4,
+  },
+  cardTypeBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#eff6ff",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  cardTypeBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#3b82f6",
   },
   cardFront: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
+    color: "#1f2937",
+    marginBottom: 6,
   },
   cardBack: {
     fontSize: 14,
-    color: "#666",
+    color: "#6b7280",
+    lineHeight: 20,
   },
   deleteButton: {
-    alignSelf: "flex-end",
+    position: "absolute",
+    top: 8,
+    right: 8,
+    padding: 8,
+    backgroundColor: "#fef2f2",
+    borderRadius: 8,
   },
-  deleteText: {
-    color: "#dc3545",
-    fontSize: 14,
-    fontWeight: "600",
+  deleteIcon: {
+    fontSize: 18,
   },
   modalOverlay: {
     flex: 1,
@@ -619,7 +825,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 16,
   },
   cardTypeSelector: {
@@ -631,23 +837,23 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: "#e5e7eb",
     backgroundColor: "#fff",
     alignItems: "center",
   },
   cardTypeButtonActive: {
-    borderColor: "#007AFF",
-    backgroundColor: "#E6F4FE",
+    borderColor: "#3b82f6",
+    backgroundColor: "#eff6ff",
   },
   cardTypeButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#666",
+    color: "#6b7280",
   },
   cardTypeButtonTextActive: {
-    color: "#007AFF",
+    color: "#3b82f6",
   },
   diagramActions: {
     marginVertical: 12,
@@ -657,14 +863,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#dc3545",
+    borderColor: "#ef4444",
     backgroundColor: "#fff",
     alignItems: "center",
   },
   changeImageButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#dc3545",
+    color: "#ef4444",
   },
   modalButtons: {
     flexDirection: "row",
@@ -675,7 +881,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cancelButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f3f4f6",
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: "center",
@@ -684,6 +890,6 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
+    color: "#6b7280",
   },
 });

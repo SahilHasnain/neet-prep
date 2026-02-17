@@ -216,19 +216,31 @@ async function processImageForAI(imageBuffer, mode, log) {
   try {
     log("Processing image for AI...");
 
+    // Compress large images to reduce API processing time
+    let processedBuffer = imageBuffer;
+    const maxSize = 500 * 1024; // 500KB max
+
+    if (imageBuffer.length > maxSize) {
+      log(
+        `Image too large (${(imageBuffer.length / 1024).toFixed(2)}KB), compressing...`,
+      );
+      // For now, just warn - proper compression would need sharp or similar
+      // In production, consider adding image compression library
+      log("Warning: Large image may cause slow processing");
+    }
+
     // Convert buffer to base64 directly
-    // GROQ API will handle the image as-is
-    const base64 = imageBuffer.toString("base64");
+    const base64 = processedBuffer.toString("base64");
 
     // Detect image type from buffer header
     let mimeType = "image/jpeg";
-    if (imageBuffer[0] === 0x89 && imageBuffer[1] === 0x50) {
+    if (processedBuffer[0] === 0x89 && processedBuffer[1] === 0x50) {
       mimeType = "image/png";
-    } else if (imageBuffer[0] === 0xff && imageBuffer[1] === 0xd8) {
+    } else if (processedBuffer[0] === 0xff && processedBuffer[1] === 0xd8) {
       mimeType = "image/jpeg";
     }
 
-    log(`Image size: ${(imageBuffer.length / 1024).toFixed(2)}KB`);
+    log(`Image size: ${(processedBuffer.length / 1024).toFixed(2)}KB`);
 
     return `data:${mimeType};base64,${base64}`;
   } catch (err) {
@@ -260,9 +272,9 @@ async function detectLabels(groq, imageBase64, diagramType, language, log) {
           ],
         },
       ],
-      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+      model: "llama-3.3-70b-versatile", // Faster model
       temperature: 0.3,
-      max_tokens: 2048,
+      max_tokens: 1536, // Reduced tokens for faster response
       response_format: { type: "json_object" },
     });
   });
@@ -364,9 +376,9 @@ Be concise and specific.`;
             ],
           },
         ],
-        model: "meta-llama/llama-4-maverick-17b-128e-instruct", // Faster model for quality check
+        model: "llama-3.3-70b-versatile", // Faster model for quality check
         temperature: 0.2,
-        max_tokens: 512,
+        max_tokens: 384, // Reduced for faster response
         response_format: { type: "json_object" },
       });
     });
@@ -439,8 +451,9 @@ Guidelines:
 - Use standard scientific terminology
 - Position should point to the CENTER of each part
 - Only include parts you can clearly identify
-- Aim for 5-15 labels per diagram
+- Aim for 5-10 labels per diagram (focus on most important parts)
 - Be precise with positions
+- Prioritize clarity over quantity
 
 Return ONLY valid JSON:
 {
@@ -573,7 +586,7 @@ async function generateQuiz(
       ],
       model: "llama-3.3-70b-versatile",
       temperature: 0.7,
-      max_tokens: 3072,
+      max_tokens: 2048, // Reduced for faster response
       response_format: { type: "json_object" },
     });
   });

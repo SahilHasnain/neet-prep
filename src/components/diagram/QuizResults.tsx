@@ -23,9 +23,15 @@ interface QuizResultsProps {
   results: QuizResult[];
   onRetry: () => void;
   onExit: () => void;
+  hasMoreCards?: boolean;
 }
 
-export function QuizResults({ results, onRetry, onExit }: QuizResultsProps) {
+export function QuizResults({
+  results,
+  onRetry,
+  onExit,
+  hasMoreCards = false,
+}: QuizResultsProps) {
   const correctCount = results.filter((r) => r.is_correct).length;
   const totalCount = results.length;
   const accuracy = Math.round((correctCount / totalCount) * 100);
@@ -99,7 +105,9 @@ export function QuizResults({ results, onRetry, onExit }: QuizResultsProps) {
           style={[styles.button, styles.exitButton]}
           onPress={onExit}
         >
-          <Text style={styles.exitButtonText}>Exit</Text>
+          <Text style={styles.exitButtonText}>
+            {hasMoreCards ? "Next Card →" : "Exit"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
