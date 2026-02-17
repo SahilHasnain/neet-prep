@@ -38,17 +38,44 @@ export default async ({ req, res, log, error }) => {
       diagramType = "general",
       language = "en",
       mode = "label_detection", // label_detection, quality_check, generate_quiz
+      labels = [], // For quiz generation
+      questionCount = 5,
+      questionTypes = ["identification", "function", "multiple_choice"],
+      difficulty = "medium",
     } = body;
 
     // Validate inputs
-    if (!imageId || !userId || !cardId) {
+    if (!userId || !cardId) {
       return res.json(
         {
           success: false,
-          error: "Missing required fields: imageId, userId, cardId",
+          error: "Missing required fields: userId, cardId",
         },
         400,
       );
+    }
+
+    // Mode-specific validation
+    if (mode === "generate_quiz") {
+      if (!labels || labels.length === 0) {
+        return res.json(
+          {
+            success: false,
+            error: "Labels are required for quiz generation",
+          },
+          400,
+        );
+      }
+    } else {
+      if (!imageId) {
+        return res.json(
+          {
+            success: false,
+            error: "imageId is required for this mode",
+          },
+          400,
+        );
+      }
     }
 
     log(`Analyzing diagram (mode: ${mode}) for card: ${cardId}`);
@@ -62,12 +89,6 @@ export default async ({ req, res, log, error }) => {
     const databases = new Databases(client);
     const storage = new Storage(client);
 
-    // Download image from storage
-    const imageBuffer = await downloadImage(storage, imageId, log);
-
-    // Process image for AI
-    const processedImage = await processImageForAI(imageBuffer, mode, log);
-
     // Initialize GROQ client
     const groq = new Groq({ apiKey: GROQ_API_KEY });
 
@@ -76,6 +97,10 @@ export default async ({ req, res, log, error }) => {
 
     // Route to appropriate handler
     if (mode === "label_detection") {
+      // Download and process image
+      const imageBuffer = await downloadImage(storage, imageId, log);
+      const processedImage = await processImageForAI(imageBuffer, mode, log);
+
       result = await detectLabels(
         groq,
         processedImage,
@@ -84,7 +109,22 @@ export default async ({ req, res, log, error }) => {
         log,
       );
     } else if (mode === "quality_check") {
+      // Download and process image
+      const imageBuffer = await downloadImage(storage, imageId, log);
+      const processedImage = await processImageForAI(imageBuffer, mode, log);
+
       result = await checkQuality(groq, processedImage, imageBuffer, log);
+    } else if (mode === "generate_quiz") {
+      result = await generateQuiz(
+        groq,
+        labels,
+        questionCount,
+        questionTypes,
+        difficulty,
+        language,
+        diagramType,
+        log,
+      );
     } else {
       return res.json({ success: false, error: "Invalid mode" }, 400);
     }
@@ -491,5 +531,170 @@ async function logAnalysis(
   } catch (err) {
     console.error("Failed to log analysis:", err.message);
     // Don't throw - logging failure shouldn't break the main flow
+  }
+}
+
+/**
+ * Generate quiz questions based on diagram labels
+ */
+async function generateQuiz(
+  groq,
+  labels,
+  questionCount,
+  questionTypes,
+  difficulty,
+  language,
+  diagramType,
+  log,
+) {
+  log(`Generating ${questionCount} quiz questions...`);
+
+  const prompt = buildQuizGenerationPrompt(
+    labels,
+    questionCount,
+    questionTypes,
+    difficulty,
+    language,
+    diagramType,
+  );
+
+  const completion = await callGroqWithRetry(async () => {
+    return await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert NEET exam educator creating quiz questions. Always respond with valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
+      max_tokens: 3072,
+      response_format: { type: "json_object" },
+    });
+  });
+
+  const responseText = completion.choices[0]?.message?.content;
+
+  if (!responseText) {
+    throw new Error("Empty response from GROQ API");
+  }
+
+  log("Parsing quiz questions...");
+  const parsed = JSON.parse(responseText);
+  const questions = parsed.questions || [];
+
+  // Validate and format questions
+  const validatedQuestions = questions
+    .filter((q) => q.question && q.correct_answer && q.type)
+    .map((q, index) => ({
+      question_id: `q${index + 1}`,
+      type: q.type,
+      question: q.question.trim(),
+      correct_answer: q.correct_answer.trim(),
+      options: q.options || [],
+      explanation: q.explanation || "",
+      related_label: q.related_label || "",
+      difficulty: difficulty,
+    }));
+
+  log(`Generated ${validatedQuestions.length} valid questions`);
+
+  return {
+    questions: validatedQuestions,
+    count: validatedQuestions.length,
+  };
+}
+
+/**
+ * Build prompt for quiz generation
+ */
+function buildQuizGenerationPrompt(
+  labels,
+  questionCount,
+  questionTypes,
+  difficulty,
+  language,
+  diagramType,
+) {
+  const labelsJson = JSON.stringify(
+    labels.map((l) => ({
+      label_text: l.label_text,
+      description: l.description || "",
+    })),
+    null,
+    2,
+  );
+
+  const typeDescriptions = {
+    identification:
+      "Ask 'What is the structure/part labeled X?' or 'Identify the part at position Y'",
+    function:
+      "Ask 'What is the function of [label]?' or 'What does [label] do?'",
+    location:
+      "Ask 'Where is [label] located?' or 'Which part is adjacent to [label]?'",
+    relationship:
+      "Ask 'How does [label A] relate to [label B]?' or 'What is the connection between X and Y?'",
+    fill_blank: "Create 'The _____ is responsible for...' style questions",
+    multiple_choice: "Create multiple choice questions with 4 options",
+  };
+
+  const requestedTypes = questionTypes
+    .map((type) => `- ${type}: ${typeDescriptions[type] || ""}`)
+    .join("\n");
+
+  return `You are creating quiz questions for NEET exam preparation about a ${diagramType} diagram.
+
+Labeled parts in the diagram:
+${labelsJson}
+
+Generate ${questionCount} quiz questions in ${language} language.
+
+Question types to include:
+${requestedTypes}
+
+Difficulty level: ${difficulty}
+${getDifficultyGuidance(difficulty)}
+
+Requirements:
+- Create exactly ${questionCount} questions
+- Distribute questions across the specified types
+- Questions should test understanding, not just memorization
+- Use NEET-style phrasing and terminology
+- For multiple_choice questions, provide 4 plausible options
+- Include clear explanations (2-3 sentences)
+- Reference the related label when applicable
+- Ensure scientific accuracy
+
+Return ONLY valid JSON:
+{
+  "questions": [
+    {
+      "type": "identification|function|location|relationship|fill_blank|multiple_choice",
+      "question": "Question text here",
+      "correct_answer": "Correct answer here",
+      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+      "explanation": "Why this answer is correct and educational context",
+      "related_label": "Label name this question relates to"
+    }
+  ]
+}`;
+}
+
+/**
+ * Get difficulty-specific guidance for quiz questions
+ */
+function getDifficultyGuidance(difficulty) {
+  switch (difficulty) {
+    case "easy":
+      return "Focus on basic identification and simple functions. Use straightforward language.";
+    case "hard":
+      return "Include complex relationships, advanced concepts, and application-based questions. Use technical terminology.";
+    default:
+      return "Balance between recall and understanding. Include some application questions.";
   }
 }
