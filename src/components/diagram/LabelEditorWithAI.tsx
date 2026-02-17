@@ -3,6 +3,7 @@
  * Enhanced LabelEditor with AI label suggestions
  */
 
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -191,11 +192,21 @@ export function LabelEditorWithAI({
   return (
     <View style={styles.container}>
       <View style={styles.instructions}>
-        <Text style={styles.instructionsText}>
-          {editable
-            ? "📍 Tap on the diagram to add labels or use AI"
-            : "View labeled diagram"}
-        </Text>
+        <View style={styles.instructionsRow}>
+          {editable && (
+            <Ionicons
+              name="location"
+              size={16}
+              color="#1e40af"
+              style={styles.instructionsIcon}
+            />
+          )}
+          <Text style={styles.instructionsText}>
+            {editable
+              ? "Tap on the diagram to add labels or use AI"
+              : "View labeled diagram"}
+          </Text>
+        </View>
       </View>
 
       {/* AI Actions */}
@@ -210,7 +221,7 @@ export function LabelEditorWithAI({
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
-                <Text style={styles.aiButtonIcon}>🤖</Text>
+                <Ionicons name="sparkles" size={20} color="#fff" />
                 <Text style={styles.aiButtonText}>Analyze with AI</Text>
               </>
             )}
@@ -226,7 +237,7 @@ export function LabelEditorWithAI({
               onPress={handleCheckQuality}
               disabled={analyzing}
             >
-              <Text style={styles.aiButtonIcon}>✓</Text>
+              <Ionicons name="checkmark-circle" size={20} color="#fff" />
               <Text style={styles.aiButtonText}>Check Quality</Text>
             </TouchableOpacity>
           )}
@@ -235,7 +246,10 @@ export function LabelEditorWithAI({
 
       {error && (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
+          <View style={styles.errorRow}>
+            <Ionicons name="warning" size={16} color="#dc2626" />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
         </View>
       )}
 
@@ -410,10 +424,18 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#3b82f6",
   },
+  instructionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  instructionsIcon: {
+    marginTop: 1,
+  },
   instructionsText: {
     fontSize: 14,
     color: "#1e40af",
-    textAlign: "center",
     fontWeight: "500",
   },
   aiActions: {
@@ -446,9 +468,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#10b981",
     shadowColor: "#10b981",
   },
-  aiButtonIcon: {
-    fontSize: 20,
-  },
   aiButtonText: {
     color: "#fff",
     fontSize: 14,
@@ -462,10 +481,15 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#ef4444",
   },
+  errorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
   errorText: {
     color: "#dc2626",
     fontSize: 14,
-    textAlign: "center",
     fontWeight: "500",
   },
   imageContainer: {

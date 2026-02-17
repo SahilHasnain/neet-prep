@@ -123,11 +123,21 @@ export function LabelEditor({
   return (
     <View style={styles.container}>
       <View style={styles.instructions}>
-        <Text style={styles.instructionsText}>
-          {editable
-            ? "📍 Tap on the diagram to add labels"
-            : "View labeled diagram"}
-        </Text>
+        <View style={styles.instructionsRow}>
+          {editable && (
+            <Ionicons
+              name="location"
+              size={14}
+              color="#007AFF"
+              style={styles.instructionsIcon}
+            />
+          )}
+          <Text style={styles.instructionsText}>
+            {editable
+              ? "Tap on the diagram to add labels"
+              : "View labeled diagram"}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.imageContainer}>
@@ -266,10 +276,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
+  instructionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  instructionsIcon: {
+    marginTop: 1,
+  },
   instructionsText: {
     fontSize: 14,
     color: "#007AFF",
-    textAlign: "center",
   },
   imageContainer: {
     position: "relative",

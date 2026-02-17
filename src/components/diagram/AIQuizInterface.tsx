@@ -78,8 +78,12 @@ export function AIQuizInterface({
                 >
                   {String.fromCharCode(65 + index)}. {option}
                 </Text>
-                {showCorrect && <Text style={styles.checkmark}>✓</Text>}
-                {showIncorrect && <Text style={styles.crossmark}>✗</Text>}
+                {showCorrect && (
+                  <Ionicons name="checkmark" size={20} color="#10b981" />
+                )}
+                {showIncorrect && (
+                  <Ionicons name="close" size={20} color="#ef4444" />
+                )}
               </TouchableOpacity>
             );
           })}
@@ -159,9 +163,16 @@ export function AIQuizInterface({
               isCorrect ? styles.resultCorrect : styles.resultIncorrect,
             ]}
           >
-            <Text style={styles.resultTitle}>
-              {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-            </Text>
+            <View style={styles.resultTitleRow}>
+              <Ionicons
+                name={isCorrect ? "checkmark-circle" : "close-circle"}
+                size={24}
+                color={isCorrect ? "#10b981" : "#ef4444"}
+              />
+              <Text style={styles.resultTitle}>
+                {isCorrect ? "Correct!" : "Incorrect"}
+              </Text>
+            </View>
 
             {!isCorrect && (
               <Text style={styles.correctAnswer}>
@@ -307,16 +318,6 @@ const styles = StyleSheet.create({
   optionTextResult: {
     fontWeight: "600",
   },
-  checkmark: {
-    fontSize: 20,
-    color: "#10b981",
-    fontWeight: "700",
-  },
-  crossmark: {
-    fontSize: 20,
-    color: "#ef4444",
-    fontWeight: "700",
-  },
   submitButton: {
     paddingVertical: 16,
     paddingHorizontal: 24,
@@ -347,10 +348,15 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#ef4444",
   },
+  resultTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
   resultTitle: {
     fontSize: 20,
     fontWeight: "700",
-    marginBottom: 12,
     color: "#111827",
   },
   correctAnswer: {

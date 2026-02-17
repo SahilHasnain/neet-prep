@@ -101,7 +101,7 @@ export function ImageUploader({
               style={styles.removeButton}
               onPress={handleRemoveImage}
             >
-              <Text style={styles.removeButtonText}>✕</Text>
+              <Ionicons name="close" size={20} color="#fff" />
             </TouchableOpacity>
           )}
         </View>
@@ -120,7 +120,7 @@ export function ImageUploader({
           <ActivityIndicator color="#007AFF" />
         ) : (
           <>
-            <Text style={styles.uploadIcon}>📷</Text>
+            <Ionicons name="camera" size={48} color="#007AFF" />
             <Text style={styles.uploadText}>Upload Diagram</Text>
             <Text style={styles.uploadHint}>JPG or PNG, max 5MB</Text>
           </>
@@ -148,10 +148,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     backgroundColor: "#f5f5f5",
   },
-  uploadIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
   uploadText: {
     fontSize: 16,
     fontWeight: "600",
@@ -178,15 +174,10 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     backgroundColor: "rgba(220, 53, 69, 0.9)",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-  },
-  removeButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
   },
 });
