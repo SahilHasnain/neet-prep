@@ -1,4 +1,5 @@
 import { LabelEditorWithAI } from "@/src/components/diagram/LabelEditorWithAI";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -294,18 +295,18 @@ export default function DeckDetailScreen() {
 
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.actionButton} onPress={handleStudy}>
-            <Text style={styles.actionButtonIcon}>📖</Text>
+            <Ionicons name="book-outline" size={20} color="#374151" />
             <Text style={styles.actionButtonText}>Study</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton} onPress={handleQuiz}>
-            <Text style={styles.actionButtonIcon}>🎯</Text>
+            <Ionicons name="trophy-outline" size={20} color="#374151" />
             <Text style={styles.actionButtonText}>Quiz</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonPrimary]}
             onPress={() => setShowCreateModal(true)}
           >
-            <Text style={styles.actionButtonIcon}>+</Text>
+            <Ionicons name="add" size={20} color="#fff" />
             <Text
               style={[styles.actionButtonText, styles.actionButtonTextPrimary]}
             >
@@ -316,7 +317,7 @@ export default function DeckDetailScreen() {
             style={styles.actionButton}
             onPress={() => setShowAIModal(true)}
           >
-            <Text style={styles.actionButtonIcon}>🤖</Text>
+            <Ionicons name="sparkles" size={20} color="#374151" />
             <Text style={styles.actionButtonText}>AI</Text>
           </TouchableOpacity>
         </View>
@@ -324,13 +325,13 @@ export default function DeckDetailScreen() {
 
       {loading && flashcards.length === 0 ? (
         <View style={styles.centerContainer}>
-          <Text style={styles.loadingIcon}>⏳</Text>
+          <Ionicons name="hourglass-outline" size={48} color="#6b7280" />
           <Text style={styles.loadingText}>Loading flashcards...</Text>
         </View>
       ) : flashcards.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIllustration}>
-            <Text style={styles.emptyIcon}>📇</Text>
+            <Ionicons name="albums-outline" size={48} color="#3b82f6" />
           </View>
           <Text style={styles.emptyTitle}>No Flashcards Yet</Text>
           <Text style={styles.emptyText}>
@@ -347,7 +348,13 @@ export default function DeckDetailScreen() {
               style={styles.secondaryCTA}
               onPress={() => setShowAIModal(true)}
             >
-              <Text style={styles.secondaryCTAText}>🤖 Generate with AI</Text>
+              <Ionicons
+                name="sparkles"
+                size={16}
+                color="#3b82f6"
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.secondaryCTAText}>Generate with AI</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -367,7 +374,12 @@ export default function DeckDetailScreen() {
                     />
                     <View style={styles.cardTextContent}>
                       <View style={styles.cardTypeBadge}>
-                        <Text style={styles.cardTypeBadgeText}>🖼️ Diagram</Text>
+                        <Ionicons
+                          name="image-outline"
+                          size={12}
+                          color="#3b82f6"
+                        />
+                        <Text style={styles.cardTypeBadgeText}>Diagram</Text>
                       </View>
                       <Text style={styles.cardBack} numberOfLines={2}>
                         {item.back_content}
@@ -377,7 +389,12 @@ export default function DeckDetailScreen() {
                 ) : (
                   <View style={styles.cardTextOnly}>
                     <View style={styles.cardTypeBadge}>
-                      <Text style={styles.cardTypeBadgeText}>📝 Text</Text>
+                      <Ionicons
+                        name="document-text-outline"
+                        size={12}
+                        color="#3b82f6"
+                      />
+                      <Text style={styles.cardTypeBadgeText}>Text</Text>
                     </View>
                     <Text style={styles.cardFront} numberOfLines={1}>
                       {item.front_content}
@@ -392,7 +409,7 @@ export default function DeckDetailScreen() {
                 onPress={() => handleDeleteCard(item.card_id)}
                 style={styles.deleteButton}
               >
-                <Text style={styles.deleteIcon}>🗑️</Text>
+                <Ionicons name="trash-outline" size={18} color="#ef4444" />
               </TouchableOpacity>
             </View>
           )}
@@ -417,13 +434,18 @@ export default function DeckDetailScreen() {
                 ]}
                 onPress={() => setCardType("text")}
               >
+                <Ionicons
+                  name="document-text-outline"
+                  size={16}
+                  color={cardType === "text" ? "#3b82f6" : "#6b7280"}
+                />
                 <Text
                   style={[
                     styles.cardTypeButtonText,
                     cardType === "text" && styles.cardTypeButtonTextActive,
                   ]}
                 >
-                  📝 Text Card
+                  Text Card
                 </Text>
               </TouchableOpacity>
 
@@ -434,13 +456,18 @@ export default function DeckDetailScreen() {
                 ]}
                 onPress={() => setCardType("diagram")}
               >
+                <Ionicons
+                  name="image-outline"
+                  size={16}
+                  color={cardType === "diagram" ? "#3b82f6" : "#6b7280"}
+                />
                 <Text
                   style={[
                     styles.cardTypeButtonText,
                     cardType === "diagram" && styles.cardTypeButtonTextActive,
                   ]}
                 >
-                  🖼️ Diagram Card
+                  Diagram Card
                 </Text>
               </TouchableOpacity>
             </View>
@@ -544,7 +571,10 @@ export default function DeckDetailScreen() {
       <Modal visible={showAIModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>🤖 AI Generate Flashcards</Text>
+            <View style={styles.modalTitleContainer}>
+              <Ionicons name="sparkles" size={24} color="#3b82f6" />
+              <Text style={styles.modalTitle}>AI Generate Flashcards</Text>
+            </View>
 
             <Input
               label="Topic"
@@ -593,13 +623,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
   loadingText: {
     fontSize: 16,
     color: "#6b7280",
+    marginTop: 12,
   },
   header: {
     backgroundColor: "#fff",
@@ -675,14 +702,11 @@ const styles = StyleSheet.create({
   actionButtonPrimary: {
     backgroundColor: "#3b82f6",
   },
-  actionButtonIcon: {
-    fontSize: 18,
-    marginBottom: 2,
-  },
   actionButtonText: {
     fontSize: 11,
     fontWeight: "600",
     color: "#374151",
+    marginTop: 2,
   },
   actionButtonTextPrimary: {
     color: "#fff",
@@ -701,9 +725,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-  },
-  emptyIcon: {
-    fontSize: 48,
   },
   emptyTitle: {
     fontSize: 24,
@@ -747,6 +768,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#3b82f6",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   secondaryCTAText: {
     color: "#3b82f6",
@@ -794,6 +817,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   cardTypeBadgeText: {
     fontSize: 11,
@@ -819,9 +845,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fef2f2",
     borderRadius: 8,
   },
-  deleteIcon: {
-    fontSize: 18,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -837,11 +860,16 @@ const styles = StyleSheet.create({
   modalScroll: {
     maxHeight: "70%",
   },
+  modalTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1f2937",
-    marginBottom: 16,
   },
   cardTypeSelector: {
     flexDirection: "row",
@@ -857,6 +885,9 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
     backgroundColor: "#fff",
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
   },
   cardTypeButtonActive: {
     borderColor: "#3b82f6",

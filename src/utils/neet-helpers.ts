@@ -79,16 +79,28 @@ export function getSubjectColor(subject: string): string {
   }
 }
 
-export function getSubjectIcon(subject: string): string {
+export function getSubjectIconName(subject: string): string {
   switch (subject) {
     case NEET_SUBJECTS.PHYSICS:
-      return "⚛️";
+      return "nuclear";
     case NEET_SUBJECTS.CHEMISTRY:
-      return "🧪";
+      return "flask";
     case NEET_SUBJECTS.BIOLOGY:
-      return "🧬";
+      return "dna";
     default:
-      return "📚";
+      return "book";
+  }
+}
+
+export function getSubjectIconFamily(
+  subject: string,
+): "ionicons" | "material-community" {
+  switch (subject) {
+    case NEET_SUBJECTS.CHEMISTRY:
+    case NEET_SUBJECTS.BIOLOGY:
+      return "material-community";
+    default:
+      return "ionicons";
   }
 }
 

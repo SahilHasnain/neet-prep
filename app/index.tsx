@@ -1,3 +1,4 @@
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -15,7 +16,10 @@ import { Button } from "../src/components/ui/Button";
 import { Input } from "../src/components/ui/Input";
 import { NEET_SUBJECTS, NEET_TOPICS } from "../src/config/neet.config";
 import { useDecks } from "../src/hooks/useDecks";
-import { getSubjectIcon } from "../src/utils/neet-helpers";
+import {
+  getSubjectIconFamily,
+  getSubjectIconName,
+} from "../src/utils/neet-helpers";
 
 const TEMP_USER_ID = "temp-user-123";
 
@@ -101,6 +105,14 @@ export default function Index() {
     router.push(`/deck/${deckId}`);
   };
 
+  const getSubjectIconComponent = (subject: string) => {
+    const iconName = getSubjectIconName(subject);
+    const iconFamily = getSubjectIconFamily(subject);
+    return iconFamily === "material-community"
+      ? { Component: MaterialCommunityIcons, name: iconName }
+      : { Component: Ionicons, name: iconName };
+  };
+
   if (loading && decks.length === 0) {
     return (
       <View style={styles.centerContainer}>
@@ -142,7 +154,12 @@ export default function Index() {
       {decks.length > 0 && (
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Ionicons
+              name="search"
+              size={20}
+              color="#6b7280"
+              style={styles.searchIcon}
+            />
             <Input
               placeholder="Search decks..."
               value={searchQuery}
@@ -151,7 +168,12 @@ export default function Index() {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Text style={styles.clearIcon}>✕</Text>
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color="#9ca3af"
+                  style={styles.clearIcon}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -160,7 +182,10 @@ export default function Index() {
 
       {error && (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
+          <View style={styles.errorContent}>
+            <Ionicons name="warning" size={20} color="#dc2626" />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
           <TouchableOpacity style={styles.retryButton} onPress={refresh}>
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
@@ -170,7 +195,7 @@ export default function Index() {
       {decks.length === 0 && !loading ? (
         <ScrollView contentContainerStyle={styles.emptyContainer}>
           <View style={styles.emptyIllustration}>
-            <Text style={styles.emptyIcon}>📚</Text>
+            <Ionicons name="library" size={64} color="#3b82f6" />
           </View>
           <Text style={styles.emptyTitle}>Start Your NEET Journey</Text>
           <Text style={styles.emptyText}>
@@ -188,31 +213,40 @@ export default function Index() {
           <View style={styles.quickStartContainer}>
             <Text style={styles.quickStartTitle}>Quick Start Templates:</Text>
 
-            {subjects.map((subject) => (
-              <View key={subject} style={styles.subjectSection}>
-                <Text style={styles.subjectTitle}>
-                  {getSubjectIcon(subject)} {subject}
-                </Text>
-                <View style={styles.topicGrid}>
-                  {NEET_TOPICS[subject as keyof typeof NEET_TOPICS]
-                    ?.slice(0, 6)
-                    .map((topic) => (
-                      <TouchableOpacity
-                        key={topic}
-                        style={styles.topicChip}
-                        onPress={() => handleQuickCreate(subject, topic)}
-                      >
-                        <Text style={styles.topicChipText}>{topic}</Text>
-                      </TouchableOpacity>
-                    ))}
+            {subjects.map((subject) => {
+              const { Component: IconComponent, name: iconName } =
+                getSubjectIconComponent(subject);
+              return (
+                <View key={subject} style={styles.subjectSection}>
+                  <View style={styles.subjectTitleContainer}>
+                    <IconComponent
+                      name={iconName as any}
+                      size={20}
+                      color="#1f2937"
+                    />
+                    <Text style={styles.subjectTitle}>{subject}</Text>
+                  </View>
+                  <View style={styles.topicGrid}>
+                    {NEET_TOPICS[subject as keyof typeof NEET_TOPICS]
+                      ?.slice(0, 6)
+                      .map((topic) => (
+                        <TouchableOpacity
+                          key={topic}
+                          style={styles.topicChip}
+                          onPress={() => handleQuickCreate(subject, topic)}
+                        >
+                          <Text style={styles.topicChipText}>{topic}</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </ScrollView>
       ) : filteredDecks.length === 0 && searchQuery ? (
         <View style={styles.noResultsContainer}>
-          <Text style={styles.noResultsIcon}>🔍</Text>
+          <Ionicons name="search" size={64} color="#9ca3af" />
           <Text style={styles.emptyTitle}>No Results Found</Text>
           <Text style={styles.noResultsText}>
             Try a different search term or create a new deck
@@ -229,27 +263,36 @@ export default function Index() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
-          {Object.entries(decksBySubject).map(([subject, subjectDecks]) => (
-            <View key={subject} style={styles.subjectGroup}>
-              <View style={styles.subjectGroupHeader}>
-                <Text style={styles.subjectGroupTitle}>
-                  {getSubjectIcon(subject)} {subject}
-                </Text>
-                <View style={styles.subjectBadge}>
-                  <Text style={styles.subjectBadgeText}>
-                    {subjectDecks.length}
-                  </Text>
+          {Object.entries(decksBySubject).map(([subject, subjectDecks]) => {
+            const { Component: IconComponent, name: iconName } =
+              getSubjectIconComponent(subject);
+            return (
+              <View key={subject} style={styles.subjectGroup}>
+                <View style={styles.subjectGroupHeader}>
+                  <View style={styles.subjectGroupTitleContainer}>
+                    <IconComponent
+                      name={iconName as any}
+                      size={20}
+                      color="#1f2937"
+                    />
+                    <Text style={styles.subjectGroupTitle}>{subject}</Text>
+                  </View>
+                  <View style={styles.subjectBadge}>
+                    <Text style={styles.subjectBadgeText}>
+                      {subjectDecks.length}
+                    </Text>
+                  </View>
                 </View>
+                {subjectDecks.map((deck) => (
+                  <DeckCard
+                    key={deck.deck_id}
+                    deck={deck}
+                    onPress={() => handleDeckPress(deck.deck_id)}
+                  />
+                ))}
               </View>
-              {subjectDecks.map((deck) => (
-                <DeckCard
-                  key={deck.deck_id}
-                  deck={deck}
-                  onPress={() => handleDeckPress(deck.deck_id)}
-                />
-              ))}
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
 
@@ -259,7 +302,7 @@ export default function Index() {
           onPress={() => setShowCreateModal(true)}
           activeOpacity={0.8}
         >
-          <Text style={styles.fabIcon}>+</Text>
+          <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>
       )}
 
@@ -272,30 +315,40 @@ export default function Index() {
               <View style={styles.subjectSelector}>
                 <Text style={styles.inputLabel}>Subject *</Text>
                 <View style={styles.subjectButtons}>
-                  {subjects.map((subject) => (
-                    <TouchableOpacity
-                      key={subject}
-                      style={[
-                        styles.subjectButton,
-                        selectedSubject === subject &&
-                          styles.subjectButtonActive,
-                      ]}
-                      onPress={() => {
-                        setSelectedSubject(subject);
-                        setSelectedTopic("");
-                      }}
-                    >
-                      <Text
+                  {subjects.map((subject) => {
+                    const { Component: IconComponent, name: iconName } =
+                      getSubjectIconComponent(subject);
+                    const isActive = selectedSubject === subject;
+                    return (
+                      <TouchableOpacity
+                        key={subject}
                         style={[
-                          styles.subjectButtonText,
-                          selectedSubject === subject &&
-                            styles.subjectButtonTextActive,
+                          styles.subjectButton,
+                          isActive && styles.subjectButtonActive,
                         ]}
+                        onPress={() => {
+                          setSelectedSubject(subject);
+                          setSelectedTopic("");
+                        }}
                       >
-                        {getSubjectIcon(subject)} {subject}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <View style={styles.subjectButtonContent}>
+                          <IconComponent
+                            name={iconName as any}
+                            size={16}
+                            color={isActive ? "#3b82f6" : "#6b7280"}
+                          />
+                          <Text
+                            style={[
+                              styles.subjectButtonText,
+                              isActive && styles.subjectButtonTextActive,
+                            ]}
+                          >
+                            {subject}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -447,7 +500,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   searchIcon: {
-    fontSize: 18,
     marginRight: 8,
   },
   searchInput: {
@@ -457,8 +509,6 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   clearIcon: {
-    fontSize: 20,
-    color: "#9ca3af",
     paddingHorizontal: 8,
   },
   loadingText: { fontSize: 16, color: "#666" },
@@ -473,11 +523,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  errorContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    marginRight: 12,
+  },
   errorText: {
     color: "#dc2626",
     fontSize: 14,
-    flex: 1,
-    marginRight: 12,
+    marginLeft: 8,
   },
   retryButton: {
     backgroundColor: "#ef4444",
@@ -502,9 +557,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
-  },
-  emptyIcon: {
-    fontSize: 64,
   },
   emptyTitle: {
     fontSize: 24,
@@ -545,10 +597,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
   },
-  noResultsIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
   noResultsText: {
     fontSize: 16,
     color: "#6b7280",
@@ -566,11 +614,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   subjectSection: { marginBottom: 24 },
+  subjectTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 8,
+  },
   subjectTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#1f2937",
-    marginBottom: 12,
   },
   topicGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   topicChip: {
@@ -592,6 +645,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+  },
+  subjectGroupTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   subjectGroupTitle: {
     fontSize: 18,
@@ -624,11 +682,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  fabIcon: {
-    fontSize: 32,
-    color: "#fff",
-    fontWeight: "300",
   },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" },
   modalScrollContent: { flexGrow: 1, justifyContent: "flex-end" },
@@ -665,6 +718,11 @@ const styles = StyleSheet.create({
   subjectButtonActive: {
     borderColor: "#3b82f6",
     backgroundColor: "#eff6ff",
+  },
+  subjectButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   subjectButtonText: {
     fontSize: 12,

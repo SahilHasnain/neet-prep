@@ -59,10 +59,10 @@ export function QuizResults({
   };
 
   const getPerformanceMessage = () => {
-    if (isPerfect) return "Outstanding! Perfect score! 🌟";
-    if (accuracy >= 80) return "Excellent work! Keep it up! 🎯";
-    if (accuracy >= 60) return "Good job! Room for improvement 📚";
-    return "Keep practicing! You'll get better 💪";
+    if (isPerfect) return "Outstanding! Perfect score!";
+    if (accuracy >= 80) return "Excellent work! Keep it up!";
+    if (accuracy >= 60) return "Good job! Room for improvement";
+    return "Keep practicing! You'll get better";
   };
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -77,7 +77,13 @@ export function QuizResults({
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Quiz Complete!</Text>
-        {isPerfect && <Text style={styles.confetti}>🎉 🎊 🎉</Text>}
+        {isPerfect && (
+          <View style={styles.confettiRow}>
+            <Ionicons name="trophy" size={32} color="#f59e0b" />
+            <Ionicons name="star" size={28} color="#fbbf24" />
+            <Ionicons name="trophy" size={32} color="#f59e0b" />
+          </View>
+        )}
       </View>
 
       {/* Score Card with Animation */}
@@ -102,17 +108,17 @@ export function QuizResults({
       {showDetails && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>✅</Text>
+            <Ionicons name="checkmark-circle" size={32} color="#10b981" />
             <Text style={styles.statValue}>{correctCount}</Text>
             <Text style={styles.statLabel}>Correct</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>❌</Text>
+            <Ionicons name="close-circle" size={32} color="#ef4444" />
             <Text style={styles.statValue}>{wrongAnswers.length}</Text>
             <Text style={styles.statLabel}>Wrong</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>📊</Text>
+            <Ionicons name="stats-chart" size={32} color="#3b82f6" />
             <Text style={styles.statValue}>{accuracy}%</Text>
             <Text style={styles.statLabel}>Accuracy</Text>
           </View>
@@ -122,9 +128,12 @@ export function QuizResults({
       {/* Weak Areas */}
       {showDetails && wrongAnswers.length > 0 && (
         <View style={styles.weakAreasContainer}>
-          <Text style={styles.weakAreasTitle}>
-            🎯 Areas to Review ({wrongAnswers.length})
-          </Text>
+          <View style={styles.weakAreasTitleRow}>
+            <Ionicons name="alert-circle" size={20} color="#ef4444" />
+            <Text style={styles.weakAreasTitle}>
+              Areas to Review ({wrongAnswers.length})
+            </Text>
+          </View>
           <ScrollView style={styles.weakAreasList}>
             {wrongAnswers.map((result, index) => (
               <View key={result.label_id} style={styles.weakAreaItem}>
@@ -157,9 +166,11 @@ export function QuizResults({
             >
               <View style={styles.resultHeader}>
                 <Text style={styles.resultNumber}>Q{index + 1}</Text>
-                <Text style={styles.resultIcon}>
-                  {result.is_correct ? "✅" : "❌"}
-                </Text>
+                <Ionicons
+                  name={result.is_correct ? "checkmark-circle" : "close-circle"}
+                  size={24}
+                  color={result.is_correct ? "#10b981" : "#ef4444"}
+                />
               </View>
               <Text style={styles.resultAnswer}>{result.correct_answer}</Text>
               {!result.is_correct && (
@@ -178,14 +189,26 @@ export function QuizResults({
           style={[styles.button, styles.retryButton]}
           onPress={onRetry}
         >
-          <Text style={styles.retryButtonText}>🔄 Retry Quiz</Text>
+          <Ionicons
+            name="refresh"
+            size={20}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.retryButtonText}>Retry Quiz</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.exitButton]}
           onPress={onExit}
         >
+          <Ionicons
+            name={hasMoreCards ? "arrow-forward" : "checkmark"}
+            size={20}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
           <Text style={styles.exitButtonText}>
-            {hasMoreCards ? "Next Card →" : "✓ Done"}
+            {hasMoreCards ? "Next Card" : "Done"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -210,9 +233,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1f2937",
   },
-  confetti: {
-    fontSize: 36,
-    marginTop: 8,
+  confettiRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 12,
   },
   scoreCard: {
     padding: 32,
@@ -266,10 +291,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#e5e7eb",
-  },
-  statIcon: {
-    fontSize: 28,
-    marginBottom: 8,
+    gap: 8,
   },
   statValue: {
     fontSize: 24,
@@ -292,11 +314,16 @@ const styles = StyleSheet.create({
     borderColor: "#fecaca",
     maxHeight: 200,
   },
+  weakAreasTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
   weakAreasTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: "#ef4444",
-    marginBottom: 12,
   },
   weakAreasList: {
     maxHeight: 140,
@@ -371,9 +398,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1f2937",
   },
-  resultIcon: {
-    fontSize: 22,
-  },
   resultAnswer: {
     fontSize: 15,
     fontWeight: "600",
@@ -393,10 +417,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   button: {
+    flexDirection: "row",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
     minHeight: 52,
+    gap: 8,
+  },
+  buttonIcon: {
+    marginTop: 2,
   },
   retryButton: {
     backgroundColor: "#3b82f6",

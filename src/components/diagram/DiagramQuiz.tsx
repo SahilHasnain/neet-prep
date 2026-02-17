@@ -128,7 +128,7 @@ export function DiagramQuiz({
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onExit} style={styles.exitButton}>
-          <Text style={styles.exitText}>✕ Exit</Text>
+          <Ionicons name="close" size={24} color="#ef4444" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {mode === "label-quiz" ? "Label Quiz" : "Identification Quiz"}
@@ -251,7 +251,7 @@ export function DiagramQuiz({
                   ]}
                 >
                   <View style={[styles.dotCircle, styles.correctDot]}>
-                    <Text style={styles.dotNumber}>✓</Text>
+                    <Ionicons name="checkmark" size={20} color="#fff" />
                   </View>
                 </View>
               )}
@@ -273,7 +273,11 @@ export function DiagramQuiz({
               isCorrect ? styles.feedbackCorrect : styles.feedbackWrong,
             ]}
           >
-            <Text style={styles.feedbackIcon}>{isCorrect ? "✅" : "❌"}</Text>
+            <Ionicons
+              name={isCorrect ? "checkmark-circle" : "close-circle"}
+              size={32}
+              color={isCorrect ? "#10b981" : "#ef4444"}
+            />
             <Text style={styles.feedbackText}>
               {isCorrect
                 ? "Correct!"
@@ -327,11 +331,8 @@ const styles = StyleSheet.create({
   exitButton: {
     padding: 8,
     minWidth: 60,
-  },
-  exitText: {
-    fontSize: 16,
-    color: "#ef4444",
-    fontWeight: "600",
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,
@@ -471,10 +472,6 @@ const styles = StyleSheet.create({
   feedbackWrong: {
     backgroundColor: "#fee2e2",
     borderLeftColor: "#ef4444",
-  },
-  feedbackIcon: {
-    fontSize: 28,
-    marginRight: 12,
   },
   feedbackText: {
     flex: 1,

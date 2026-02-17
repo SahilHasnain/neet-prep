@@ -3,6 +3,7 @@
  * Displays AI-suggested labels for diagram flashcards
  */
 
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -73,7 +74,10 @@ export function AILabelSuggestions({
         <View style={styles.loadingAnimation}>
           <ActivityIndicator size="large" color="#3b82f6" />
         </View>
-        <Text style={styles.loadingText}>🤖 AI Analyzing Diagram...</Text>
+        <View style={styles.loadingTextRow}>
+          <Ionicons name="sparkles" size={20} color="#3b82f6" />
+          <Text style={styles.loadingText}>AI Analyzing Diagram...</Text>
+        </View>
         <Text style={styles.loadingSubtext}>
           Detecting labels and positions
         </Text>
@@ -85,7 +89,7 @@ export function AILabelSuggestions({
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIllustration}>
-          <Text style={styles.emptyIcon}>🔍</Text>
+          <Ionicons name="search" size={48} color="#f59e0b" />
         </View>
         <Text style={styles.emptyText}>No Labels Detected</Text>
         <Text style={styles.emptySubtext}>
@@ -101,10 +105,13 @@ export function AILabelSuggestions({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>
-          🎯 AI Detected {suggestions.length} Label
-          {suggestions.length !== 1 ? "s" : ""}
-        </Text>
+        <View style={styles.headerTitleRow}>
+          <Ionicons name="sparkles" size={20} color="#3b82f6" />
+          <Text style={styles.title}>
+            AI Detected {suggestions.length} Label
+            {suggestions.length !== 1 ? "s" : ""}
+          </Text>
+        </View>
         <Text style={styles.subtitle}>
           Review and select labels to add • {selectedIndices.length} selected
         </Text>
@@ -171,7 +178,8 @@ export function AILabelSuggestions({
                 </View>
 
                 <Text style={styles.position}>
-                  📍 Position: ({Math.round(suggestion.x_position)}%,{" "}
+                  <Ionicons name="location" size={11} color="#9ca3af" />{" "}
+                  Position: ({Math.round(suggestion.x_position)}%,{" "}
                   {Math.round(suggestion.y_position)}%)
                 </Text>
               </View>
@@ -179,7 +187,9 @@ export function AILabelSuggestions({
               <View
                 style={[styles.checkbox, isSelected && styles.checkboxSelected]}
               >
-                {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                {isSelected && (
+                  <Ionicons name="checkmark" size={18} color="#fff" />
+                )}
               </View>
             </TouchableOpacity>
           );
@@ -238,8 +248,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  loadingText: {
+  loadingTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginTop: 16,
+  },
+  loadingText: {
     fontSize: 18,
     fontWeight: "600",
     color: "#1f2937",
@@ -264,9 +279,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-  },
-  emptyIcon: {
-    fontSize: 48,
   },
   emptyText: {
     fontSize: 20,
@@ -298,11 +310,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#e5e7eb",
   },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
   title: {
     fontSize: 20,
     fontWeight: "700",
     color: "#1f2937",
-    marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
@@ -404,11 +421,6 @@ const styles = StyleSheet.create({
   checkboxSelected: {
     backgroundColor: "#3b82f6",
     borderColor: "#3b82f6",
-  },
-  checkmark: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
   },
   actions: {
     flexDirection: "row",
