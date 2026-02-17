@@ -7,7 +7,6 @@ import type {
   ApiResponse,
   CreateLabelDTO,
   DiagramLabel,
-  DiagramQualityReport,
   DifficultyLevel,
   LabelSuggestion,
   QuizQuestion,
@@ -221,8 +220,6 @@ export class AIDiagramService {
       };
     }
   }
-}
-
 
   /**
    * Generate quiz questions based on diagram labels

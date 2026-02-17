@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ImageUploader } from "../../src/components/diagram/ImageUploader";
-import { LabelEditor } from "../../src/components/diagram/LabelEditor";
 import { Button } from "../../src/components/ui/Button";
 import { Input } from "../../src/components/ui/Input";
 import { useAI } from "../../src/hooks/useAI";
@@ -20,6 +19,7 @@ import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useImageUpload } from "../../src/hooks/useImageUpload";
 import { LabelService } from "../../src/services/label.service";
 import type { DifficultyLevel } from "../../src/types/flashcard.types";
+import { LabelEditorWithAI } from "@/src/components/diagram/LabelEditorWithAI";
 
 const TEMP_USER_ID = "temp-user-123";
 
@@ -397,11 +397,15 @@ export default function DeckDetailScreen() {
                     />
                   ) : (
                     <>
-                      <LabelEditor
+                      <LabelEditorWithAI
                         imageUrl={uploadedImage.fileUrl}
+                        imageId={uploadedImage.fileId}
+                        cardId="new-card" // Temporary ID for new cards
+                        userId={TEMP_USER_ID}
                         labels={labels}
                         onLabelsChange={setLabels}
                         editable={true}
+                        diagramType="general"
                       />
 
                       <View style={styles.diagramActions}>
