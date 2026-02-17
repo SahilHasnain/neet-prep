@@ -223,6 +223,20 @@ export default function DeckDetailScreen() {
     router.push(`/study/${deckId}`);
   };
 
+  const handleQuiz = () => {
+    const diagramCards = flashcards.filter(
+      (card) => card.has_image && card.image_url,
+    );
+    if (diagramCards.length === 0) {
+      Alert.alert(
+        "No Diagram Cards",
+        "Add diagram flashcards to use quiz mode!",
+      );
+      return;
+    }
+    router.push(`/quiz/${deckId}` as any);
+  };
+
   const handleDeleteCard = (cardId: string) => {
     Alert.alert(
       "Delete Card",
@@ -257,6 +271,9 @@ export default function DeckDetailScreen() {
         <View style={styles.headerButtons}>
           <View style={styles.buttonWrapper}>
             <Button title="Study" onPress={handleStudy} />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <Button title="🎯 Quiz" onPress={handleQuiz} variant="secondary" />
           </View>
           <View style={styles.buttonWrapper}>
             <Button title="+ Add" onPress={() => setShowCreateModal(true)} />
