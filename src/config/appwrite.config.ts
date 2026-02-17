@@ -30,6 +30,8 @@ export const FUNCTIONS = {
   GENERATE_FLASHCARDS: "generate-flashcards",
   GENERATE_FLASHCARDS_URL:
     process.env.EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL!,
+  ANALYZE_DIAGRAM: "analyze-diagram",
+  ANALYZE_DIAGRAM_URL: process.env.EXPO_PUBLIC_ANALYZE_DIAGRAM_FUNCTION_URL!,
 } as const;
 
 // Validation Constants
