@@ -25,6 +25,11 @@ export default function StudyScreen() {
   const [showResult, setShowResult] = useState(false);
   const [shuffledCards, setShuffledCards] = useState(flashcards);
   const [isShuffled, setIsShuffled] = useState(false);
+  const [sessionStats, setSessionStats] = useState({
+    correct: 0,
+    wrong: 0,
+    startTime: Date.now(),
+  });
 
   const currentCard = shuffledCards[currentIndex];
   const stats = getMasteryStats(shuffledCards.length);
@@ -57,6 +62,13 @@ export default function StudyScreen() {
 
   const handleAnswer = async (isCorrect: boolean) => {
     if (!currentCard) return;
+
+    // Update session stats
+    setSessionStats((prev) => ({
+      ...prev,
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      wrong: prev.wrong + (isCorrect ? 0 : 1),
+    }));
 
     await updateProgress({
       card_id: currentCard.card_id,
@@ -110,15 +122,25 @@ export default function StudyScreen() {
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backText}>← Exit Study</Text>
+            <Text style={styles.backText}>← Exit</Text>
           </TouchableOpacity>
+
+          <View style={styles.sessionStats}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>✅ {sessionStats.correct}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>❌ {sessionStats.wrong}</Text>
+            </View>
+          </View>
 
           <TouchableOpacity
             onPress={isShuffled ? resetOrder : shuffleCards}
             style={styles.shuffleButton}
           >
             <Text style={styles.shuffleButtonText}>
-              {isShuffled ? "🔄 Reset" : "🔀 Shuffle"}
+              {isShuffled ? "🔄" : "🔀"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -155,26 +177,30 @@ export default function StudyScreen() {
           )}
         </View>
 
+        {!isFlipped && (
+          <View style={styles.hintContainer}>
+            <Text style={styles.hint}>👆 Tap the card to see the answer</Text>
+          </View>
+        )}
+
         {showResult && isFlipped && (
           <View style={styles.answerButtons}>
             <TouchableOpacity
               style={[styles.answerButton, styles.wrongButton]}
               onPress={() => handleAnswer(false)}
             >
-              <Text style={styles.answerButtonText}>❌ Wrong</Text>
+              <Text style={styles.answerButtonIcon}>❌</Text>
+              <Text style={styles.answerButtonText}>Hard</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.answerButton, styles.correctButton]}
               onPress={() => handleAnswer(true)}
             >
-              <Text style={styles.answerButtonText}>✅ Correct</Text>
+              <Text style={styles.answerButtonIcon}>✅</Text>
+              <Text style={styles.answerButtonText}>Easy</Text>
             </TouchableOpacity>
           </View>
-        )}
-
-        {!isFlipped && (
-          <Text style={styles.hint}>Tap the card to see the answer</Text>
         )}
       </View>
     </SafeAreaView>
@@ -184,20 +210,19 @@ export default function StudyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9fafb",
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9fafb",
     padding: 32,
   },
   header: {
     backgroundColor: "#fff",
     padding: 16,
     shadowColor: "#000",
-
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -210,40 +235,71 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButton: {
-    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   backText: {
     fontSize: 16,
-    color: "#007AFF",
+    color: "#3b82f6",
+    fontWeight: "600",
+  },
+  sessionStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 12,
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1f2937",
+  },
+  statDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: "#d1d5db",
   },
   shuffleButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    backgroundColor: "#3b82f6",
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   shuffleButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 20,
   },
   progressContainer: {
     marginBottom: 8,
   },
   progressText: {
     fontSize: 14,
-    color: "#666",
+    color: "#6b7280",
     marginBottom: 8,
+    fontWeight: "600",
   },
   progressBarContainer: {
-    height: 4,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 2,
+    height: 6,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 3,
     overflow: "hidden",
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3b82f6",
+    borderRadius: 3,
   },
   content: {
     flex: 1,
@@ -253,7 +309,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 32,
+    marginVertical: 24,
+  },
+  hintContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: "#eff6ff",
+    borderRadius: 12,
+  },
+  hint: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "#3b82f6",
+    fontWeight: "600",
   },
   answerButtons: {
     flexDirection: "row",
@@ -262,41 +332,45 @@ const styles = StyleSheet.create({
   },
   answerButton: {
     flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 64,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   wrongButton: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "#ef4444",
   },
   correctButton: {
-    backgroundColor: "#34C759",
+    backgroundColor: "#10b981",
+  },
+  answerButtonIcon: {
+    fontSize: 28,
+    marginBottom: 4,
   },
   answerButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
-  },
-  hint: {
-    textAlign: "center",
-    fontSize: 14,
-    color: "#999",
-    marginTop: 16,
   },
   loadingText: {
     fontSize: 16,
-    color: "#666",
+    color: "#6b7280",
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#1f2937",
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: "#666",
+    color: "#6b7280",
     textAlign: "center",
     marginBottom: 24,
   },
