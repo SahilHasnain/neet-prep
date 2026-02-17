@@ -3,7 +3,7 @@
  * Initializes and exports Appwrite client instances
  */
 
-import { Account, Client, Databases } from "appwrite";
+import { Account, Client, Databases, Storage } from "react-native-appwrite";
 import { APPWRITE_CONFIG, DATABASE_ID } from "../config/appwrite.config";
 
 // Initialize Appwrite Client
@@ -14,5 +14,6 @@ const client = new Client()
 // Export service instances
 export const databases = new Databases(client);
 export const account = new Account(client);
+export const storage = new Storage(client);
 
 export { client, DATABASE_ID };

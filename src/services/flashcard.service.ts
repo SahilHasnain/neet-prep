@@ -3,7 +3,7 @@
  * Handles all flashcard-related database operations
  */
 
-import { ID, Query } from "appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { COLLECTIONS } from "../config/appwrite.config";
 import type {
   CreateDeckDTO,
@@ -133,6 +133,9 @@ export class FlashcardService {
           difficulty: data.difficulty || "medium",
           tags: data.tags || [],
           order_index: existingCards.total,
+          has_image: data.has_image || false,
+          image_url: data.image_url || null,
+          image_id: data.image_id || null,
           created_at: now,
           updated_at: now,
         },

@@ -3,7 +3,7 @@
  * Handles user progress tracking and spaced repetition
  */
 
-import { ID, Query } from "appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { COLLECTIONS } from "../config/appwrite.config";
 import type { UpdateProgressDTO, UserProgress } from "../types/flashcard.types";
 import { DATABASE_ID, databases } from "./appwrite";

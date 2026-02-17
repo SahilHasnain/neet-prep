@@ -39,6 +39,9 @@ export interface Flashcard {
   order_index: number;
   created_at: string;
   updated_at: string;
+  has_image?: boolean;
+  image_url?: string;
+  image_id?: string;
 }
 
 export interface UserProgress {
@@ -86,6 +89,9 @@ export interface CreateFlashcardDTO {
   back_content: string;
   difficulty?: DifficultyLevel;
   tags?: string[];
+  has_image?: boolean;
+  image_url?: string;
+  image_id?: string;
 }
 
 export interface UpdateFlashcardDTO {
@@ -123,4 +129,35 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   hasMore: boolean;
+}
+
+// Diagram Types
+export interface DiagramLabel {
+  label_id: string;
+  card_id: string;
+  label_text: string;
+  x_position: number; // 0-100 percentage
+  y_position: number; // 0-100 percentage
+  order_index: number;
+  created_at: string;
+}
+
+export interface CreateLabelDTO {
+  card_id: string;
+  label_text: string;
+  x_position: number;
+  y_position: number;
+  order_index: number;
+}
+
+export interface UpdateLabelDTO {
+  label_text?: string;
+  x_position?: number;
+  y_position?: number;
+  order_index?: number;
+}
+
+export interface ImageUploadResult {
+  fileId: string;
+  fileUrl: string;
 }

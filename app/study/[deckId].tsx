@@ -23,14 +23,37 @@ export default function StudyScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [shuffledCards, setShuffledCards] = useState(flashcards);
+  const [isShuffled, setIsShuffled] = useState(false);
 
-  const currentCard = flashcards[currentIndex];
-  const stats = getMasteryStats(flashcards.length);
-  const progress = ((currentIndex + 1) / flashcards.length) * 100;
+  const currentCard = shuffledCards[currentIndex];
+  const stats = getMasteryStats(shuffledCards.length);
+  const progress = ((currentIndex + 1) / shuffledCards.length) * 100;
 
   useEffect(() => {
     refreshProgress();
   }, []);
+
+  useEffect(() => {
+    setShuffledCards(flashcards);
+  }, [flashcards]);
+
+  const shuffleCards = () => {
+    const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
+    setShuffledCards(shuffled);
+    setCurrentIndex(0);
+    setIsFlipped(false);
+    setShowResult(false);
+    setIsShuffled(true);
+  };
+
+  const resetOrder = () => {
+    setShuffledCards(flashcards);
+    setCurrentIndex(0);
+    setIsFlipped(false);
+    setShowResult(false);
+    setIsShuffled(false);
+  };
 
   const handleAnswer = async (isCorrect: boolean) => {
     if (!currentCard) return;
@@ -44,7 +67,7 @@ export default function StudyScreen() {
     setShowResult(false);
     setIsFlipped(false);
 
-    if (currentIndex < flashcards.length - 1) {
+    if (currentIndex < shuffledCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
       // Study session complete
@@ -82,16 +105,27 @@ export default function StudyScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>← Exit Study</Text>
-        </TouchableOpacity>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backText}>← Exit Study</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={isShuffled ? resetOrder : shuffleCards}
+            style={styles.shuffleButton}
+          >
+            <Text style={styles.shuffleButtonText}>
+              {isShuffled ? "🔄 Reset" : "🔀 Shuffle"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.progressContainer}>
           <Text style={styles.progressText}>
-            Card {currentIndex + 1} of {flashcards.length}
+            Card {currentIndex + 1} of {shuffledCards.length}
           </Text>
           <View style={styles.progressBarContainer}>
             <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
@@ -104,7 +138,7 @@ export default function StudyScreen() {
           mastered={stats.mastered}
           learning={stats.learning}
           newCards={stats.new}
-          total={flashcards.length}
+          total={shuffledCards.length}
         />
 
         <View style={styles.cardContainer}>
@@ -113,6 +147,9 @@ export default function StudyScreen() {
               key={currentCard.card_id}
               front={currentCard.front_content}
               back={currentCard.back_content}
+              imageUrl={currentCard.image_url}
+              hasImage={currentCard.has_image}
+              cardId={currentCard.card_id}
               onFlip={handleFlip}
             />
           )}
@@ -166,12 +203,29 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  backButton: {
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
+  },
+  backButton: {
+    flex: 1,
   },
   backText: {
     fontSize: 16,
     color: "#007AFF",
+  },
+  shuffleButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  shuffleButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
   progressContainer: {
     marginBottom: 8,
