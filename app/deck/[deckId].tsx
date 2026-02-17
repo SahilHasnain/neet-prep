@@ -6,11 +6,15 @@ import {
   Alert,
   FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -421,193 +425,234 @@ export default function DeckDetailScreen() {
 
       {/* Create Card Modal */}
       <Modal visible={showCreateModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create Flashcard</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modalWrapper}>
+                  <ScrollView
+                    contentContainerStyle={styles.modalScrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>Create Flashcard</Text>
 
-            {/* Card Type Selector */}
-            <View style={styles.cardTypeSelector}>
-              <TouchableOpacity
-                style={[
-                  styles.cardTypeButton,
-                  cardType === "text" && styles.cardTypeButtonActive,
-                ]}
-                onPress={() => setCardType("text")}
-              >
-                <Ionicons
-                  name="document-text-outline"
-                  size={16}
-                  color={cardType === "text" ? "#3b82f6" : "#6b7280"}
-                />
-                <Text
-                  style={[
-                    styles.cardTypeButtonText,
-                    cardType === "text" && styles.cardTypeButtonTextActive,
-                  ]}
-                >
-                  Text Card
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.cardTypeButton,
-                  cardType === "diagram" && styles.cardTypeButtonActive,
-                ]}
-                onPress={() => setCardType("diagram")}
-              >
-                <Ionicons
-                  name="image-outline"
-                  size={16}
-                  color={cardType === "diagram" ? "#3b82f6" : "#6b7280"}
-                />
-                <Text
-                  style={[
-                    styles.cardTypeButtonText,
-                    cardType === "diagram" && styles.cardTypeButtonTextActive,
-                  ]}
-                >
-                  Diagram Card
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalScroll}>
-              {cardType === "text" ? (
-                <>
-                  <Input
-                    label="Front (Question)"
-                    placeholder="Enter the question or term"
-                    value={frontContent}
-                    onChangeText={setFrontContent}
-                    multiline
-                    numberOfLines={3}
-                  />
-
-                  <Input
-                    label="Back (Answer)"
-                    placeholder="Enter the answer or definition"
-                    value={backContent}
-                    onChangeText={setBackContent}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </>
-              ) : (
-                <>
-                  {!uploadedImage ? (
-                    <ImageUploader
-                      onImageSelected={handleImageSelected}
-                      onImageRemoved={handleImageRemoved}
-                      disabled={uploading}
-                    />
-                  ) : (
-                    <>
-                      <LabelEditorWithAI
-                        imageUrl={uploadedImage.fileUrl}
-                        imageId={uploadedImage.fileId}
-                        cardId="new-card" // Temporary ID for new cards
-                        userId={TEMP_USER_ID}
-                        labels={labels}
-                        onLabelsChange={setLabels}
-                        editable={true}
-                        diagramType="general"
-                      />
-
-                      <View style={styles.diagramActions}>
+                      {/* Card Type Selector */}
+                      <View style={styles.cardTypeSelector}>
                         <TouchableOpacity
-                          style={styles.changeImageButton}
-                          onPress={handleImageRemoved}
+                          style={[
+                            styles.cardTypeButton,
+                            cardType === "text" && styles.cardTypeButtonActive,
+                          ]}
+                          onPress={() => setCardType("text")}
                         >
-                          <Text style={styles.changeImageButtonText}>
-                            Change Image
+                          <Ionicons
+                            name="document-text-outline"
+                            size={16}
+                            color={cardType === "text" ? "#3b82f6" : "#6b7280"}
+                          />
+                          <Text
+                            style={[
+                              styles.cardTypeButtonText,
+                              cardType === "text" &&
+                                styles.cardTypeButtonTextActive,
+                            ]}
+                          >
+                            Text Card
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.cardTypeButton,
+                            cardType === "diagram" &&
+                              styles.cardTypeButtonActive,
+                          ]}
+                          onPress={() => setCardType("diagram")}
+                        >
+                          <Ionicons
+                            name="image-outline"
+                            size={16}
+                            color={
+                              cardType === "diagram" ? "#3b82f6" : "#6b7280"
+                            }
+                          />
+                          <Text
+                            style={[
+                              styles.cardTypeButtonText,
+                              cardType === "diagram" &&
+                                styles.cardTypeButtonTextActive,
+                            ]}
+                          >
+                            Diagram Card
                           </Text>
                         </TouchableOpacity>
                       </View>
-                    </>
-                  )}
 
-                  <Input
-                    label="Explanation / Notes"
-                    placeholder="Add explanation or additional notes"
-                    value={backContent}
-                    onChangeText={setBackContent}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </>
-              )}
-            </ScrollView>
+                      <View style={styles.modalScroll}>
+                        {cardType === "text" ? (
+                          <>
+                            <Input
+                              label="Front (Question)"
+                              placeholder="Enter the question or term"
+                              value={frontContent}
+                              onChangeText={setFrontContent}
+                              multiline
+                              numberOfLines={3}
+                            />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setShowCreateModal(false);
-                  setCardType("text");
-                  setFrontContent("");
-                  setBackContent("");
-                  setLabels([]);
-                  if (uploadedImage) {
-                    deleteImage(uploadedImage.fileId);
-                  }
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <View style={styles.modalButton}>
-                <Button
-                  title="Create"
-                  onPress={handleCreateCard}
-                  loading={creating}
-                />
-              </View>
+                            <Input
+                              label="Back (Answer)"
+                              placeholder="Enter the answer or definition"
+                              value={backContent}
+                              onChangeText={setBackContent}
+                              multiline
+                              numberOfLines={3}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            {!uploadedImage ? (
+                              <ImageUploader
+                                onImageSelected={handleImageSelected}
+                                onImageRemoved={handleImageRemoved}
+                                disabled={uploading}
+                              />
+                            ) : (
+                              <>
+                                <LabelEditorWithAI
+                                  imageUrl={uploadedImage.fileUrl}
+                                  imageId={uploadedImage.fileId}
+                                  cardId="new-card"
+                                  userId={TEMP_USER_ID}
+                                  labels={labels}
+                                  onLabelsChange={setLabels}
+                                  editable={true}
+                                  diagramType="general"
+                                />
+
+                                <View style={styles.diagramActions}>
+                                  <TouchableOpacity
+                                    style={styles.changeImageButton}
+                                    onPress={handleImageRemoved}
+                                  >
+                                    <Text style={styles.changeImageButtonText}>
+                                      Change Image
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                              </>
+                            )}
+
+                            <Input
+                              label="Explanation / Notes"
+                              placeholder="Add explanation or additional notes"
+                              value={backContent}
+                              onChangeText={setBackContent}
+                              multiline
+                              numberOfLines={3}
+                            />
+                          </>
+                        )}
+                      </View>
+
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                          style={[styles.modalButton, styles.cancelButton]}
+                          onPress={() => {
+                            setShowCreateModal(false);
+                            setCardType("text");
+                            setFrontContent("");
+                            setBackContent("");
+                            setLabels([]);
+                            if (uploadedImage) {
+                              deleteImage(uploadedImage.fileId);
+                            }
+                          }}
+                        >
+                          <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <View style={styles.modalButton}>
+                          <Button
+                            title="Create"
+                            onPress={handleCreateCard}
+                            loading={creating}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  </ScrollView>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* AI Generate Modal */}
       <Modal visible={showAIModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalTitleContainer}>
-              <Ionicons name="sparkles" size={24} color="#3b82f6" />
-              <Text style={styles.modalTitle}>AI Generate Flashcards</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modalWrapper}>
+                  <ScrollView
+                    contentContainerStyle={styles.modalScrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={styles.modalContent}>
+                      <View style={styles.modalTitleContainer}>
+                        <Ionicons name="sparkles" size={24} color="#3b82f6" />
+                        <Text style={styles.modalTitle}>
+                          AI Generate Flashcards
+                        </Text>
+                      </View>
+
+                      <Input
+                        label="Topic"
+                        placeholder="e.g., Cell Division"
+                        value={aiTopic}
+                        onChangeText={setAiTopic}
+                      />
+
+                      <Input
+                        label="Number of Cards (1-5)"
+                        placeholder="5"
+                        value={aiCount}
+                        onChangeText={setAiCount}
+                        keyboardType="number-pad"
+                      />
+
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                          style={[styles.modalButton, styles.cancelButton]}
+                          onPress={() => setShowAIModal(false)}
+                        >
+                          <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <View style={styles.modalButton}>
+                          <Button
+                            title="Generate"
+                            onPress={handleGenerateAI}
+                            loading={generating}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  </ScrollView>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-
-            <Input
-              label="Topic"
-              placeholder="e.g., Cell Division"
-              value={aiTopic}
-              onChangeText={setAiTopic}
-            />
-
-            <Input
-              label="Number of Cards (1-5)"
-              placeholder="5"
-              value={aiCount}
-              onChangeText={setAiCount}
-              keyboardType="number-pad"
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowAIModal(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <View style={styles.modalButton}>
-                <Button
-                  title="Generate"
-                  onPress={handleGenerateAI}
-                  loading={generating}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -848,6 +893,13 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalWrapper: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalScrollContent: {
+    flexGrow: 1,
     justifyContent: "flex-end",
   },
   modalContent: {
@@ -858,7 +910,7 @@ const styles = StyleSheet.create({
     maxHeight: "90%",
   },
   modalScroll: {
-    maxHeight: "70%",
+    marginBottom: 16,
   },
   modalTitleContainer: {
     flexDirection: "row",
