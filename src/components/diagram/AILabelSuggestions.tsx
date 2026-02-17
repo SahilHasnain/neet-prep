@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,

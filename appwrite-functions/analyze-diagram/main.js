@@ -260,7 +260,7 @@ async function detectLabels(groq, imageBase64, diagramType, language, log) {
           ],
         },
       ],
-      model: "llama-3.2-90b-vision-preview",
+      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
       temperature: 0.3,
       max_tokens: 2048,
       response_format: { type: "json_object" },
@@ -364,7 +364,7 @@ Be concise and specific.`;
             ],
           },
         ],
-        model: "llama-3.2-11b-vision-preview", // Faster model for quality check
+        model: "meta-llama/llama-4-maverick-17b-128e-instruct", // Faster model for quality check
         temperature: 0.2,
         max_tokens: 512,
         response_format: { type: "json_object" },
