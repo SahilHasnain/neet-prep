@@ -170,7 +170,7 @@ async function generateFlashcardsWithGroq(
     ],
     model: "llama-3.3-70b-versatile",
     temperature: 0.7,
-    max_tokens: 4096,
+    max_tokens: 2048, // Reduced for faster response
     response_format: { type: "json_object" },
   });
 

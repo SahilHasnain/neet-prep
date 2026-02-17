@@ -48,7 +48,7 @@ export class AIDiagramService {
   ): Promise<ApiResponse<AnalyzeDiagramResponse>> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout (increased)
 
       const response = await fetch(ANALYZE_DIAGRAM_URL, {
         method: "POST",
@@ -160,7 +160,7 @@ export class AIDiagramService {
   ): Promise<ApiResponse<QualityCheckResponse>> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout (increased)
 
       const response = await fetch(ANALYZE_DIAGRAM_URL, {
         method: "POST",
@@ -234,7 +234,7 @@ export class AIDiagramService {
   ): Promise<ApiResponse<{ questions: QuizQuestion[]; count: number }>> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout (increased)
 
       const response = await fetch(ANALYZE_DIAGRAM_URL, {
         method: "POST",
