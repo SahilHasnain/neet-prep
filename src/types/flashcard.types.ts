@@ -197,3 +197,49 @@ export interface AIAnalysisLog {
   error_message?: string;
   created_at: string;
 }
+
+// Quiz Types
+export enum QuizQuestionType {
+  IDENTIFICATION = "identification",
+  FUNCTION = "function",
+  LOCATION = "location",
+  RELATIONSHIP = "relationship",
+  FILL_BLANK = "fill_blank",
+  MULTIPLE_CHOICE = "multiple_choice",
+}
+
+export interface QuizQuestion {
+  question_id: string;
+  type: QuizQuestionType;
+  question: string;
+  correct_answer: string;
+  options?: string[];
+  explanation: string;
+  related_label?: string;
+  difficulty: DifficultyLevel;
+}
+
+export interface QuizSession {
+  session_id: string;
+  card_id: string;
+  questions: QuizQuestion[];
+  answers: QuizAnswer[];
+  score: number;
+  started_at: string;
+  completed_at?: string;
+}
+
+export interface QuizAnswer {
+  question_id: string;
+  user_answer: string;
+  is_correct: boolean;
+  time_taken: number; // seconds
+}
+
+export interface GenerateQuizDTO {
+  cardId: string;
+  labels: DiagramLabel[];
+  questionCount: number;
+  questionTypes: QuizQuestionType[];
+  difficulty: DifficultyLevel;
+}

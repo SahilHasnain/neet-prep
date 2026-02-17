@@ -7,7 +7,11 @@ import type {
   ApiResponse,
   CreateLabelDTO,
   DiagramLabel,
+  DiagramQualityReport,
+  DifficultyLevel,
   LabelSuggestion,
+  QuizQuestion,
+  QuizQuestionType,
 } from "../types/flashcard.types";
 import { LabelService } from "./label.service";
 
@@ -213,6 +217,87 @@ export class AIDiagramService {
       return {
         success: false,
         error: "Failed to check quality",
+        message: "Unknown error occurred",
+      };
+    }
+  }
+}
+
+
+  /**
+   * Generate quiz questions based on diagram labels
+   */
+  static async generateQuizQuestions(
+    userId: string,
+    cardId: string,
+    labels: DiagramLabel[],
+    questionCount: number,
+    questionTypes: QuizQuestionType[],
+    difficulty: DifficultyLevel,
+  ): Promise<ApiResponse<{ questions: QuizQuestion[]; count: number }>> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+      const response = await fetch(ANALYZE_DIAGRAM_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          cardId,
+          mode: "generate_quiz",
+          labels: labels.map((l) => ({
+            label_text: l.label_text,
+            description: "", // Can be enhanced later
+          })),
+          questionCount,
+          questionTypes,
+          difficulty,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const responseText = await response.text();
+
+      if (!responseText) {
+        throw new Error("Empty response from server");
+      }
+
+      const result = JSON.parse(responseText);
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || result.error || "Failed to generate quiz",
+        );
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Quiz Generation Error:", error);
+
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          return {
+            success: false,
+            error: "Request timeout",
+            message: "Quiz generation took too long. Please try again.",
+          };
+        }
+
+        return {
+          success: false,
+          error: "Failed to generate quiz",
+          message: error.message,
+        };
+      }
+
+      return {
+        success: false,
+        error: "Failed to generate quiz",
         message: "Unknown error occurred",
       };
     }
