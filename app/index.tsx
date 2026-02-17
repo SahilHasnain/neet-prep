@@ -3,11 +3,15 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +24,7 @@ import {
   getSubjectIconFamily,
   getSubjectIconName,
 } from "../src/utils/neet-helpers";
+import { Platform } from "react-native";
 
 const TEMP_USER_ID = "temp-user-123";
 
@@ -160,11 +165,12 @@ export default function Index() {
               color="#6b7280"
               style={styles.searchIcon}
             />
-            <Input
+            <TextInput
               placeholder="Search decks..."
               value={searchQuery}
               onChangeText={setSearchQuery}
               style={styles.searchInput}
+              placeholderTextColor="#9ca3af"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
@@ -307,120 +313,142 @@ export default function Index() {
       )}
 
       <Modal visible={showCreateModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <ScrollView contentContainerStyle={styles.modalScrollContent}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Create NEET Deck</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modalWrapper}>
+                  <ScrollView
+                    contentContainerStyle={styles.modalScrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>Create NEET Deck</Text>
 
-              <View style={styles.subjectSelector}>
-                <Text style={styles.inputLabel}>Subject *</Text>
-                <View style={styles.subjectButtons}>
-                  {subjects.map((subject) => {
-                    const { Component: IconComponent, name: iconName } =
-                      getSubjectIconComponent(subject);
-                    const isActive = selectedSubject === subject;
-                    return (
-                      <TouchableOpacity
-                        key={subject}
-                        style={[
-                          styles.subjectButton,
-                          isActive && styles.subjectButtonActive,
-                        ]}
-                        onPress={() => {
-                          setSelectedSubject(subject);
-                          setSelectedTopic("");
-                        }}
-                      >
-                        <View style={styles.subjectButtonContent}>
-                          <IconComponent
-                            name={iconName as any}
-                            size={16}
-                            color={isActive ? "#3b82f6" : "#6b7280"}
-                          />
-                          <Text
-                            style={[
-                              styles.subjectButtonText,
-                              isActive && styles.subjectButtonTextActive,
-                            ]}
-                          >
-                            {subject}
-                          </Text>
+                      <View style={styles.subjectSelector}>
+                        <Text style={styles.inputLabel}>Subject *</Text>
+                        <View style={styles.subjectButtons}>
+                          {subjects.map((subject) => {
+                            const { Component: IconComponent, name: iconName } =
+                              getSubjectIconComponent(subject);
+                            const isActive = selectedSubject === subject;
+                            return (
+                              <TouchableOpacity
+                                key={subject}
+                                style={[
+                                  styles.subjectButton,
+                                  isActive && styles.subjectButtonActive,
+                                ]}
+                                onPress={() => {
+                                  setSelectedSubject(subject);
+                                  setSelectedTopic("");
+                                }}
+                              >
+                                <View style={styles.subjectButtonContent}>
+                                  <IconComponent
+                                    name={iconName as any}
+                                    size={16}
+                                    color={isActive ? "#3b82f6" : "#6b7280"}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.subjectButtonText,
+                                      isActive &&
+                                        styles.subjectButtonTextActive,
+                                    ]}
+                                  >
+                                    {subject}
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            );
+                          })}
                         </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
+                      </View>
 
-              {selectedSubject && topics.length > 0 && (
-                <View style={styles.topicSelector}>
-                  <Text style={styles.inputLabel}>Topic (Optional)</Text>
-                  <ScrollView style={styles.topicList} nestedScrollEnabled>
-                    {topics.map((topic) => (
-                      <TouchableOpacity
-                        key={topic}
-                        style={[
-                          styles.topicItem,
-                          selectedTopic === topic && styles.topicItemActive,
-                        ]}
-                        onPress={() => {
-                          setSelectedTopic(topic);
-                          setNewDeckTitle(topic);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.topicItemText,
-                            selectedTopic === topic &&
-                              styles.topicItemTextActive,
-                          ]}
+                      {selectedSubject && topics.length > 0 && (
+                        <View style={styles.topicSelector}>
+                          <Text style={styles.inputLabel}>
+                            Topic (Optional)
+                          </Text>
+                          <ScrollView
+                            style={styles.topicList}
+                            nestedScrollEnabled
+                          >
+                            {topics.map((topic) => (
+                              <TouchableOpacity
+                                key={topic}
+                                style={[
+                                  styles.topicItem,
+                                  selectedTopic === topic &&
+                                    styles.topicItemActive,
+                                ]}
+                                onPress={() => {
+                                  setSelectedTopic(topic);
+                                  setNewDeckTitle(topic);
+                                }}
+                              >
+                                <Text
+                                  style={[
+                                    styles.topicItemText,
+                                    selectedTopic === topic &&
+                                      styles.topicItemTextActive,
+                                  ]}
+                                >
+                                  {topic}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+
+                      <Input
+                        label="Deck Title *"
+                        placeholder="e.g., Laws of Motion"
+                        value={newDeckTitle}
+                        onChangeText={setNewDeckTitle}
+                        maxLength={100}
+                      />
+
+                      <Input
+                        label="Description"
+                        placeholder="What topics will this deck cover?"
+                        value={newDeckDescription}
+                        onChangeText={setNewDeckDescription}
+                        maxLength={500}
+                        multiline
+                        numberOfLines={3}
+                      />
+
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                          style={[styles.modalButton, styles.cancelButton]}
+                          onPress={() => setShowCreateModal(false)}
+                          disabled={creating}
                         >
-                          {topic}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.modalButton}>
+                          <Button
+                            title="Create Deck"
+                            onPress={handleCreateDeck}
+                            loading={creating}
+                          />
+                        </View>
+                      </View>
+                    </View>
                   </ScrollView>
                 </View>
-              )}
-
-              <Input
-                label="Deck Title *"
-                placeholder="e.g., Laws of Motion"
-                value={newDeckTitle}
-                onChangeText={setNewDeckTitle}
-                maxLength={100}
-              />
-
-              <Input
-                label="Description"
-                placeholder="What topics will this deck cover?"
-                value={newDeckDescription}
-                onChangeText={setNewDeckDescription}
-                maxLength={500}
-                multiline
-                numberOfLines={3}
-              />
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => setShowCreateModal(false)}
-                  disabled={creating}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <View style={styles.modalButton}>
-                  <Button
-                    title="Create Deck"
-                    onPress={handleCreateDeck}
-                    loading={creating}
-                  />
-                </View>
-              </View>
+              </TouchableWithoutFeedback>
             </View>
-          </ScrollView>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -437,8 +465,8 @@ const styles = StyleSheet.create({
   heroHeader: {
     backgroundColor: "#3b82f6",
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -446,16 +474,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   heroContent: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   appTitle: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   heroSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "rgba(255, 255, 255, 0.9)",
     fontWeight: "500",
   },
@@ -464,22 +492,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderRadius: 10,
+    paddingVertical: 8,
   },
   statItem: {
     alignItems: "center",
     flex: 1,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: "rgba(255, 255, 255, 0.85)",
-    marginTop: 2,
+    marginTop: 1,
   },
   statDivider: {
     width: 1,
@@ -497,7 +525,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6",
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    height: 44,
   },
   searchIcon: {
     marginRight: 8,
@@ -505,11 +533,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
+    color: "#1f2937",
     padding: 0,
-    margin: 0,
   },
   clearIcon: {
-    paddingHorizontal: 8,
+    padding: 4,
   },
   loadingText: { fontSize: 16, color: "#666" },
   errorContainer: {
@@ -670,7 +698,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 20,
-    bottom: 20,
+    bottom: 50,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -683,8 +711,18 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)" },
-  modalScrollContent: { flexGrow: 1, justifyContent: "flex-end" },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalWrapper: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+  },
   modalContent: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,

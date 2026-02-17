@@ -10,7 +10,10 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "setup:database": "ts-node scripts/setup-appwrite-database.ts",
-    "setup:diagrams": "ts-node scripts/setup-diagram-feature.ts"
+    "setup:diagrams": "ts-node scripts/setup-diagram-feature.ts",
+    "build:dev": "eas build --platform android --profile development",
+    "build:preview": "eas build --platform android --profile preview",
+    "build:playstore": "eas build --platform android --profile production"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -20,6 +23,7 @@
     "appwrite": "^16.1.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.12",
+    "expo-dev-client": "~6.0.20",
     "expo-file-system": "~19.0.21",
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",
