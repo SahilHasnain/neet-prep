@@ -161,3 +161,39 @@ export interface ImageUploadResult {
   fileId: string;
   fileUrl: string;
 }
+
+// AI Diagram Analysis Types
+export interface LabelSuggestion {
+  label_text: string;
+  x_position: number; // 0-100 percentage
+  y_position: number; // 0-100 percentage
+  confidence: number; // 0-1
+  description?: string;
+}
+
+export interface DiagramQualityReport {
+  score: number; // 0-10
+  issues: string[];
+  suggestions: string[];
+  is_acceptable: boolean;
+  metadata?: {
+    width: number;
+    height: number;
+    format: string;
+    size: number;
+  };
+}
+
+export interface AIAnalysisLog {
+  analysis_id: string;
+  user_id: string;
+  card_id: string;
+  image_id: string;
+  analysis_type: "label_detection" | "quality_check" | "quiz_generation";
+  status: "pending" | "success" | "failed";
+  result_data?: string; // JSON string
+  confidence_score?: number;
+  processing_time: number; // milliseconds
+  error_message?: string;
+  created_at: string;
+}
