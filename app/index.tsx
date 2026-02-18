@@ -6,6 +6,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,7 +25,6 @@ import {
   getSubjectIconFamily,
   getSubjectIconName,
 } from "../src/utils/neet-helpers";
-import { Platform } from "react-native";
 
 const TEMP_USER_ID = "temp-user-123";
 
@@ -154,6 +154,14 @@ export default function Index() {
             </View>
           </View>
         )}
+
+        <TouchableOpacity
+          style={styles.templatesButton}
+          onPress={() => router.push("/templates")}
+        >
+          <Ionicons name="albums" size={20} color="#3b82f6" />
+          <Text style={styles.templatesButtonText}>Browse Templates</Text>
+        </TouchableOpacity>
       </View>
 
       {decks.length > 0 && (
@@ -214,6 +222,16 @@ export default function Index() {
             onPress={() => setShowCreateModal(true)}
           >
             <Text style={styles.primaryCTAText}>+ Create Your First Deck</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryCTA}
+            onPress={() => router.push("/templates")}
+          >
+            <Ionicons name="albums" size={20} color="#3b82f6" />
+            <Text style={styles.secondaryCTAText}>
+              Or Start with a Template
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.quickStartContainer}>
@@ -487,6 +505,22 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.9)",
     fontWeight: "500",
   },
+  templatesButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  templatesButtonText: {
+    color: "#3b82f6",
+    fontSize: 14,
+    fontWeight: "600",
+  },
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -605,7 +639,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: 32,
+    marginBottom: 16,
     minWidth: 200,
     alignItems: "center",
     shadowColor: "#3b82f6",
@@ -616,6 +650,25 @@ const styles = StyleSheet.create({
   },
   primaryCTAText: {
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  secondaryCTA: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#eff6ff",
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 32,
+    minWidth: 200,
+    borderWidth: 2,
+    borderColor: "#3b82f6",
+  },
+  secondaryCTAText: {
+    color: "#3b82f6",
     fontSize: 16,
     fontWeight: "600",
   },

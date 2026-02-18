@@ -3,6 +3,7 @@
  * Interactive quiz mode for diagram flashcards
  */
 
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Image,
