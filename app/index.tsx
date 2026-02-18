@@ -1,7 +1,7 @@
 import { getOrCreateUserId } from "@/src/utils/user-id";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -47,6 +47,15 @@ export default function Index() {
   useEffect(() => {
     getOrCreateUserId().then(setUserId);
   }, []);
+
+  // Refresh decks when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        refresh();
+      }
+    }, [userId, refresh]),
+  );
 
   const subjects = Object.values(NEET_SUBJECTS);
   const topics = selectedSubject

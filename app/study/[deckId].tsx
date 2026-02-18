@@ -7,6 +7,7 @@ import { ProgressBar } from "../../src/components/flashcard/ProgressBar";
 import { Button } from "../../src/components/ui/Button";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useProgress } from "../../src/hooks/useProgress";
+import { getOrCreateUserId } from "../../src/utils/user-id";
 
 export default function StudyScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();

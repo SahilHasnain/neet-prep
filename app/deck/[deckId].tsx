@@ -1,7 +1,7 @@
 import { LabelEditorWithAI } from "@/src/components/diagram/LabelEditorWithAI";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -26,6 +26,7 @@ import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useImageUpload } from "../../src/hooks/useImageUpload";
 import { LabelService } from "../../src/services/label.service";
 import type { DifficultyLevel } from "../../src/types/flashcard.types";
+import { getOrCreateUserId } from "../../src/utils/user-id";
 
 interface LabelPosition {
   x: number;
