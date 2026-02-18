@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -21,19 +21,21 @@ import {
   getSubjectIconFamily,
   getSubjectIconName,
 } from "../../src/utils/neet-helpers";
-
-const TEMP_USER_ID = "temp-user-123";
+import { getOrCreateUserId } from "../../src/utils/user-id";
 
 export default function TemplatesScreen() {
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [creatingTemplateId, setCreatingTemplateId] = useState<string | null>(
     null,
   );
-  const [previewTemplate, setPreviewTemplate] =
-    useState<FlashcardTemplate | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+
+  // Initialize user ID on mount
+  useEffect(() => {
+    getOrCreateUserId().then(setUserId);
+  }, []);
 
   const categories = ["All", ...getAllCategories()];
 
@@ -48,10 +50,12 @@ export default function TemplatesScreen() {
   });
 
   const handleUseTemplate = async (template: FlashcardTemplate) => {
+    if (!userId) return;
+
     setCreatingTemplateId(template.id);
 
     const deck = await TemplateService.createDeckFromTemplate(
-      TEMP_USER_ID,
+      userId,
       template.id,
     );
 
@@ -72,21 +76,6 @@ export default function TemplatesScreen() {
     } else {
       Alert.alert("Error", "Failed to create deck from template");
     }
-  };
-
-  const handlePreview = (template: FlashcardTemplate) => {
-    setPreviewTemplate(template);
-  };
-
-  const closePreview = () => {
-    setPreviewTemplate(null);
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    // Simulate refresh delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setRefreshing(false);
   };
 
   const getSubjectIconComponent = (subject: string) => {
@@ -112,170 +101,182 @@ export default function TemplatesScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1f2937" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Flashcard Templates</Text>
-          <Text style={styles.headerSubtitle}>
-            Start learning with pre-made decks
-          </Text>
+      {!userId ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Initializing...</Text>
         </View>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons
-            name="search"
-            size={20}
-            color="#6b7280"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            placeholder="Search templates..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
-            placeholderTextColor="#9ca3af"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close" size={20} color="#9ca3af" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryScroll}
-        contentContainerStyle={styles.categoryScrollContent}
-      >
-        {categories.map((category) => {
-          const isActive = selectedCategory === category;
-          const { Component: IconComponent, name: iconName } =
-            category === "All"
-              ? { Component: Ionicons, name: "apps" }
-              : getSubjectIconComponent(category);
-
-          return (
+      ) : (
+        <>
+          <View style={styles.header}>
             <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryChip,
-                isActive && styles.categoryChipActive,
-              ]}
-              onPress={() => setSelectedCategory(category)}
+              style={styles.backButton}
+              onPress={() => router.back()}
             >
-              <IconComponent
-                name={iconName as any}
-                size={14}
-                color={isActive ? "#fff" : "#6b7280"}
-              />
-              <Text
-                style={[
-                  styles.categoryChipText,
-                  isActive && styles.categoryChipTextActive,
-                ]}
-              >
-                {category}
-              </Text>
+              <Ionicons name="arrow-back" size={24} color="#1f2937" />
             </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {filteredTemplates.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="search" size={64} color="#9ca3af" />
-            <Text style={styles.emptyTitle}>No Templates Found</Text>
-            <Text style={styles.emptyText}>
-              Try a different search term or category
-            </Text>
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>Flashcard Templates</Text>
+              <Text style={styles.headerSubtitle}>
+                Start learning with pre-made decks
+              </Text>
+            </View>
           </View>
-        ) : (
-          filteredTemplates.map((template) => {
-            const isCreating = creatingTemplateId === template.id;
-            const { Component: IconComponent, name: iconName } =
-              getSubjectIconComponent(template.category);
 
-            return (
-              <View key={template.id} style={styles.templateCard}>
-                <View style={styles.templateHeader}>
-                  <View style={styles.templateIconContainer}>
-                    <IconComponent
-                      name={iconName as any}
-                      size={24}
-                      color="#3b82f6"
-                    />
-                  </View>
-                  <View style={styles.templateHeaderText}>
-                    <Text style={styles.templateTitle}>{template.title}</Text>
-                    <Text style={styles.templateTopic}>{template.topic}</Text>
-                  </View>
-                </View>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons
+                name="search"
+                size={20}
+                color="#6b7280"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchInput}
+                placeholderTextColor="#9ca3af"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery("")}>
+                  <Ionicons name="close" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
 
-                <Text style={styles.templateDescription}>
-                  {template.description}
-                </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoryScroll}
+            contentContainerStyle={styles.categoryScrollContent}
+          >
+            {categories.map((category) => {
+              const isActive = selectedCategory === category;
+              const { Component: IconComponent, name: iconName } =
+                category === "All"
+                  ? { Component: Ionicons, name: "apps" }
+                  : getSubjectIconComponent(category);
 
-                <View style={styles.templateMeta}>
-                  <View style={styles.metaItem}>
-                    <Ionicons name="layers" size={16} color="#6b7280" />
-                    <Text style={styles.metaText}>
-                      {template.cardCount} cards
-                    </Text>
-                  </View>
-                  <View
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryChip,
+                    isActive && styles.categoryChipActive,
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <IconComponent
+                    name={iconName as any}
+                    size={14}
+                    color={isActive ? "#fff" : "#6b7280"}
+                  />
+                  <Text
                     style={[
-                      styles.difficultyBadge,
-                      {
-                        backgroundColor: `${getDifficultyColor(template.difficulty)}20`,
-                      },
+                      styles.categoryChipText,
+                      isActive && styles.categoryChipTextActive,
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.difficultyText,
-                        { color: getDifficultyColor(template.difficulty) },
-                      ]}
-                    >
-                      {template.difficulty}
-                    </Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.useButton,
-                    isCreating && styles.useButtonDisabled,
-                  ]}
-                  onPress={() => handleUseTemplate(template)}
-                  disabled={isCreating}
-                >
-                  {isCreating ? (
-                    <Text style={styles.useButtonText}>Creating...</Text>
-                  ) : (
-                    <>
-                      <Ionicons name="add-circle" size={20} color="#fff" />
-                      <Text style={styles.useButtonText}>Use Template</Text>
-                    </>
-                  )}
+                    {category}
+                  </Text>
                 </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+          >
+            {filteredTemplates.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="search" size={64} color="#9ca3af" />
+                <Text style={styles.emptyTitle}>No Templates Found</Text>
+                <Text style={styles.emptyText}>
+                  Try a different search term or category
+                </Text>
               </View>
-            );
-          })
-        )}
-      </ScrollView>
+            ) : (
+              filteredTemplates.map((template) => {
+                const isCreating = creatingTemplateId === template.id;
+                const { Component: IconComponent, name: iconName } =
+                  getSubjectIconComponent(template.category);
+
+                return (
+                  <View key={template.id} style={styles.templateCard}>
+                    <View style={styles.templateHeader}>
+                      <View style={styles.templateIconContainer}>
+                        <IconComponent
+                          name={iconName as any}
+                          size={24}
+                          color="#3b82f6"
+                        />
+                      </View>
+                      <View style={styles.templateHeaderText}>
+                        <Text style={styles.templateTitle}>
+                          {template.title}
+                        </Text>
+                        <Text style={styles.templateTopic}>
+                          {template.topic}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.templateDescription}>
+                      {template.description}
+                    </Text>
+
+                    <View style={styles.templateMeta}>
+                      <View style={styles.metaItem}>
+                        <Ionicons name="layers" size={16} color="#6b7280" />
+                        <Text style={styles.metaText}>
+                          {template.cardCount} cards
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.difficultyBadge,
+                          {
+                            backgroundColor: `${getDifficultyColor(template.difficulty)}20`,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.difficultyText,
+                            { color: getDifficultyColor(template.difficulty) },
+                          ]}
+                        >
+                          {template.difficulty}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.useButton,
+                        isCreating && styles.useButtonDisabled,
+                      ]}
+                      onPress={() => handleUseTemplate(template)}
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <Text style={styles.useButtonText}>Creating...</Text>
+                      ) : (
+                        <>
+                          <Ionicons name="add-circle" size={20} color="#fff" />
+                          <Text style={styles.useButtonText}>Use Template</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                );
+              })
+            )}
+          </ScrollView>
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -284,6 +285,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#6b7280",
   },
   header: {
     flexDirection: "row",

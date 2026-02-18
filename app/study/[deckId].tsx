@@ -8,17 +8,16 @@ import { Button } from "../../src/components/ui/Button";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useProgress } from "../../src/hooks/useProgress";
 
-const TEMP_USER_ID = "temp-user-123";
-
 export default function StudyScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const { flashcards, loading } = useFlashcards(deckId);
   const {
     updateProgress,
     getMasteryStats,
     refresh: refreshProgress,
-  } = useProgress(TEMP_USER_ID, deckId);
+  } = useProgress(userId || "", deckId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -35,9 +34,16 @@ export default function StudyScreen() {
   const stats = getMasteryStats(shuffledCards.length);
   const progress = ((currentIndex + 1) / shuffledCards.length) * 100;
 
+  // Initialize user ID on mount
   useEffect(() => {
-    refreshProgress();
+    getOrCreateUserId().then(setUserId);
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      refreshProgress();
+    }
+  }, [userId]);
 
   useEffect(() => {
     setShuffledCards(flashcards);
@@ -94,7 +100,7 @@ export default function StudyScreen() {
     }
   };
 
-  if (loading) {
+  if (loading || !userId) {
     return (
       <SafeAreaView style={styles.centerContainer}>
         <Text style={styles.loadingText}>Loading...</Text>

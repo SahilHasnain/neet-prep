@@ -1,6 +1,7 @@
+import { getOrCreateUserId } from "@/src/utils/user-id";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -26,11 +27,13 @@ import {
   getSubjectIconName,
 } from "../src/utils/neet-helpers";
 
-const TEMP_USER_ID = "temp-user-123";
+// Dev flag to test empty state - set to true to force empty state
+const FORCE_EMPTY_STATE = false;
 
 export default function Index() {
   const router = useRouter();
-  const { decks, loading, error, createDeck, refresh } = useDecks(TEMP_USER_ID);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { decks, loading, error, createDeck, refresh } = useDecks(userId || "");
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
@@ -40,13 +43,21 @@ export default function Index() {
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Initialize user ID on mount
+  useEffect(() => {
+    getOrCreateUserId().then(setUserId);
+  }, []);
+
   const subjects = Object.values(NEET_SUBJECTS);
   const topics = selectedSubject
     ? NEET_TOPICS[selectedSubject as keyof typeof NEET_TOPICS] || []
     : [];
 
+  // Apply dev flag to force empty state for testing
+  const displayDecks = FORCE_EMPTY_STATE ? [] : decks;
+
   // Filter decks by search query
-  const filteredDecks = decks.filter(
+  const filteredDecks = displayDecks.filter(
     (deck) =>
       deck.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       deck.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,7 +75,10 @@ export default function Index() {
   );
 
   // Calculate total cards across all decks
-  const totalCards = decks.reduce((sum, deck) => sum + deck.card_count, 0);
+  const totalCards = displayDecks.reduce(
+    (sum, deck) => sum + deck.card_count,
+    0,
+  );
 
   const handleCreateDeck = async () => {
     if (!newDeckTitle.trim()) {
@@ -98,14 +112,6 @@ export default function Index() {
     }
   };
 
-  const handleQuickCreate = (subject: string, topic: string) => {
-    setNewDeckTitle(topic);
-    setNewDeckDescription(`NEET ${subject} - ${topic}`);
-    setSelectedSubject(subject);
-    setSelectedTopic(topic);
-    setShowCreateModal(true);
-  };
-
   const handleDeckPress = (deckId: string) => {
     router.push(`/deck/${deckId}`);
   };
@@ -118,10 +124,19 @@ export default function Index() {
       : { Component: Ionicons, name: iconName };
   };
 
-  if (loading && decks.length === 0) {
+  if (loading && displayDecks.length === 0) {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.loadingText}>Loading your decks...</Text>
+      </View>
+    );
+  }
+
+  // Don't render until userId is loaded
+  if (!userId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.loadingText}>Initializing...</Text>
       </View>
     );
   }
@@ -136,10 +151,10 @@ export default function Index() {
           </Text>
         </View>
 
-        {decks.length > 0 && (
+        {displayDecks.length > 0 && (
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{decks.length}</Text>
+              <Text style={styles.statValue}>{displayDecks.length}</Text>
               <Text style={styles.statLabel}>Decks</Text>
             </View>
             <View style={styles.statDivider} />
@@ -157,14 +172,14 @@ export default function Index() {
 
         <TouchableOpacity
           style={styles.templatesButton}
-          onPress={() => router.push("/templates")}
+          onPress={() => router.push("/templates/" as any)}
         >
           <Ionicons name="albums" size={20} color="#3b82f6" />
           <Text style={styles.templatesButtonText}>Browse Templates</Text>
         </TouchableOpacity>
       </View>
 
-      {decks.length > 0 && (
+      {displayDecks.length > 0 && (
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
             <Ionicons
@@ -206,8 +221,8 @@ export default function Index() {
         </View>
       )}
 
-      {decks.length === 0 && !loading ? (
-        <ScrollView contentContainerStyle={styles.emptyContainer}>
+      {displayDecks.length === 0 && !loading ? (
+        <View style={styles.emptyContainer}>
           <View style={styles.emptyIllustration}>
             <Ionicons name="library" size={64} color="#3b82f6" />
           </View>
@@ -221,53 +236,18 @@ export default function Index() {
             style={styles.primaryCTA}
             onPress={() => setShowCreateModal(true)}
           >
-            <Text style={styles.primaryCTAText}>+ Create Your First Deck</Text>
+            <Ionicons name="add-circle" size={20} color="#fff" />
+            <Text style={styles.primaryCTAText}>Create Deck</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryCTA}
-            onPress={() => router.push("/templates")}
+            onPress={() => router.push("/templates/" as any)}
           >
             <Ionicons name="albums" size={20} color="#3b82f6" />
-            <Text style={styles.secondaryCTAText}>
-              Or Start with a Template
-            </Text>
+            <Text style={styles.secondaryCTAText}>Browse Templates</Text>
           </TouchableOpacity>
-
-          <View style={styles.quickStartContainer}>
-            <Text style={styles.quickStartTitle}>Quick Start Templates:</Text>
-
-            {subjects.map((subject) => {
-              const { Component: IconComponent, name: iconName } =
-                getSubjectIconComponent(subject);
-              return (
-                <View key={subject} style={styles.subjectSection}>
-                  <View style={styles.subjectTitleContainer}>
-                    <IconComponent
-                      name={iconName as any}
-                      size={20}
-                      color="#1f2937"
-                    />
-                    <Text style={styles.subjectTitle}>{subject}</Text>
-                  </View>
-                  <View style={styles.topicGrid}>
-                    {NEET_TOPICS[subject as keyof typeof NEET_TOPICS]
-                      ?.slice(0, 6)
-                      .map((topic) => (
-                        <TouchableOpacity
-                          key={topic}
-                          style={styles.topicChip}
-                          onPress={() => handleQuickCreate(subject, topic)}
-                        >
-                          <Text style={styles.topicChipText}>{topic}</Text>
-                        </TouchableOpacity>
-                      ))}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        </ScrollView>
+        </View>
       ) : filteredDecks.length === 0 && searchQuery ? (
         <View style={styles.noResultsContainer}>
           <Ionicons name="search" size={64} color="#9ca3af" />
@@ -320,7 +300,7 @@ export default function Index() {
         </ScrollView>
       )}
 
-      {decks.length > 0 && (
+      {displayDecks.length > 0 && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => setShowCreateModal(true)}
@@ -608,8 +588,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   emptyContainer: {
-    padding: 24,
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
+    padding: 24,
   },
   emptyIllustration: {
     width: 120,
@@ -635,13 +617,17 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   primaryCTA: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    minWidth: 200,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#3b82f6",
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    width: "100%",
+    maxWidth: 300,
     shadowColor: "#3b82f6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -658,12 +644,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#eff6ff",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    backgroundColor: "#fff",
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 12,
-    marginBottom: 32,
-    minWidth: 200,
+    width: "100%",
+    maxWidth: 300,
     borderWidth: 2,
     borderColor: "#3b82f6",
   },
