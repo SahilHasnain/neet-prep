@@ -27,8 +27,6 @@ import { useImageUpload } from "../../src/hooks/useImageUpload";
 import { LabelService } from "../../src/services/label.service";
 import type { DifficultyLevel } from "../../src/types/flashcard.types";
 
-const TEMP_USER_ID = "temp-user-123";
-
 interface LabelPosition {
   x: number;
   y: number;
@@ -39,6 +37,7 @@ interface LabelPosition {
 export default function DeckDetailScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const {
     flashcards,
     loading,
@@ -47,7 +46,7 @@ export default function DeckDetailScreen() {
     deleteFlashcard,
     refresh,
   } = useFlashcards(deckId);
-  const { generateFlashcards, generating } = useAI(TEMP_USER_ID);
+  const { generateFlashcards, generating } = useAI(userId || "");
   const { uploadImage, deleteImage, uploadedImage, uploading } =
     useImageUpload();
 
@@ -60,6 +59,11 @@ export default function DeckDetailScreen() {
   const [aiCount, setAiCount] = useState("5");
   const [creating, setCreating] = useState(false);
   const [labels, setLabels] = useState<LabelPosition[]>([]);
+
+  // Initialize user ID on mount
+  useEffect(() => {
+    getOrCreateUserId().then(setUserId);
+  }, []);
 
   const handleImageSelected = async (asset: {
     uri: string;

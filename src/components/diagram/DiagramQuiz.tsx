@@ -7,6 +7,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -125,7 +127,11 @@ export function DiagramQuiz({
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onExit} style={styles.exitButton}>
@@ -311,7 +317,7 @@ export function DiagramQuiz({
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

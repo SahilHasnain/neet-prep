@@ -12,7 +12,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 interface QuizResult {
   label_id: string;
