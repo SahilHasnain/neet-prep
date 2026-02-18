@@ -3,6 +3,7 @@
  * Shows quiz completion stats and weak areas
  */
 
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
