@@ -41,6 +41,13 @@ export async function getOrCreateUserId(): Promise<string> {
 }
 
 /**
+ * Alias for getOrCreateUserId for consistency
+ */
+export async function getUserId(): Promise<string> {
+  return getOrCreateUserId();
+}
+
+/**
  * Clears the stored user ID (useful for testing or when implementing auth)
  */
 export async function clearUserId(): Promise<void> {

@@ -238,14 +238,40 @@ export default function DeckDetailScreen() {
     const diagramCards = flashcards.filter(
       (card) => card.has_image && card.image_url,
     );
-    if (diagramCards.length === 0) {
-      Alert.alert(
-        "No Diagram Cards",
-        "Add diagram flashcards to use quiz mode!",
-      );
+    const textCards = flashcards.filter((card) => !card.has_image);
+
+    if (flashcards.length === 0) {
+      Alert.alert("No Cards", "Add some flashcards first!");
       return;
     }
-    router.push(`/quiz/${deckId}` as any);
+
+    // If only one type exists, go directly to that quiz
+    if (diagramCards.length > 0 && textCards.length === 0) {
+      router.push(`/quiz/${deckId}` as any);
+      return;
+    }
+
+    if (textCards.length > 0 && diagramCards.length === 0) {
+      router.push(`/flashcard-quiz/${deckId}` as any);
+      return;
+    }
+
+    // Both types exist - show selector
+    Alert.alert(
+      "Select Quiz Mode",
+      "Choose the type of quiz you want to take",
+      [
+        {
+          text: `Diagram Quiz (${diagramCards.length} cards)`,
+          onPress: () => router.push(`/quiz/${deckId}` as any),
+        },
+        {
+          text: `Flashcard Quiz (${textCards.length} cards)`,
+          onPress: () => router.push(`/flashcard-quiz/${deckId}` as any),
+        },
+        { text: "Cancel", style: "cancel" },
+      ],
+    );
   };
 
   const handleDeleteCard = (cardId: string) => {

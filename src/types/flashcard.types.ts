@@ -307,3 +307,25 @@ export interface GenerateRemediationDTO {
   topic: string;
   mistake_count: number;
 }
+
+// Flashcard Quiz Types
+export interface FlashcardQuizQuestion {
+  question_id: string;
+  card_id: string;
+  type: "mcq" | "true_false" | "fill_blank";
+  question: string;
+  options?: string[]; // For MCQ
+  correct_answer: string;
+  user_answer?: string;
+  is_correct?: boolean;
+}
+
+export interface GenerateQuizQuestionsDTO {
+  cards: Array<{
+    card_id: string;
+    front_content: string;
+    back_content: string;
+  }>;
+  quiz_type: "mcq" | "true_false" | "fill_blank";
+  question_count: number;
+}
