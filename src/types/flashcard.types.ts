@@ -243,3 +243,67 @@ export interface GenerateQuizDTO {
   questionTypes: QuizQuestionType[];
   difficulty: DifficultyLevel;
 }
+
+// Mistake Pattern Types
+export interface MistakePattern {
+  pattern_id: string;
+  user_id: string;
+  subject: string;
+  topic: string;
+  concept_id: string;
+  mistake_count: number;
+  last_occurrence: string;
+  related_questions: string[]; // Array of question IDs
+}
+
+export interface QuizAttempt {
+  attempt_id: string;
+  user_id: string;
+  card_id: string;
+  deck_id: string;
+  quiz_mode: string;
+  score: number;
+  total_questions: number;
+  wrong_answers: WrongAnswer[];
+  completed_at: string;
+}
+
+export interface WrongAnswer {
+  question_id: string;
+  label_id: string;
+  user_answer: string;
+  correct_answer: string;
+  concept_id: string;
+}
+
+export interface CreateQuizAttemptDTO {
+  card_id: string;
+  deck_id: string;
+  quiz_mode: string;
+  score: number;
+  total_questions: number;
+  wrong_answers: WrongAnswer[];
+}
+
+// Remediation Types
+export interface RemediationContent {
+  concept_id: string;
+  explanation: string;
+  practice_questions: PracticeQuestion[];
+  misconception: string;
+  generated_at: string;
+}
+
+export interface PracticeQuestion {
+  question: string;
+  options: string[];
+  correct_answer: string;
+  explanation: string;
+}
+
+export interface GenerateRemediationDTO {
+  concept_id: string;
+  subject: string;
+  topic: string;
+  mistake_count: number;
+}

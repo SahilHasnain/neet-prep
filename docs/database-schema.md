@@ -164,3 +164,56 @@ flashcard_decks (1) ──< (N) ai_generation_logs
 - `log_id_idx` (unique) on log_id
 - `user_id_idx` (key) on user_id
 - `deck_id_idx` (key) on deck_id
+
+---
+
+## Collection: mistake_patterns
+
+Tracks recurring mistakes by concept for personalized remediation.
+
+### Attributes
+
+| Field             | Type          | Required | Indexed | Default | Description                |
+| ----------------- | ------------- | -------- | ------- | ------- | -------------------------- |
+| pattern_id        | string(36)    | Yes      | Unique  | -       | Unique identifier          |
+| user_id           | string(36)    | Yes      | Key     | -       | User ID                    |
+| subject           | string(50)    | Yes      | -       | -       | Subject (physics/chem/bio) |
+| topic             | string(100)   | Yes      | -       | -       | Topic within subject       |
+| concept_id        | string(200)   | Yes      | Key     | -       | Unique concept identifier  |
+| mistake_count     | integer       | Yes      | -       | 0       | Number of mistakes         |
+| last_occurrence   | datetime      | Yes      | -       | -       | Last mistake timestamp     |
+| related_questions | string(10000) | No       | -       | []      | JSON array of question IDs |
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)
+
+---
+
+## Collection: quiz_attempts
+
+Logs all quiz attempts with detailed wrong answer tracking.
+
+### Attributes
+
+| Field           | Type          | Required | Indexed | Default | Description                 |
+| --------------- | ------------- | -------- | ------- | ------- | --------------------------- |
+| attempt_id      | string(36)    | Yes      | Unique  | -       | Unique identifier           |
+| user_id         | string(36)    | Yes      | Key     | -       | User ID                     |
+| card_id         | string(36)    | Yes      | -       | -       | Flashcard ID                |
+| deck_id         | string(36)    | Yes      | Key     | -       | Deck ID                     |
+| quiz_mode       | string(50)    | Yes      | -       | -       | Quiz type                   |
+| score           | integer       | Yes      | -       | -       | Score percentage (0-100)    |
+| total_questions | integer       | Yes      | -       | -       | Number of questions         |
+| wrong_answers   | string(50000) | No       | -       | []      | JSON array of wrong answers |
+| completed_at    | datetime      | Yes      | -       | -       | Completion timestamp        |
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)
