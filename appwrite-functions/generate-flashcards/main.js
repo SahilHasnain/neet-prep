@@ -28,6 +28,33 @@ export default async ({ req, res, log, error }) => {
       typeof req.body === "string"
         ? JSON.parse(req.body || "{}")
         : req.body || {};
+
+    const { type } = body;
+
+    // Route to appropriate handler
+    if (type === "remediation") {
+      return await handleRemediation(body, res, log, error);
+    } else {
+      return await handleFlashcardGeneration(body, res, log, error);
+    }
+  } catch (err) {
+    error(`Error in function: ${err.message}`);
+    return res.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: err.message,
+      },
+      500,
+    );
+  }
+};
+
+/**
+ * Handle flashcard generation
+ */
+async function handleFlashcardGeneration(body, res, log, error) {
+  try {
     const {
       topic,
       count = 10,
@@ -139,7 +166,7 @@ export default async ({ req, res, log, error }) => {
       500,
     );
   }
-};
+}
 
 /**
  * Generate flashcards using GROQ AI
@@ -268,4 +295,88 @@ async function logGeneration(
   } catch (err) {
     console.error("Failed to log generation:", err.message);
   }
+}
+
+/**
+ * Generate remediation content using GROQ AI
+ */
+async function generateRemediationWithGroq(
+  groq,
+  conceptName,
+  subject,
+  topic,
+  mistakeCount,
+  log,
+) {
+  const prompt = buildRemediationPrompt(
+    conceptName,
+    subject,
+    topic,
+    mistakeCount,
+  );
+
+  log("Calling GROQ API for remediation...");
+
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an expert NEET exam tutor specializing in Biology, Physics, and Chemistry. Create personalized remediation content to help students understand concepts they struggle with. Always respond with valid JSON only.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 2048,
+    response_format: { type: "json_object" },
+  });
+
+  const responseText = completion.choices[0]?.message?.content;
+
+  if (!responseText) {
+    throw new Error("Empty response from GROQ API");
+  }
+
+  log("Parsing GROQ remediation response...");
+
+  const parsed = JSON.parse(responseText);
+
+  return {
+    explanation: parsed.explanation || "",
+    practice_questions: parsed.practice_questions || [],
+    misconception: parsed.misconception || "",
+  };
+}
+
+/**
+ * Build the prompt for remediation content
+ */
+function buildRemediationPrompt(conceptName, subject, topic, mistakeCount) {
+  return `Generate personalized remediation content for a NEET student who has made ${mistakeCount} mistake(s) on the concept: "${conceptName}" in ${subject} (${topic}).
+
+Requirements:
+1. Explanation: Provide a clear, concise explanation (2-3 sentences) of this concept suitable for NEET exam preparation
+2. Practice Questions: Create exactly 3 multiple-choice questions to test understanding
+   - Each question should have 4 options
+   - Include the correct answer
+   - Provide a brief explanation for the correct answer
+3. Common Misconception: Identify one common mistake students make with this concept and how to avoid it
+
+Return ONLY a JSON object in this exact format:
+{
+  "explanation": "Clear explanation of the concept here",
+  "practice_questions": [
+    {
+      "question": "Question text here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct_answer": "Option B",
+      "explanation": "Why this is correct"
+    }
+  ],
+  "misconception": "Common mistake and how to avoid it"
+}`;
 }

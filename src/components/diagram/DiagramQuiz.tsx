@@ -25,7 +25,7 @@ interface Label {
   order_index: number;
 }
 
-interface QuizResult {
+export interface QuizResult {
   label_id: string;
   is_correct: boolean;
   user_answer: string;

@@ -186,6 +186,14 @@ export default function Index() {
           <Ionicons name="albums" size={20} color="#3b82f6" />
           <Text style={styles.templatesButtonText}>Browse Templates</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.insightsButton}
+          onPress={() => router.push("/insights/" as any)}
+        >
+          <Ionicons name="analytics" size={20} color="#10b981" />
+          <Text style={styles.insightsButtonText}>Learning Insights</Text>
+        </TouchableOpacity>
       </View>
 
       {displayDecks.length > 0 && (
@@ -507,6 +515,22 @@ const styles = StyleSheet.create({
   },
   templatesButtonText: {
     color: "#3b82f6",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  insightsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  insightsButtonText: {
+    color: "#10b981",
     fontSize: 14,
     fontWeight: "600",
   },

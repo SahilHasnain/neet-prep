@@ -11,7 +11,11 @@ import { DiagramQuiz } from "../../src/components/diagram/DiagramQuiz";
 import { QuizResults } from "../../src/components/diagram/QuizResults";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { LabelService } from "../../src/services/label.service";
-import type { DiagramLabel } from "../../src/types/flashcard.types";
+import { MistakeTrackingService } from "../../src/services/mistake-tracking.service";
+import type {
+  DiagramLabel,
+  WrongAnswer,
+} from "../../src/types/flashcard.types";
 
 interface QuizResult {
   label_id: string;
@@ -97,8 +101,46 @@ export default function QuizModeScreen() {
     }
   };
 
-  const handleQuizComplete = (results: QuizResult[]) => {
+  const handleQuizComplete = async (results: QuizResult[]) => {
     setQuizResults(results);
+
+    // Log quiz attempt with mistake tracking
+    try {
+      const wrongAnswers: WrongAnswer[] = results
+        .filter((r) => !r.is_correct)
+        .map((r) => {
+          // Find the label to get concept info
+          const label = labels.find((l) => l.label_id === r.label_id);
+          const conceptId = generateConceptId(
+            label?.label_text || r.correct_answer,
+          );
+
+          return {
+            question_id: r.label_id,
+            label_id: r.label_id,
+            user_answer: r.user_answer,
+            correct_answer: r.correct_answer,
+            concept_id: conceptId,
+          };
+        });
+
+      const correctCount = results.filter((r) => r.is_correct).length;
+      const score = Math.round((correctCount / results.length) * 100);
+
+      await MistakeTrackingService.logQuizAttempt({
+        card_id: currentCard.card_id,
+        deck_id: deckId,
+        quiz_mode: quizMode || "label-quiz",
+        score,
+        total_questions: results.length,
+        wrong_answers: wrongAnswers,
+      });
+
+      console.log("Quiz attempt logged successfully");
+    } catch (error) {
+      console.error("Failed to log quiz attempt:", error);
+      // Don't block user flow if logging fails
+    }
   };
 
   const handleRetry = () => {
