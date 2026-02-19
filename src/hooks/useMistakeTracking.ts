@@ -22,9 +22,20 @@ export function useMistakeTracking(subject?: string) {
       setError(null);
       const data = await MistakeTrackingService.getMistakePatterns(subject);
       setPatterns(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading mistake patterns:", err);
-      setError("Failed to load mistake patterns");
+
+      // Check if it's a collection not found error
+      if (err?.code === 404 || err?.message?.includes("not found")) {
+        setError("Mistake tracking not set up. Please run the setup script.");
+      } else if (err?.code === 401) {
+        setError("Permission denied. Please check your authentication.");
+      } else {
+        setError(err?.message || "Failed to load mistake patterns");
+      }
+
+      // Set empty patterns on error so UI shows empty state
+      setPatterns([]);
     } finally {
       setLoading(false);
     }

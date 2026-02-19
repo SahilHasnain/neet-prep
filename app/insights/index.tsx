@@ -112,6 +112,11 @@ export default function InsightsScreen() {
           <View style={styles.centerContainer}>
             <Ionicons name="alert-circle" size={48} color="#ef4444" />
             <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorHint}>
+              {error.includes("not set up")
+                ? "Run: npx ts-node scripts/setup-mistake-tracking.ts"
+                : "Try taking a quiz first to generate data"}
+            </Text>
             <TouchableOpacity style={styles.retryButton} onPress={refresh}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -273,6 +278,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#ef4444",
     textAlign: "center",
+    fontWeight: "600",
+  },
+  errorHint: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#6b7280",
+    textAlign: "center",
+    paddingHorizontal: 20,
   },
   retryButton: {
     marginTop: 16,

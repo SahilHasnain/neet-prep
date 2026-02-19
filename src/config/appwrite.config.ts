@@ -18,6 +18,8 @@ export const COLLECTIONS = {
   USER_PROGRESS: "user_progress",
   AI_GENERATION_LOGS: "ai_generation_logs",
   FLASHCARD_LABELS: "flashcard_labels",
+  MISTAKE_PATTERNS: "mistake_patterns",
+  QUIZ_ATTEMPTS: "quiz_attempts",
 } as const;
 
 // Storage Buckets

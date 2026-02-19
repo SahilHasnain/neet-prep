@@ -4,7 +4,7 @@
  */
 
 import { ID, Query } from "react-native-appwrite";
-import { DATABASE_ID, databases } from "../config/appwrite.config";
+import { COLLECTIONS, DATABASE_ID } from "../config/appwrite.config";
 import type {
   CreateQuizAttemptDTO,
   MistakePattern,
@@ -12,9 +12,10 @@ import type {
   WrongAnswer,
 } from "../types/flashcard.types";
 import { getUserId } from "../utils/user-id";
+import { databases } from "./appwrite";
 
-const QUIZ_ATTEMPTS_COLLECTION = "quiz_attempts";
-const MISTAKE_PATTERNS_COLLECTION = "mistake_patterns";
+const QUIZ_ATTEMPTS_COLLECTION = COLLECTIONS.QUIZ_ATTEMPTS;
+const MISTAKE_PATTERNS_COLLECTION = COLLECTIONS.MISTAKE_PATTERNS;
 
 export class MistakeTrackingService {
   /**

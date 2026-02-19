@@ -34,6 +34,8 @@ export default async ({ req, res, log, error }) => {
     // Route to appropriate handler
     if (type === "remediation") {
       return await handleRemediation(body, res, log, error);
+    } else if (type === "quiz_questions") {
+      return await handleQuizQuestions(body, res, log, error);
     } else {
       return await handleFlashcardGeneration(body, res, log, error);
     }
@@ -379,4 +381,182 @@ Return ONLY a JSON object in this exact format:
   ],
   "misconception": "Common mistake and how to avoid it"
 }`;
+}
+
+/**
+ * Handle quiz question generation
+ */
+async function handleQuizQuestions(body, res, log, error) {
+  try {
+    const { cards, quiz_type, question_count } = body;
+
+    if (!cards || !Array.isArray(cards) || cards.length === 0) {
+      return res.json(
+        { success: false, error: "Missing or invalid cards array" },
+        400,
+      );
+    }
+
+    if (
+      !quiz_type ||
+      !["mcq", "true_false", "fill_blank"].includes(quiz_type)
+    ) {
+      return res.json(
+        {
+          success: false,
+          error: "Invalid quiz_type. Must be: mcq, true_false, or fill_blank",
+        },
+        400,
+      );
+    }
+
+    log(`Generating ${quiz_type} questions for ${cards.length} cards`);
+
+    const groq = new Groq({ apiKey: GROQ_API_KEY });
+
+    const questions = await generateQuizQuestionsWithGroq(
+      groq,
+      cards,
+      quiz_type,
+      question_count || cards.length,
+      log,
+    );
+
+    log(`Successfully generated ${questions.length} quiz questions`);
+
+    return res.json({
+      success: true,
+      data: {
+        questions,
+        quiz_type,
+        count: questions.length,
+      },
+    });
+  } catch (err) {
+    error(`Error generating quiz questions: ${err.message}`);
+    return res.json(
+      {
+        success: false,
+        error: "Failed to generate quiz questions",
+        message: err.message,
+      },
+      500,
+    );
+  }
+}
+
+/**
+ * Generate quiz questions using GROQ AI
+ */
+async function generateQuizQuestionsWithGroq(
+  groq,
+  cards,
+  quizType,
+  questionCount,
+  log,
+) {
+  const prompt = buildQuizQuestionsPrompt(cards, quizType, questionCount);
+
+  log("Calling GROQ API for quiz questions...");
+
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an expert NEET exam question creator. Generate high-quality quiz questions from flashcard content. Always respond with valid JSON only.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 2048,
+    response_format: { type: "json_object" },
+  });
+
+  const responseText = completion.choices[0]?.message?.content;
+
+  if (!responseText) {
+    throw new Error("Empty response from GROQ API");
+  }
+
+  log("Parsing GROQ quiz questions response...");
+
+  const parsed = JSON.parse(responseText);
+  return parsed.questions || [];
+}
+
+/**
+ * Build prompt for quiz question generation
+ */
+function buildQuizQuestionsPrompt(cards, quizType, questionCount) {
+  const cardsText = cards
+    .map(
+      (c, i) =>
+        `${i + 1}. Front: ${c.front_content}\n   Back: ${c.back_content}`,
+    )
+    .join("\n\n");
+
+  if (quizType === "mcq") {
+    return `Generate ${questionCount} multiple-choice questions from these flashcards:
+
+${cardsText}
+
+For each card, create an MCQ question with:
+- Question based on the front content
+- 4 options (one correct answer from back content + 3 plausible distractors)
+- Correct answer clearly marked
+
+Return ONLY a JSON object:
+{
+  "questions": [
+    {
+      "card_id": "card_id_here",
+      "question": "Question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct_answer": "Option B"
+    }
+  ]
+}`;
+  } else if (quizType === "true_false") {
+    return `Generate ${questionCount} true/false questions from these flashcards:
+
+${cardsText}
+
+For each card, create a statement that can be true or false based on the content.
+Mix true and false statements.
+
+Return ONLY a JSON object:
+{
+  "questions": [
+    {
+      "card_id": "card_id_here",
+      "question": "Statement to evaluate",
+      "correct_answer": "true" or "false"
+    }
+  ]
+}`;
+  } else {
+    // fill_blank
+    return `Generate ${questionCount} fill-in-the-blank questions from these flashcards:
+
+${cardsText}
+
+For each card, create a sentence with a key term blanked out (use _____ for blank).
+The blank should be a critical term from the back content.
+
+Return ONLY a JSON object:
+{
+  "questions": [
+    {
+      "card_id": "card_id_here",
+      "question": "Sentence with _____ blank",
+      "correct_answer": "word or phrase that fills the blank"
+    }
+  ]
+}`;
+  }
 }
