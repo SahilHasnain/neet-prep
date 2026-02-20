@@ -22,23 +22,28 @@ export class FlashcardQuizService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
 
+      const requestBody = {
+        type: "quiz_questions",
+        cards: data.cards,
+        quiz_type: data.quiz_type,
+        question_count: data.question_count,
+      };
+
+      console.log("Sending quiz generation request:", requestBody);
+
       const response = await fetch(FUNCTIONS.GENERATE_FLASHCARDS_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          type: "quiz_questions",
-          cards: data.cards,
-          quiz_type: data.quiz_type,
-          question_count: data.question_count,
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
       const responseText = await response.text();
+      console.log("Quiz generation response:", responseText);
 
       if (!responseText) {
         throw new Error("Empty response from AI service");

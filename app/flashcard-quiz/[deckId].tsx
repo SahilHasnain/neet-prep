@@ -9,6 +9,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -140,6 +141,13 @@ export default function FlashcardQuizScreen() {
             card?.front_content || q.question,
           );
 
+          console.log("Generated concept ID:", {
+            cardId: q.card_id,
+            frontContent: card?.front_content,
+            question: q.question,
+            conceptId,
+          });
+
           return {
             question_id: q.question_id,
             label_id: q.card_id,
@@ -152,6 +160,15 @@ export default function FlashcardQuizScreen() {
       const correctCount = questions.filter((q) => q.is_correct).length;
       const score = Math.round((correctCount / questions.length) * 100);
 
+      console.log("Logging quiz attempt:", {
+        card_id: textCards[0]?.card_id,
+        deck_id: deckId,
+        quiz_mode: `flashcard_${quizMode}`,
+        score,
+        total_questions: questions.length,
+        wrong_answers_count: wrongAnswers.length,
+      });
+
       await MistakeTrackingService.logQuizAttempt({
         card_id: textCards[0]?.card_id || "unknown",
         deck_id: deckId,
@@ -160,8 +177,11 @@ export default function FlashcardQuizScreen() {
         total_questions: questions.length,
         wrong_answers: wrongAnswers,
       });
+
+      console.log("Quiz attempt logged successfully");
     } catch (error) {
       console.error("Failed to log quiz attempt:", error);
+      // Don't show alert to user, just log the error
     }
   };
 
@@ -330,7 +350,11 @@ export default function FlashcardQuizScreen() {
         </View>
       </View>
 
-      <View style={styles.quizContent}>
+      <ScrollView
+        style={styles.quizContent}
+        contentContainerStyle={styles.quizContentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.questionText}>{currentQuestion?.question}</Text>
 
         {quizMode === "mcq" && currentQuestion?.options && (
@@ -422,7 +446,7 @@ export default function FlashcardQuizScreen() {
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         {!showFeedback ? (
@@ -557,7 +581,10 @@ const styles = StyleSheet.create({
   },
   quizContent: {
     flex: 1,
+  },
+  quizContentContainer: {
     padding: 20,
+    flexGrow: 1,
   },
   questionText: {
     fontSize: 18,
