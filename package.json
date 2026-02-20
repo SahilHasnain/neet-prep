@@ -11,6 +11,8 @@
     "lint": "expo lint",
     "setup:database": "ts-node scripts/setup-appwrite-database.ts",
     "setup:diagrams": "ts-node scripts/setup-diagram-feature.ts",
+    "setup:spaced-repetition": "ts-node scripts/setup-spaced-repetition.ts",
+    "fix:card-reviews": "ts-node scripts/fix-card-reviews-permissions.ts",
     "build:dev": "eas build --platform android --profile development",
     "build:preview": "eas build --platform android --profile preview",
     "build:playstore": "eas build --platform android --profile production"

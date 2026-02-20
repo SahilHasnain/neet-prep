@@ -19,12 +19,15 @@ export default function StudyScreen() {
     getMasteryStats,
     refresh: refreshProgress,
   } = useProgress(userId || "", deckId);
+  const { submitReview } = useSpacedRepetition(deckId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [shuffledCards, setShuffledCards] = useState(flashcards);
   const [isShuffled, setIsShuffled] = useState(false);
+  const [reviewStartTime, setReviewStartTime] = useState(Date.now());
+  const [nextReviewInfo, setNextReviewInfo] = useState<string | null>(null);
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     wrong: 0,
@@ -67,29 +70,37 @@ export default function StudyScreen() {
     setIsShuffled(false);
   };
 
-  const handleAnswer = async (isCorrect: boolean) => {
+  const handleQualityRating = async (quality: QualityRating) => {
     if (!currentCard) return;
+
+    const timeSpent = Math.floor((Date.now() - reviewStartTime) / 1000);
+
+    // Submit spaced repetition review
+    await submitReview(currentCard.card_id, quality, timeSpent);
+
+    // Update legacy progress (for backward compatibility)
+    await updateProgress({
+      card_id: currentCard.card_id,
+      deck_id: deckId,
+      is_correct: quality >= QualityRating.CORRECT_DIFFICULT,
+    });
 
     // Update session stats
     setSessionStats((prev) => ({
       ...prev,
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      wrong: prev.wrong + (isCorrect ? 0 : 1),
+      correct:
+        prev.correct + (quality >= QualityRating.CORRECT_DIFFICULT ? 1 : 0),
+      wrong: prev.wrong + (quality < QualityRating.CORRECT_DIFFICULT ? 1 : 0),
     }));
-
-    await updateProgress({
-      card_id: currentCard.card_id,
-      deck_id: deckId,
-      is_correct: isCorrect,
-    });
 
     setShowResult(false);
     setIsFlipped(false);
+    setNextReviewInfo(null);
 
     if (currentIndex < shuffledCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
+      setReviewStartTime(Date.now());
     } else {
-      // Study session complete
       router.back();
     }
   };
@@ -98,6 +109,7 @@ export default function StudyScreen() {
     setIsFlipped(flipped);
     if (flipped) {
       setShowResult(true);
+      setReviewStartTime(Date.now());
     }
   };
 
@@ -191,22 +203,49 @@ export default function StudyScreen() {
         )}
 
         {showResult && isFlipped && (
-          <View style={styles.answerButtons}>
-            <TouchableOpacity
-              style={[styles.answerButton, styles.wrongButton]}
-              onPress={() => handleAnswer(false)}
-            >
-              <Text style={styles.answerButtonIcon}>❌</Text>
-              <Text style={styles.answerButtonText}>Hard</Text>
-            </TouchableOpacity>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.ratingTitle}>How well did you know this?</Text>
+            <View style={styles.ratingButtons}>
+              <TouchableOpacity
+                style={[styles.ratingButton, styles.againButton]}
+                onPress={() => handleQualityRating(QualityRating.INCORRECT)}
+              >
+                <Text style={styles.ratingButtonIcon}>❌</Text>
+                <Text style={styles.ratingButtonText}>Again</Text>
+                <Text style={styles.ratingButtonSubtext}>{"<1m"}</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.answerButton, styles.correctButton]}
-              onPress={() => handleAnswer(true)}
-            >
-              <Text style={styles.answerButtonIcon}>✅</Text>
-              <Text style={styles.answerButtonText}>Easy</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.ratingButton, styles.hardButton]}
+                onPress={() =>
+                  handleQualityRating(QualityRating.CORRECT_DIFFICULT)
+                }
+              >
+                <Text style={styles.ratingButtonIcon}>😓</Text>
+                <Text style={styles.ratingButtonText}>Hard</Text>
+                <Text style={styles.ratingButtonSubtext}>1d</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.ratingButton, styles.goodButton]}
+                onPress={() =>
+                  handleQualityRating(QualityRating.CORRECT_HESITATION)
+                }
+              >
+                <Text style={styles.ratingButtonIcon}>👍</Text>
+                <Text style={styles.ratingButtonText}>Good</Text>
+                <Text style={styles.ratingButtonSubtext}>3d</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.ratingButton, styles.easyButton]}
+                onPress={() => handleQualityRating(QualityRating.PERFECT)}
+              >
+                <Text style={styles.ratingButtonIcon}>✨</Text>
+                <Text style={styles.ratingButtonText}>Easy</Text>
+                <Text style={styles.ratingButtonSubtext}>6d</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
@@ -364,6 +403,61 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  ratingContainer: {
+    marginTop: 24,
+  },
+  ratingTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1f2937",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  ratingButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  ratingButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 80,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  againButton: {
+    backgroundColor: "#ef4444",
+  },
+  hardButton: {
+    backgroundColor: "#f59e0b",
+  },
+  goodButton: {
+    backgroundColor: "#3b82f6",
+  },
+  easyButton: {
+    backgroundColor: "#10b981",
+  },
+  ratingButtonIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  ratingButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  ratingButtonSubtext: {
+    color: "#fff",
+    fontSize: 11,
+    opacity: 0.9,
   },
   loadingText: {
     fontSize: 16,

@@ -53,6 +53,11 @@ export default function InsightsScreen() {
     setSelectedPattern(null);
   };
 
+  const handlePatternReviewed = () => {
+    // Refresh the patterns list after marking as reviewed
+    refresh();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -195,6 +200,7 @@ export default function InsightsScreen() {
         visible={showRemediationModal}
         pattern={selectedPattern}
         onClose={handleCloseRemediation}
+        onReviewed={handlePatternReviewed}
       />
     </SafeAreaView>
   );

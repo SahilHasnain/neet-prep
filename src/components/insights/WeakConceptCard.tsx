@@ -72,13 +72,6 @@ export function WeakConceptCard({
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      {/* Rank Badge */}
-      {rank && (
-        <View style={[styles.rankBadge, { backgroundColor: subjectColor }]}>
-          <Text style={styles.rankText}>#{rank}</Text>
-        </View>
-      )}
-
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -151,25 +144,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    position: "relative",
-  },
-  rankBadge: {
-    position: "absolute",
-    top: -8,
-    right: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  rankText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
   },
   header: {
     flexDirection: "row",

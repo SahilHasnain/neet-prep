@@ -3,6 +3,7 @@
  * Shows AI-generated remediation content for weak concepts
  */
 
+import { MistakeTrackingService } from "@/src/services/mistake-tracking.service";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { RemediationService } from "../../services/remediation.service";
 import type {
   MistakePattern,
@@ -26,22 +28,34 @@ interface RemediationModalProps {
   visible: boolean;
   pattern: MistakePattern | null;
   onClose: () => void;
+  onReviewed?: () => void; // Callback to refresh the patterns list
 }
 
 export function RemediationModal({
   visible,
   pattern,
   onClose,
+  onReviewed,
 }: RemediationModalProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<RemediationContent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     if (visible && pattern) {
       loadRemediation();
+      // Reset state when opening modal with new pattern
+      setUserAnswers({});
+      setSelectedQuestion(null);
+    } else if (!visible) {
+      // Reset state when closing modal
+      setUserAnswers({});
+      setSelectedQuestion(null);
+      setContent(null);
+      setError(null);
     }
   }, [visible, pattern]);
 
@@ -93,6 +107,30 @@ export function RemediationModal({
     }
   };
 
+  const handleMarkAsReviewed = async () => {
+    if (!pattern) return;
+
+    setMarking(true);
+    try {
+      // Mark the pattern as reviewed (reduces mistake count by 1)
+      await MistakeTrackingService.markPatternAsReviewed(pattern.pattern_id);
+
+      // Call the callback to refresh the patterns list
+      if (onReviewed) {
+        onReviewed();
+      }
+
+      // Close the modal
+      onClose();
+    } catch (error) {
+      console.error("Error marking as reviewed:", error);
+      // Still close the modal even if there's an error
+      onClose();
+    } finally {
+      setMarking(false);
+    }
+  };
+
   const handleAnswerSelect = (questionIndex: number, answer: string) => {
     setUserAnswers({ ...userAnswers, [questionIndex]: answer });
   };
@@ -122,7 +160,7 @@ export function RemediationModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
+      <SafeAreaView style={styles.overlay} edges={["bottom"]}>
         <View style={styles.container}>
           {/* Header */}
           <View style={[styles.header, { backgroundColor: subjectColor }]}>
@@ -286,16 +324,29 @@ export function RemediationModal({
           {content && (
             <View style={styles.footer}>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: subjectColor }]}
-                onPress={onClose}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: subjectColor },
+                  marking && styles.actionButtonDisabled,
+                ]}
+                onPress={handleMarkAsReviewed}
+                disabled={marking}
               >
-                <Ionicons name="checkmark" size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>Mark as Reviewed</Text>
+                {marking ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark" size={20} color="#fff" />
+                    <Text style={styles.actionButtonText}>
+                      Mark as Reviewed
+                    </Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           )}
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
@@ -310,8 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: "90%",
-    overflow: "hidden",
+    height: "90%",
   },
   header: {
     flexDirection: "row",
@@ -492,5 +542,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  actionButtonDisabled: {
+    opacity: 0.6,
   },
 });

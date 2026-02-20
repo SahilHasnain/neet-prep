@@ -220,4 +220,36 @@ export class MistakeTrackingService {
       throw error;
     }
   }
+
+  /**
+   * Mark a mistake pattern as reviewed
+   * Reduces mistake count by 1 (minimum 0)
+   */
+  static async markPatternAsReviewed(patternId: string): Promise<void> {
+    try {
+      const pattern = await databases.getDocument(
+        DATABASE_ID,
+        MISTAKE_PATTERNS_COLLECTION,
+        patternId,
+      );
+
+      const newMistakeCount = Math.max(0, pattern.mistake_count - 1);
+
+      await databases.updateDocument(
+        DATABASE_ID,
+        MISTAKE_PATTERNS_COLLECTION,
+        patternId,
+        {
+          mistake_count: newMistakeCount,
+        },
+      );
+
+      console.log(
+        `Pattern ${patternId} reviewed. Mistake count: ${pattern.mistake_count} -> ${newMistakeCount}`,
+      );
+    } catch (error) {
+      console.error("Error marking pattern as reviewed:", error);
+      throw error;
+    }
+  }
 }
