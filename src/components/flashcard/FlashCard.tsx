@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   backContent: {
     flexGrow: 1,
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 60,
     paddingHorizontal: 8,
   },
