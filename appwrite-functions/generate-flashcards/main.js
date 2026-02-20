@@ -384,6 +384,60 @@ Return ONLY a JSON object in this exact format:
 }
 
 /**
+ * Handle remediation content generation
+ */
+async function handleRemediation(body, res, log, error) {
+  try {
+    const { concept_id, concept_name, subject, topic, mistake_count } = body;
+
+    if (!concept_id || !concept_name || !subject || !topic) {
+      return res.json(
+        {
+          success: false,
+          error:
+            "Missing required fields: concept_id, concept_name, subject, topic",
+        },
+        400,
+      );
+    }
+
+    log(`Generating remediation for concept: ${concept_name} (${subject})`);
+
+    const groq = new Groq({ apiKey: GROQ_API_KEY });
+
+    const remediationContent = await generateRemediationWithGroq(
+      groq,
+      concept_name,
+      subject,
+      topic,
+      mistake_count || 1,
+      log,
+    );
+
+    log(`Successfully generated remediation for ${concept_name}`);
+
+    return res.json({
+      success: true,
+      data: {
+        concept_id,
+        ...remediationContent,
+        generated_at: new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    error(`Error generating remediation: ${err.message}`);
+    return res.json(
+      {
+        success: false,
+        error: "Failed to generate remediation",
+        message: err.message,
+      },
+      500,
+    );
+  }
+}
+
+/**
  * Handle quiz question generation
  */
 async function handleQuizQuestions(body, res, log, error) {
