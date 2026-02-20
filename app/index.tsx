@@ -1,3 +1,6 @@
+import { ReviewCalendar } from "@/src/components/flashcard/ReviewCalendar";
+import { ReviewSession } from "@/src/components/flashcard/ReviewSession";
+import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
 import { getOrCreateUserId } from "@/src/utils/user-id";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -26,9 +29,6 @@ import {
   getSubjectIconFamily,
   getSubjectIconName,
 } from "../src/utils/neet-helpers";
-import { ReviewSession } from "@/src/components/flashcard/ReviewSession";
-import { ReviewCalendar } from "@/src/components/flashcard/ReviewCalendar";
-import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
 
 // Dev flag to test empty state - set to true to force empty state
 const FORCE_EMPTY_STATE = false;
@@ -37,7 +37,12 @@ export default function Index() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const { decks, loading, error, createDeck, refresh } = useDecks(userId || "");
-  const { dueCount, stats, loading: reviewLoading } = useSpacedRepetition();
+  const {
+    dueCount,
+    stats,
+    loading: reviewLoading,
+    refresh: refreshReviews,
+  } = useSpacedRepetition();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
@@ -52,12 +57,14 @@ export default function Index() {
     getOrCreateUserId().then(setUserId);
   }, []);
 
-  // Refresh decks when screen comes into focus
+  // Refresh decks and reviews when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (userId) {
         refresh();
+        refreshReviews();
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, refresh]),
   );
 
@@ -183,21 +190,23 @@ export default function Index() {
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.templatesButton}
-          onPress={() => router.push("/templates/" as any)}
-        >
-          <Ionicons name="albums" size={20} color="#3b82f6" />
-          <Text style={styles.templatesButtonText}>Browse Templates</Text>
-        </TouchableOpacity>
+        <View style={styles.quickActions}>
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            onPress={() => router.push("/templates/" as any)}
+          >
+            <Ionicons name="albums" size={16} color="#3b82f6" />
+            <Text style={styles.quickActionText}>Templates</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.insightsButton}
-          onPress={() => router.push("/insights/" as any)}
-        >
-          <Ionicons name="analytics" size={20} color="#10b981" />
-          <Text style={styles.insightsButtonText}>Learning Insights</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.quickActionButton}
+            onPress={() => router.push("/insights/" as any)}
+          >
+            <Ionicons name="analytics" size={16} color="#10b981" />
+            <Text style={styles.quickActionText}>Insights</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {displayDecks.length > 0 && (
@@ -205,7 +214,7 @@ export default function Index() {
           <View style={styles.searchBar}>
             <Ionicons
               name="search"
-              size={20}
+              size={18}
               color="#6b7280"
               style={styles.searchIcon}
             />
@@ -220,7 +229,7 @@ export default function Index() {
               <TouchableOpacity onPress={() => setSearchQuery("")}>
                 <Ionicons
                   name="close"
-                  size={20}
+                  size={18}
                   color="#9ca3af"
                   style={styles.clearIcon}
                 />
@@ -487,28 +496,49 @@ const styles = StyleSheet.create({
   },
   heroHeader: {
     backgroundColor: "#3b82f6",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   heroContent: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 2,
+    marginBottom: 1,
   },
   heroSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: "rgba(255, 255, 255, 0.9)",
     fontWeight: "500",
+  },
+  quickActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
+  },
+  quickActionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#fff",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  quickActionText: {
+    color: "#1f2937",
+    fontSize: 13,
+    fontWeight: "600",
   },
   templatesButton: {
     flexDirection: "row",
@@ -547,52 +577,53 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: 10,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingVertical: 6,
+    marginTop: 6,
   },
   statItem: {
     alignItems: "center",
     flex: 1,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: "rgba(255, 255, 255, 0.85)",
     marginTop: 1,
   },
   statDivider: {
     width: 1,
-    height: 30,
+    height: 24,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   searchContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     backgroundColor: "#fff",
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f3f4f6",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 38,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: "#1f2937",
     padding: 0,
   },
   clearIcon: {
-    padding: 4,
+    padding: 2,
   },
   loadingText: { fontSize: 16, color: "#666" },
   errorContainer: {

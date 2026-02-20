@@ -1,9 +1,10 @@
+import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
+import { QualityRating } from "@/src/types/flashcard.types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashCard } from "../../src/components/flashcard/FlashCard";
-import { ProgressBar } from "../../src/components/flashcard/ProgressBar";
 import { Button } from "../../src/components/ui/Button";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { useProgress } from "../../src/hooks/useProgress";
@@ -35,7 +36,6 @@ export default function StudyScreen() {
   });
 
   const currentCard = shuffledCards[currentIndex];
-  const stats = getMasteryStats(shuffledCards.length);
   const progress = ((currentIndex + 1) / shuffledCards.length) * 100;
 
   // Initialize user ID on mount
@@ -74,16 +74,12 @@ export default function StudyScreen() {
     if (!currentCard) return;
 
     const timeSpent = Math.floor((Date.now() - reviewStartTime) / 1000);
+    const cardToReview = currentCard.card_id;
 
-    // Submit spaced repetition review
-    await submitReview(currentCard.card_id, quality, timeSpent);
-
-    // Update legacy progress (for backward compatibility)
-    await updateProgress({
-      card_id: currentCard.card_id,
-      deck_id: deckId,
-      is_correct: quality >= QualityRating.CORRECT_DIFFICULT,
-    });
+    // Update UI immediately - move to next card
+    setShowResult(false);
+    setIsFlipped(false);
+    setNextReviewInfo(null);
 
     // Update session stats
     setSessionStats((prev) => ({
@@ -93,16 +89,25 @@ export default function StudyScreen() {
       wrong: prev.wrong + (quality < QualityRating.CORRECT_DIFFICULT ? 1 : 0),
     }));
 
-    setShowResult(false);
-    setIsFlipped(false);
-    setNextReviewInfo(null);
-
     if (currentIndex < shuffledCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setReviewStartTime(Date.now());
     } else {
       router.back();
     }
+
+    // Process API calls in background (fire and forget)
+    Promise.all([
+      submitReview(cardToReview, quality, timeSpent),
+      updateProgress({
+        card_id: cardToReview,
+        deck_id: deckId,
+        is_correct: quality >= QualityRating.CORRECT_DIFFICULT,
+      }),
+    ]).catch((error) => {
+      console.error("Background review submission failed:", error);
+      // Silently fail - user already moved on
+    });
   };
 
   const handleFlip = (flipped: boolean) => {
@@ -175,13 +180,6 @@ export default function StudyScreen() {
       </View>
 
       <View style={styles.content}>
-        <ProgressBar
-          mastered={stats.mastered}
-          learning={stats.learning}
-          newCards={stats.new}
-          total={shuffledCards.length}
-        />
-
         <View style={styles.cardContainer}>
           {currentCard && (
             <FlashCard

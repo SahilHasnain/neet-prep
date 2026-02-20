@@ -52,14 +52,6 @@ async function fixPermissions() {
     await databases.createStringAttribute(
       DATABASE_ID,
       CARD_REVIEWS_COLLECTION,
-      "review_id",
-      36,
-      true,
-    );
-
-    await databases.createStringAttribute(
-      DATABASE_ID,
-      CARD_REVIEWS_COLLECTION,
       "card_id",
       36,
       true,
@@ -78,8 +70,6 @@ async function fixPermissions() {
       CARD_REVIEWS_COLLECTION,
       "ease_factor",
       true,
-      undefined,
-      2.5,
     );
 
     await databases.createIntegerAttribute(
@@ -87,8 +77,8 @@ async function fixPermissions() {
       CARD_REVIEWS_COLLECTION,
       "interval",
       true,
-      undefined,
       0,
+      365,
     );
 
     await databases.createIntegerAttribute(
@@ -96,8 +86,8 @@ async function fixPermissions() {
       CARD_REVIEWS_COLLECTION,
       "repetitions",
       true,
-      undefined,
       0,
+      1000,
     );
 
     await databases.createDatetimeAttribute(

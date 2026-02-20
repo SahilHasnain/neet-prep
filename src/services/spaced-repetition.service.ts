@@ -94,10 +94,11 @@ export const getOrCreateCardReview = async (
 
     // Create new review record
     const now = new Date().toISOString();
+    const docId = ID.unique();
     const newReview = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.CARD_REVIEWS,
-      ID.unique(),
+      docId,
       {
         card_id: cardId,
         user_id: userId,
@@ -130,10 +131,13 @@ export const recordReview = async (
     const currentReview = await getOrCreateCardReview(cardId, userId);
     const calculation = calculateNextReview(currentReview, quality);
 
+    // Use $id from Appwrite document
+    const documentId = (currentReview as any).$id || currentReview.review_id;
+
     const updatedReview = await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.CARD_REVIEWS,
-      currentReview.review_id,
+      documentId,
       {
         ease_factor: calculation.ease_factor,
         interval: calculation.interval,

@@ -4,7 +4,7 @@
  */
 
 import * as dotenv from "dotenv";
-import { Client, Databases, Query } from "node-appwrite";
+import { Client, Databases, ID, Query } from "node-appwrite";
 
 dotenv.config({ path: ".env.local" });
 
@@ -43,14 +43,6 @@ async function setupCardReviewsCollection() {
     await databases.createStringAttribute(
       DATABASE_ID,
       CARD_REVIEWS_COLLECTION,
-      "review_id",
-      36,
-      true,
-    );
-
-    await databases.createStringAttribute(
-      DATABASE_ID,
-      CARD_REVIEWS_COLLECTION,
       "card_id",
       36,
       true,
@@ -69,8 +61,6 @@ async function setupCardReviewsCollection() {
       CARD_REVIEWS_COLLECTION,
       "ease_factor",
       true,
-      undefined,
-      2.5,
     );
 
     await databases.createIntegerAttribute(
@@ -78,8 +68,8 @@ async function setupCardReviewsCollection() {
       CARD_REVIEWS_COLLECTION,
       "interval",
       true,
-      undefined,
       0,
+      365,
     );
 
     await databases.createIntegerAttribute(
@@ -87,8 +77,8 @@ async function setupCardReviewsCollection() {
       CARD_REVIEWS_COLLECTION,
       "repetitions",
       true,
-      undefined,
       0,
+      1000,
     );
 
     await databases.createDatetimeAttribute(
@@ -190,12 +180,12 @@ async function initializeExistingCards() {
 
         if (existing.documents.length === 0) {
           // Create initial review record
+          const docId = ID.unique();
           await databases.createDocument(
             DATABASE_ID,
             CARD_REVIEWS_COLLECTION,
-            `review_${card.card_id}`,
+            docId,
             {
-              review_id: `review_${card.card_id}`,
               card_id: card.card_id,
               user_id: card.user_id || "anonymous",
               ease_factor: 2.5,
