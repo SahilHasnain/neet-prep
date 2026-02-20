@@ -26,6 +26,9 @@ import {
   getSubjectIconFamily,
   getSubjectIconName,
 } from "../src/utils/neet-helpers";
+import { ReviewSession } from "@/src/components/flashcard/ReviewSession";
+import { ReviewCalendar } from "@/src/components/flashcard/ReviewCalendar";
+import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
 
 // Dev flag to test empty state - set to true to force empty state
 const FORCE_EMPTY_STATE = false;
@@ -34,6 +37,7 @@ export default function Index() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const { decks, loading, error, createDeck, refresh } = useDecks(userId || "");
+  const { dueCount, stats, loading: reviewLoading } = useSpacedRepetition();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
@@ -284,6 +288,10 @@ export default function Index() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
+          {dueCount > 0 && <ReviewSession dueCount={dueCount} />}
+
+          {stats && <ReviewCalendar stats={stats} />}
+
           {Object.entries(decksBySubject).map(([subject, subjectDecks]) => {
             const { Component: IconComponent, name: iconName } =
               getSubjectIconComponent(subject);

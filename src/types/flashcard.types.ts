@@ -329,3 +329,61 @@ export interface GenerateQuizQuestionsDTO {
   quiz_type: "mcq" | "true_false" | "fill_blank";
   question_count: number;
 }
+
+// Spaced Repetition Types
+export enum ReviewStatus {
+  NEW = "new",
+  LEARNING = "learning",
+  REVIEW = "review",
+  MASTERED = "mastered",
+}
+
+export enum QualityRating {
+  BLACKOUT = 0,
+  INCORRECT = 1,
+  INCORRECT_EASY = 2,
+  CORRECT_DIFFICULT = 3,
+  CORRECT_HESITATION = 4,
+  PERFECT = 5,
+}
+
+export interface CardReview {
+  review_id: string;
+  card_id: string;
+  user_id: string;
+  ease_factor: number; // Default: 2.5
+  interval: number; // Days until next review
+  repetitions: number; // Number of successful reviews
+  next_review_date: string; // ISO datetime
+  last_review_date?: string; // ISO datetime
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewSessionStats {
+  total_due: number;
+  reviewed_today: number;
+  new_cards: number;
+  learning_cards: number;
+  review_cards: number;
+  mastered_cards: number;
+  streak_days: number;
+  forecast: {
+    tomorrow: number;
+    next_week: number;
+  };
+}
+
+export interface RecordReviewDTO {
+  card_id: string;
+  quality: QualityRating;
+  time_spent: number; // seconds
+}
+
+export interface ReviewCalculationResult {
+  ease_factor: number;
+  interval: number;
+  repetitions: number;
+  next_review_date: string;
+  review_status: ReviewStatus;
+}

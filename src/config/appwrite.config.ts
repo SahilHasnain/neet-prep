@@ -20,6 +20,7 @@ export const COLLECTIONS = {
   FLASHCARD_LABELS: "flashcard_labels",
   MISTAKE_PATTERNS: "mistake_patterns",
   QUIZ_ATTEMPTS: "quiz_attempts",
+  CARD_REVIEWS: "card_reviews",
 } as const;
 
 // Storage Buckets
