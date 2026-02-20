@@ -81,6 +81,17 @@ export class MistakeTrackingService {
         const subject = parts[0] || "general";
         const topic = parts[1] || "general";
 
+        // Validate required fields
+        if (!userId || !subject || !topic) {
+          console.error("Missing required fields for mistake pattern:", {
+            userId,
+            subject,
+            topic,
+            concept_id: wrong.concept_id,
+          });
+          continue; // Skip this entry
+        }
+
         // Check if pattern exists
         const existing = await databases.listDocuments(
           DATABASE_ID,
@@ -111,20 +122,24 @@ export class MistakeTrackingService {
             },
           );
         } else {
-          // Create new pattern
+          // Create new pattern with all required fields
+          const newPattern = {
+            user_id: userId,
+            subject: subject,
+            topic: topic,
+            concept_id: wrong.concept_id,
+            mistake_count: 1,
+            last_occurrence: new Date().toISOString(),
+            related_questions: JSON.stringify([wrong.question_id]),
+          };
+
+          console.log("Creating new mistake pattern:", newPattern);
+
           await databases.createDocument(
             DATABASE_ID,
             MISTAKE_PATTERNS_COLLECTION,
             ID.unique(),
-            {
-              user_id: userId,
-              subject,
-              topic,
-              concept_id: wrong.concept_id,
-              mistake_count: 1,
-              last_occurrence: new Date().toISOString(),
-              related_questions: JSON.stringify([wrong.question_id]),
-            },
+            newPattern,
           );
         }
       }

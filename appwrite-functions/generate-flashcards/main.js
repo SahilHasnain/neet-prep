@@ -486,7 +486,17 @@ async function generateQuizQuestionsWithGroq(
   log("Parsing GROQ quiz questions response...");
 
   const parsed = JSON.parse(responseText);
-  return parsed.questions || [];
+  const questions = parsed.questions || [];
+
+  // Add question_id and type to each question
+  return questions.map((q, index) => ({
+    question_id: `q_${q.card_id || index}_${Date.now()}_${index}`,
+    card_id: q.card_id || cards[index]?.card_id || `card_${index}`,
+    type: quizType,
+    question: q.question,
+    options: q.options || undefined,
+    correct_answer: q.correct_answer,
+  }));
 }
 
 /**
