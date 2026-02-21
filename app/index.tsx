@@ -39,6 +39,7 @@ export default function Index() {
   const { decks, loading, error, createDeck, refresh } = useDecks(userId || "");
   const {
     dueCount,
+    dueCardIds,
     stats,
     loading: reviewLoading,
     refresh: refreshReviews,
@@ -51,6 +52,9 @@ export default function Index() {
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [firstDeckWithDueCards, setFirstDeckWithDueCards] = useState<
+    string | undefined
+  >();
 
   // Initialize user ID on mount
   useEffect(() => {
@@ -99,6 +103,42 @@ export default function Index() {
     (sum, deck) => sum + deck.card_count,
     0,
   );
+
+  // Find first deck with due cards - memoize to prevent infinite loops
+  useEffect(() => {
+    const findDeckWithDueCards = async () => {
+      if (dueCardIds.length > 0 && decks.length > 0) {
+        try {
+          // Try to find which deck the first due card belongs to
+          const { FlashcardService } =
+            await import("../src/services/flashcard.service");
+
+          // Check each deck to find one with due cards
+          for (const deck of decks) {
+            const cards = await FlashcardService.listDeckCards(deck.deck_id);
+            const hasDueCard = cards.some((card) =>
+              dueCardIds.includes(card.card_id),
+            );
+
+            if (hasDueCard) {
+              setFirstDeckWithDueCards(deck.deck_id);
+              return;
+            }
+          }
+
+          // Fallback: use first deck with cards
+          const deckWithCards = decks.find((deck) => deck.card_count > 0);
+          setFirstDeckWithDueCards(deckWithCards?.deck_id);
+        } catch (error) {
+          console.error("Error finding deck with due cards:", error);
+          // Fallback: use first deck with cards
+          const deckWithCards = decks.find((deck) => deck.card_count > 0);
+          setFirstDeckWithDueCards(deckWithCards?.deck_id);
+        }
+      }
+    };
+    findDeckWithDueCards();
+  }, [dueCardIds, decks]);
 
   const handleCreateDeck = async () => {
     if (!newDeckTitle.trim()) {
@@ -297,7 +337,9 @@ export default function Index() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.listContent}>
-          {dueCount > 0 && <ReviewSession dueCount={dueCount} />}
+          {dueCount > 0 && (
+            <ReviewSession dueCount={dueCount} deckId={firstDeckWithDueCards} />
+          )}
 
           {stats && <ReviewCalendar stats={stats} />}
 

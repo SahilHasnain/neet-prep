@@ -147,19 +147,20 @@ export function FlashCard({
           style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}
           pointerEvents={isFlipped ? "auto" : "none"}
         >
-          <ScrollView
-            contentContainerStyle={styles.backContent}
-            showsVerticalScrollIndicator={false}
-            bounces={true}
-          >
-            <Text style={styles.text}>{back}</Text>
-          </ScrollView>
           <TouchableOpacity
-            style={styles.flipBackButton}
+            style={StyleSheet.absoluteFill}
             onPress={handleFlip}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
-            <Text style={styles.hint}>Tap to flip back</Text>
+            <View style={styles.backContentWrapper} pointerEvents="box-none">
+              <ScrollView
+                contentContainerStyle={styles.backContent}
+                showsVerticalScrollIndicator={false}
+                bounces={true}
+              >
+                <Text style={styles.text}>{back}</Text>
+              </ScrollView>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -202,8 +203,11 @@ const styles = StyleSheet.create({
   backContent: {
     flexGrow: 1,
     paddingTop: 10,
-    paddingBottom: 60,
+    paddingBottom: 10,
     paddingHorizontal: 8,
+  },
+  backContentWrapper: {
+    flex: 1,
   },
   text: {
     fontSize: 22,

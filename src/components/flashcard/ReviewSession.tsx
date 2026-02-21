@@ -33,7 +33,13 @@ export const ReviewSession = ({
 
   const handleStartReview = () => {
     if (deckId) {
-      router.push(`/study/${deckId}`);
+      router.push(`/study/${deckId}?reviewMode=true`);
+    } else {
+      // If no specific deck, this means we couldn't find which deck has the due cards
+      // This is an edge case that shouldn't normally happen
+      console.warn(
+        "No deckId provided for review session - unable to start review",
+      );
     }
   };
 

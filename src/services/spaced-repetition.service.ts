@@ -16,6 +16,7 @@ import { databases } from "./appwrite";
 
 const MIN_EASE_FACTOR = 1.3;
 const DEFAULT_EASE_FACTOR = 2.5;
+const MAX_INTERVAL = 365; // Maximum interval in days
 
 /**
  * Calculate next review using SM-2 algorithm
@@ -47,6 +48,9 @@ export const calculateNextReview = (
     }
     repetitions += 1;
   }
+
+  // Cap interval at maximum allowed value
+  interval = Math.min(interval, MAX_INTERVAL);
 
   // Calculate next review date
   const next_review_date = new Date();

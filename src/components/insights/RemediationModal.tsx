@@ -162,18 +162,20 @@ export function RemediationModal({
     <Modal visible={visible} animationType="slide" transparent>
       <SafeAreaView style={styles.overlay} edges={["bottom"]}>
         <View style={styles.container}>
-          {/* Header */}
+          {/* Compact Header */}
           <View style={[styles.header, { backgroundColor: subjectColor }]}>
             <View style={styles.headerContent}>
-              <Text style={styles.headerTitle}>{conceptName}</Text>
-              <Text style={styles.headerSubtitle}>
+              <Text style={styles.headerTitle} numberOfLines={1}>
+                {conceptName}
+              </Text>
+              <Text style={styles.headerSubtitle} numberOfLines={1}>
                 {pattern.subject.charAt(0).toUpperCase() +
                   pattern.subject.slice(1)}{" "}
                 • {pattern.topic.replace(/_/g, " ")}
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={28} color="#fff" />
+              <Ionicons name="close" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
 
@@ -367,19 +369,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   headerContent: {
     flex: 1,
+    marginRight: 8,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: "rgba(255, 255, 255, 0.9)",
     textTransform: "capitalize",
   },
@@ -422,7 +426,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   section: {
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
   },
@@ -433,10 +437,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
     color: "#1f2937",
   },
@@ -446,18 +450,18 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   misconceptionText: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#dc2626",
-    lineHeight: 22,
+    lineHeight: 24,
   },
   questionCard: {
     backgroundColor: "#f9fafb",
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    padding: 14,
+    marginBottom: 12,
   },
   questionNumber: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
     color: "#6b7280",
     marginBottom: 8,
@@ -467,7 +471,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#1f2937",
-    marginBottom: 12,
+    marginBottom: 10,
     lineHeight: 22,
   },
   optionButton: {
@@ -475,9 +479,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 6,
     borderWidth: 2,
     borderColor: "#e5e7eb",
   },
@@ -497,6 +501,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#374151",
     flex: 1,
+    lineHeight: 20,
   },
   optionTextSelected: {
     fontWeight: "600",
@@ -521,12 +526,12 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     color: "#374151",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   footer: {
-    padding: 16,
+    padding: 12,
     borderTopWidth: 1,
     borderTopColor: "#e5e7eb",
   },
@@ -535,7 +540,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: 12,
   },
   actionButtonText: {
