@@ -1,3 +1,4 @@
+import { DoubtModal } from "@/src/components/doubt/DoubtModal";
 import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
 import { QualityRating } from "@/src/types/flashcard.types";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,6 +30,7 @@ export default function StudyScreen() {
   const [isShuffled, setIsShuffled] = useState(false);
   const [reviewStartTime, setReviewStartTime] = useState(Date.now());
   const [nextReviewInfo, setNextReviewInfo] = useState<string | null>(null);
+  const [doubtModalVisible, setDoubtModalVisible] = useState(false);
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     wrong: 0,
@@ -140,6 +142,19 @@ export default function StudyScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <DoubtModal
+        visible={doubtModalVisible}
+        onClose={() => setDoubtModalVisible(false)}
+        context={
+          currentCard
+            ? isFlipped
+              ? currentCard.back_content
+              : currentCard.front_content
+            : undefined
+        }
+        cardId={currentCard?.card_id}
+        deckId={deckId}
+      />
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity
@@ -159,14 +174,23 @@ export default function StudyScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            onPress={isShuffled ? resetOrder : shuffleCards}
-            style={styles.shuffleButton}
-          >
-            <Text style={styles.shuffleButtonText}>
-              {isShuffled ? "🔄" : "🔀"}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              onPress={() => setDoubtModalVisible(true)}
+              style={styles.doubtButton}
+            >
+              <Text style={styles.doubtButtonText}>❓</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={isShuffled ? resetOrder : shuffleCards}
+              style={styles.shuffleButton}
+            >
+              <Text style={styles.shuffleButtonText}>
+                {isShuffled ? "🔄" : "🔀"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.progressContainer}>
@@ -472,5 +496,25 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     textAlign: "center",
     marginBottom: 24,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  doubtButton: {
+    backgroundColor: "#f59e0b",
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#f59e0b",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  doubtButtonText: {
+    fontSize: 20,
   },
 });

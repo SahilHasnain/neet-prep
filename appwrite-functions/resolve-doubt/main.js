@@ -99,7 +99,7 @@ async function generateExplanation(groq, doubtText, context, log) {
       {
         role: "system",
         content:
-          "You are an expert tutor who explains concepts clearly and simply. Break down complex topics into easy-to-understand explanations with practical examples. Always respond with valid JSON only.",
+          "You are a friendly NEET exam tutor who explains concepts in Hinglish (mix of Hindi and English) using simple, student-friendly language. Use common Hindi words naturally mixed with English technical terms. Be conversational and encouraging like a helpful senior student. Always respond with valid JSON only.",
       },
       {
         role: "user",
@@ -127,25 +127,40 @@ async function generateExplanation(groq, doubtText, context, log) {
 }
 
 function buildExplanationPrompt(doubtText, context) {
-  return `A student has the following doubt: "${doubtText}"
+  return `Ek NEET student ka doubt hai: "${doubtText}"
 
 ${context ? `Context: ${context}` : ""}
 
-Provide a clear, comprehensive explanation that:
-1. Directly answers the doubt in simple terms (2-3 sentences)
-2. Provides 2-3 practical examples to illustrate the concept
-3. Lists 2-3 related concepts the student should understand
+Explanation Hinglish mein do (Hindi + English mix), jaise ek friendly senior student samjhata hai:
+
+Requirements:
+1. Answer simple aur clear ho, Hinglish mein (2-3 sentences)
+   - Common Hindi words naturally use karo: "samajh", "matlab", "basically", "hota hai", "kyunki", etc.
+   - Technical terms English mein rakho: "mitochondria", "ATP", "photosynthesis"
+   - Conversational tone rakho: "Dekho yaar", "Basically", "Samjho aise"
+
+2. 2-3 practical examples do jo relatable ho
+   - Real-life se connect karo
+   - Simple language mein
+   - "Jaise ki..." ya "Example ke liye..." se start karo
+
+3. 2-3 related concepts batao jo isse connected hai
+   - Short aur clear names
+   - Jo NEET ke liye important hai
 
 Return ONLY a JSON object in this format:
 {
-  "answer": "Clear, simple explanation here",
+  "answer": "Hinglish mein clear explanation yaha",
   "examples": [
-    "Example 1: Practical illustration",
+    "Example 1: Practical illustration Hinglish mein",
     "Example 2: Another example"
   ],
   "related_concepts": [
     "Related concept 1",
     "Related concept 2"
   ]
-}`;
+}
+
+Example response style:
+"Dekho, mitochondria ko powerhouse isliye kehte hai kyunki ye ATP banata hai through cellular respiration. Basically, glucose ko break karke energy release hoti hai jo cell ke saare kaam ke liye use hoti hai."`;
 }

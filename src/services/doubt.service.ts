@@ -165,4 +165,56 @@ export class DoubtService {
       return [];
     }
   }
+
+  static async getDoubtPatterns(userId: string): Promise<
+    Array<{
+      card_id: string;
+      doubt_count: number;
+      latest_doubt: string;
+      context: string;
+    }>
+  > {
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.DOUBTS,
+        [Query.equal("user_id", userId), Query.orderDesc("created_at")],
+      );
+
+      // Group by card_id and count
+      const doubtMap = new Map<
+        string,
+        { count: number; latest: string; context: string }
+      >();
+
+      response.documents.forEach((doc: any) => {
+        const cardId = doc.card_id || "general";
+        const existing = doubtMap.get(cardId);
+
+        if (existing) {
+          existing.count++;
+        } else {
+          doubtMap.set(cardId, {
+            count: 1,
+            latest: doc.doubt_text,
+            context: doc.context || "",
+          });
+        }
+      });
+
+      // Convert to array and sort by count
+      return Array.from(doubtMap.entries())
+        .map(([card_id, data]) => ({
+          card_id,
+          doubt_count: data.count,
+          latest_doubt: data.latest,
+          context: data.context,
+        }))
+        .sort((a, b) => b.doubt_count - a.doubt_count)
+        .slice(0, 10);
+    } catch (error) {
+      console.error("Error fetching doubt patterns:", error);
+      return [];
+    }
+  }
 }

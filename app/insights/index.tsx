@@ -34,6 +34,12 @@ export default function InsightsScreen() {
     selectedSubject === "all" ? undefined : selectedSubject,
   );
 
+  const {
+    patterns: doubtPatterns,
+    loading: doubtsLoading,
+    refresh: refreshDoubts,
+  } = useDoubtPatterns();
+
   const subjects: { key: SubjectFilter; label: string; icon: string }[] = [
     { key: "all", label: "All", icon: "apps" },
     { key: "biology", label: "Biology", icon: "leaf" },
@@ -70,7 +76,13 @@ export default function InsightsScreen() {
             <Ionicons name="arrow-back" size={24} color="#1f2937" />
           </TouchableOpacity>
           <Text style={styles.title}>Learning Insights</Text>
-          <TouchableOpacity onPress={refresh} style={styles.refreshButton}>
+          <TouchableOpacity
+            onPress={() => {
+              refresh();
+              refreshDoubts();
+            }}
+            style={styles.refreshButton}
+          >
             <Ionicons name="refresh" size={20} color="#3b82f6" />
           </TouchableOpacity>
         </View>
@@ -145,20 +157,43 @@ export default function InsightsScreen() {
                 </View>
                 <View style={styles.statContent}>
                   <Text style={styles.statValue}>{patterns.length}</Text>
-                  <Text style={styles.statLabel}>Tracked</Text>
+                  <Text style={styles.statLabel}>Mistakes</Text>
                 </View>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <View style={styles.statIconContainer}>
-                  <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                <View
+                  style={[
+                    styles.statIconContainer,
+                    { backgroundColor: "#fef3c7" },
+                  ]}
+                >
+                  <Ionicons name="help-circle" size={20} color="#f59e0b" />
                 </View>
                 <View style={styles.statContent}>
-                  <Text style={styles.statValue}>{topWeakConcepts.length}</Text>
-                  <Text style={styles.statLabel}>Need Focus</Text>
+                  <Text style={styles.statValue}>{doubtPatterns.length}</Text>
+                  <Text style={styles.statLabel}>Doubts</Text>
                 </View>
               </View>
             </View>
+
+            {/* Most Doubted Concepts */}
+            {doubtPatterns.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Most Doubted Concepts</Text>
+                <Text style={styles.sectionSubtitle}>
+                  Topics you frequently ask about
+                </Text>
+
+                {doubtPatterns.slice(0, 3).map((pattern, index) => (
+                  <DoubtPatternCard
+                    key={pattern.card_id}
+                    pattern={pattern}
+                    rank={index + 1}
+                  />
+                ))}
+              </View>
+            )}
 
             {/* Weak Concepts */}
             <View style={styles.section}>
