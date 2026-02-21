@@ -40,7 +40,6 @@ export function FlashCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [labels, setLabels] = useState<Label[]>([]);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-  const [doubtModalVisible, setDoubtModalVisible] = useState(false);
 
   useEffect(() => {
     if (hasImage && cardId) {
@@ -82,13 +81,6 @@ export function FlashCard({
 
   return (
     <View style={styles.container}>
-      <AskDoubtButton onPress={() => setDoubtModalVisible(true)} />
-      <DoubtModal
-        visible={doubtModalVisible}
-        onClose={() => setDoubtModalVisible(false)}
-        context={isFlipped ? back : front}
-        cardId={cardId}
-      />
       <View style={styles.card}>
         <TouchableOpacity
           onPress={handleFlip}

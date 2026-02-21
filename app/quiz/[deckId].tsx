@@ -16,6 +16,7 @@ import type {
   DiagramLabel,
   WrongAnswer,
 } from "../../src/types/flashcard.types";
+import { generateConceptId } from "@/src/utils/concept-mapper";
 
 interface QuizResult {
   label_id: string;

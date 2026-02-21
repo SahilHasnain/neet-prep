@@ -3,7 +3,10 @@
  * Creates the doubts collection in Appwrite
  */
 
+import * as dotenv from "dotenv";
 import { Client, Databases, Permission, Role } from "node-appwrite";
+
+dotenv.config({ path: ".env.local" });
 
 const client = new Client()
   .setEndpoint(process.env.APPWRITE_ENDPOINT!)
@@ -75,7 +78,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "doubt_text",
-      5000,
+      2000,
       true,
     );
     console.log("✅ doubt_text attribute created");
@@ -84,7 +87,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "context",
-      5000,
+      2000,
       false,
     );
     console.log("✅ context attribute created");
@@ -93,7 +96,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "explanation",
-      10000,
+      3000,
       true,
     );
     console.log("✅ explanation attribute created");
@@ -102,7 +105,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "examples",
-      10000,
+      2000,
       true,
     );
     console.log("✅ examples attribute created");
@@ -111,7 +114,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "related_concepts",
-      5000,
+      1000,
       true,
     );
     console.log("✅ related_concepts attribute created");
@@ -132,7 +135,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "idx_user_id",
-      "key",
+      "key" as any,
       ["user_id"],
       ["asc"],
     );
@@ -142,7 +145,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "idx_card_id",
-      "key",
+      "key" as any,
       ["card_id"],
       ["asc"],
     );
@@ -152,7 +155,7 @@ async function setupDoubtFeature() {
       DATABASE_ID,
       "doubts",
       "idx_created_at",
-      "key",
+      "key" as any,
       ["created_at"],
       ["desc"],
     );

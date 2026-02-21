@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { DoubtModal } from "../../src/components/doubt/DoubtModal";
 import { useFlashcards } from "../../src/hooks/useFlashcards";
 import { FlashcardQuizService } from "../../src/services/flashcard-quiz.service";
 import { MistakeTrackingService } from "../../src/services/mistake-tracking.service";
@@ -325,7 +326,6 @@ export default function FlashcardQuizScreen() {
   // Quiz in progress
   return (
     <SafeAreaView style={styles.container}>
-      <AskDoubtButton onPress={() => setDoubtModalVisible(true)} />
       <DoubtModal
         visible={doubtModalVisible}
         onClose={() => setDoubtModalVisible(false)}
@@ -347,7 +347,12 @@ export default function FlashcardQuizScreen() {
               ? "True/False"
               : "Fill in the Blank"}
         </Text>
-        <View style={styles.placeholder} />
+        <TouchableOpacity
+          onPress={() => setDoubtModalVisible(true)}
+          style={styles.doubtButton}
+        >
+          <Text style={styles.doubtButtonText}>❓</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.progressContainer}>
@@ -515,6 +520,18 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  doubtButton: {
+    padding: 8,
+    backgroundColor: "#f59e0b",
+    borderRadius: 8,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  doubtButtonText: {
+    fontSize: 20,
   },
   content: {
     flex: 1,
