@@ -41,6 +41,7 @@ export default function FlashcardQuizScreen() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [quizComplete, setQuizComplete] = useState(false);
+  const [doubtModalVisible, setDoubtModalVisible] = useState(false);
 
   const textCards = flashcards.filter((card) => !card.has_image);
   const currentQuestion = questions[currentIndex];
@@ -324,6 +325,14 @@ export default function FlashcardQuizScreen() {
   // Quiz in progress
   return (
     <SafeAreaView style={styles.container}>
+      <AskDoubtButton onPress={() => setDoubtModalVisible(true)} />
+      <DoubtModal
+        visible={doubtModalVisible}
+        onClose={() => setDoubtModalVisible(false)}
+        context={currentQuestion?.question}
+        cardId={currentQuestion?.card_id}
+        deckId={deckId}
+      />
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}

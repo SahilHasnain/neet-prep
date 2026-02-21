@@ -21,6 +21,7 @@ export const COLLECTIONS = {
   MISTAKE_PATTERNS: "mistake_patterns",
   QUIZ_ATTEMPTS: "quiz_attempts",
   CARD_REVIEWS: "card_reviews",
+  DOUBTS: "doubts",
 } as const;
 
 // Storage Buckets
@@ -35,6 +36,8 @@ export const FUNCTIONS = {
     process.env.EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL!,
   ANALYZE_DIAGRAM: "analyze-diagram",
   ANALYZE_DIAGRAM_URL: process.env.EXPO_PUBLIC_ANALYZE_DIAGRAM_FUNCTION_URL!,
+  RESOLVE_DOUBT: "resolve-doubt",
+  RESOLVE_DOUBT_URL: process.env.EXPO_PUBLIC_RESOLVE_DOUBT_FUNCTION_URL!,
 } as const;
 
 // Validation Constants
