@@ -19,6 +19,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { WeakConceptCard } from "../../src/components/insights/WeakConceptCard";
 import { useMistakeTracking } from "../../src/hooks/useMistakeTracking";
 import type { MistakePattern } from "../../src/types/flashcard.types";
+import { DoubtPatternCard } from "@/src/components/insights/DoubtPatternCard";
+import { useDoubtPatterns } from "@/src/hooks/useDoubtPatterns";
 
 type SubjectFilter = "all" | "biology" | "physics" | "chemistry";
 

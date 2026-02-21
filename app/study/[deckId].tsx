@@ -12,7 +12,10 @@ import { useProgress } from "../../src/hooks/useProgress";
 import { getOrCreateUserId } from "../../src/utils/user-id";
 
 export default function StudyScreen() {
-  const { deckId } = useLocalSearchParams<{ deckId: string }>();
+  const { deckId, reviewMode } = useLocalSearchParams<{
+    deckId: string;
+    reviewMode?: string;
+  }>();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const { flashcards, loading } = useFlashcards(deckId);
@@ -21,7 +24,7 @@ export default function StudyScreen() {
     getMasteryStats,
     refresh: refreshProgress,
   } = useProgress(userId || "", deckId);
-  const { submitReview } = useSpacedRepetition(deckId);
+  const { submitReview, dueCardIds } = useSpacedRepetition(deckId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -52,8 +55,18 @@ export default function StudyScreen() {
   }, [userId]);
 
   useEffect(() => {
-    setShuffledCards(flashcards);
-  }, [flashcards]);
+    // Filter cards based on review mode
+    if (reviewMode === "true" && dueCardIds.length > 0) {
+      // Only show cards that are due for review
+      const dueCards = flashcards.filter((card) =>
+        dueCardIds.includes(card.card_id),
+      );
+      setShuffledCards(dueCards);
+    } else {
+      // Show all cards
+      setShuffledCards(flashcards);
+    }
+  }, [flashcards, reviewMode, dueCardIds]);
 
   const shuffleCards = () => {
     const shuffled = [...flashcards].sort(() => Math.random() - 0.5);
@@ -195,7 +208,8 @@ export default function StudyScreen() {
 
         <View style={styles.progressContainer}>
           <Text style={styles.progressText}>
-            Card {currentIndex + 1} of {shuffledCards.length}
+            {reviewMode === "true" ? "📝 Review Mode: " : ""}Card{" "}
+            {currentIndex + 1} of {shuffledCards.length}
           </Text>
           <View style={styles.progressBarContainer}>
             <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
