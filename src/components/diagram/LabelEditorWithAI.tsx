@@ -414,7 +414,7 @@ export function LabelEditorWithAI({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: "100%",
   },
   instructions: {
     backgroundColor: "#eff6ff",
