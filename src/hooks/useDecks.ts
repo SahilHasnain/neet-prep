@@ -3,7 +3,7 @@
  * Manages flashcard deck state and operations
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlashcardService } from '../services/flashcard.service';
 import type { CreateDeckDTO, FlashcardDeck, UpdateDeckDTO } from '../types/flashcard.types';
 
@@ -14,19 +14,19 @@ export function useDecks(userId: string) {
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
 
-  const loadDecks = async (pageNum: number = 1) => {
+  const loadDecks = useCallback(async (pageNum: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await FlashcardService.listUserDecks(userId, pageNum);
-      
+
       if (pageNum === 1) {
         setDecks(response.items);
       } else {
         setDecks(prev => [...prev, ...response.items]);
       }
-      
+
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (err) {
@@ -34,7 +34,7 @@ export function useDecks(userId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const createDeck = async (data: CreateDeckDTO): Promise<FlashcardDeck | null> => {
     try {
@@ -69,21 +69,21 @@ export function useDecks(userId: string) {
     }
   };
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!loading && hasMore) {
       loadDecks(page + 1);
     }
-  };
+  }, [hasMore, loading, loadDecks, page]);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     loadDecks(1);
-  };
+  }, [loadDecks]);
 
   useEffect(() => {
     if (userId) {
       loadDecks();
     }
-  }, [userId]);
+  }, [loadDecks, userId]);
 
   return {
     decks,
