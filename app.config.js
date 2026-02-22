@@ -29,7 +29,6 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        backgroundColor: "#0a2a3a",
         foregroundImage: "./assets/images/neuro-icon.png",
         backgroundImage: "./assets/images/neuro-icon.png",
         monochromeImage: "./assets/images/neuro-icon.png",
