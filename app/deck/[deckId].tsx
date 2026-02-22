@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ImageUploader } from "../../src/components/diagram/ImageUploader";
+import { QuizModeModal } from "../../src/components/flashcard/QuizModeModal";
 import { Button } from "../../src/components/ui/Button";
 import { Input } from "../../src/components/ui/Input";
 import { useAI } from "../../src/hooks/useAI";
@@ -53,6 +54,7 @@ export default function DeckDetailScreen() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showQuizModeModal, setShowQuizModeModal] = useState(false);
   const [cardType, setCardType] = useState<"text" | "diagram">("text");
   const [frontContent, setFrontContent] = useState("");
   const [backContent, setBackContent] = useState("");
@@ -235,43 +237,26 @@ export default function DeckDetailScreen() {
   };
 
   const handleQuiz = () => {
-    const diagramCards = flashcards.filter(
-      (card) => card.has_image && card.image_url,
-    );
-    const textCards = flashcards.filter((card) => !card.has_image);
-
     if (flashcards.length === 0) {
       Alert.alert("No Cards", "Add some flashcards first!");
       return;
     }
 
-    // If only one type exists, go directly to that quiz
-    if (diagramCards.length > 0 && textCards.length === 0) {
+    // Show modal with all available quiz modes
+    setShowQuizModeModal(true);
+  };
+
+  const handleQuizModeSelect = (
+    mode: "diagram" | "mcq" | "true_false" | "fill_blank",
+  ) => {
+    setShowQuizModeModal(false);
+
+    if (mode === "diagram") {
       router.push(`/quiz/${deckId}` as any);
-      return;
+    } else {
+      // Navigate to flashcard quiz with the selected mode as a query param
+      router.push(`/flashcard-quiz/${deckId}?mode=${mode}` as any);
     }
-
-    if (textCards.length > 0 && diagramCards.length === 0) {
-      router.push(`/flashcard-quiz/${deckId}` as any);
-      return;
-    }
-
-    // Both types exist - show selector
-    Alert.alert(
-      "Select Quiz Mode",
-      "Choose the type of quiz you want to take",
-      [
-        {
-          text: `Diagram Quiz (${diagramCards.length} cards)`,
-          onPress: () => router.push(`/quiz/${deckId}` as any),
-        },
-        {
-          text: `Flashcard Quiz (${textCards.length} cards)`,
-          onPress: () => router.push(`/flashcard-quiz/${deckId}` as any),
-        },
-        { text: "Cancel", style: "cancel" },
-      ],
-    );
   };
 
   const handleDeleteCard = (cardId: string) => {
@@ -464,159 +449,156 @@ export default function DeckDetailScreen() {
             <View style={styles.modalOverlay}>
               <TouchableWithoutFeedback>
                 <View style={styles.modalWrapper}>
-                  <ScrollView
-                    contentContainerStyle={styles.modalScrollContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                  >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>Create Flashcard</Text>
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Create Flashcard</Text>
 
-                      {/* Card Type Selector */}
-                      <View style={styles.cardTypeSelector}>
-                        <TouchableOpacity
+                    {/* Card Type Selector */}
+                    <View style={styles.cardTypeSelector}>
+                      <TouchableOpacity
+                        style={[
+                          styles.cardTypeButton,
+                          cardType === "text" && styles.cardTypeButtonActive,
+                        ]}
+                        onPress={() => setCardType("text")}
+                      >
+                        <Ionicons
+                          name="document-text-outline"
+                          size={16}
+                          color={cardType === "text" ? "#3b82f6" : "#6b7280"}
+                        />
+                        <Text
                           style={[
-                            styles.cardTypeButton,
-                            cardType === "text" && styles.cardTypeButtonActive,
+                            styles.cardTypeButtonText,
+                            cardType === "text" &&
+                              styles.cardTypeButtonTextActive,
                           ]}
-                          onPress={() => setCardType("text")}
                         >
-                          <Ionicons
-                            name="document-text-outline"
-                            size={16}
-                            color={cardType === "text" ? "#3b82f6" : "#6b7280"}
-                          />
-                          <Text
-                            style={[
-                              styles.cardTypeButtonText,
-                              cardType === "text" &&
-                                styles.cardTypeButtonTextActive,
-                            ]}
-                          >
-                            Text Card
-                          </Text>
-                        </TouchableOpacity>
+                          Text Card
+                        </Text>
+                      </TouchableOpacity>
 
-                        <TouchableOpacity
+                      <TouchableOpacity
+                        style={[
+                          styles.cardTypeButton,
+                          cardType === "diagram" && styles.cardTypeButtonActive,
+                        ]}
+                        onPress={() => setCardType("diagram")}
+                      >
+                        <Ionicons
+                          name="image-outline"
+                          size={16}
+                          color={cardType === "diagram" ? "#3b82f6" : "#6b7280"}
+                        />
+                        <Text
                           style={[
-                            styles.cardTypeButton,
+                            styles.cardTypeButtonText,
                             cardType === "diagram" &&
-                              styles.cardTypeButtonActive,
+                              styles.cardTypeButtonTextActive,
                           ]}
-                          onPress={() => setCardType("diagram")}
                         >
-                          <Ionicons
-                            name="image-outline"
-                            size={16}
-                            color={
-                              cardType === "diagram" ? "#3b82f6" : "#6b7280"
-                            }
+                          Diagram Card
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <ScrollView
+                      style={styles.modalScroll}
+                      contentContainerStyle={styles.modalScrollContent}
+                      keyboardShouldPersistTaps="handled"
+                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled={true}
+                    >
+                      {cardType === "text" ? (
+                        <>
+                          <Input
+                            label="Front (Question)"
+                            placeholder="Enter the question or term"
+                            value={frontContent}
+                            onChangeText={setFrontContent}
+                            multiline
+                            numberOfLines={3}
                           />
-                          <Text
-                            style={[
-                              styles.cardTypeButtonText,
-                              cardType === "diagram" &&
-                                styles.cardTypeButtonTextActive,
-                            ]}
-                          >
-                            Diagram Card
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
 
-                      <View style={styles.modalScroll}>
-                        {cardType === "text" ? (
-                          <>
-                            <Input
-                              label="Front (Question)"
-                              placeholder="Enter the question or term"
-                              value={frontContent}
-                              onChangeText={setFrontContent}
-                              multiline
-                              numberOfLines={3}
+                          <Input
+                            label="Back (Answer)"
+                            placeholder="Enter the answer or definition"
+                            value={backContent}
+                            onChangeText={setBackContent}
+                            multiline
+                            numberOfLines={3}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          {!uploadedImage ? (
+                            <ImageUploader
+                              onImageSelected={handleImageSelected}
+                              onImageRemoved={handleImageRemoved}
+                              disabled={uploading}
                             />
-
-                            <Input
-                              label="Back (Answer)"
-                              placeholder="Enter the answer or definition"
-                              value={backContent}
-                              onChangeText={setBackContent}
-                              multiline
-                              numberOfLines={3}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            {!uploadedImage ? (
-                              <ImageUploader
-                                onImageSelected={handleImageSelected}
-                                onImageRemoved={handleImageRemoved}
-                                disabled={uploading}
+                          ) : (
+                            <>
+                              <LabelEditorWithAI
+                                imageUrl={uploadedImage.fileUrl}
+                                imageId={uploadedImage.fileId}
+                                cardId="new-card"
+                                userId={userId || ""}
+                                labels={labels}
+                                onLabelsChange={setLabels}
+                                editable={true}
+                                diagramType="general"
                               />
-                            ) : (
-                              <>
-                                <LabelEditorWithAI
-                                  imageUrl={uploadedImage.fileUrl}
-                                  imageId={uploadedImage.fileId}
-                                  cardId="new-card"
-                                  userId={TEMP_USER_ID}
-                                  labels={labels}
-                                  onLabelsChange={setLabels}
-                                  editable={true}
-                                  diagramType="general"
-                                />
 
-                                <View style={styles.diagramActions}>
-                                  <TouchableOpacity
-                                    style={styles.changeImageButton}
-                                    onPress={handleImageRemoved}
-                                  >
-                                    <Text style={styles.changeImageButtonText}>
-                                      Change Image
-                                    </Text>
-                                  </TouchableOpacity>
-                                </View>
-                              </>
-                            )}
+                              <View style={styles.diagramActions}>
+                                <TouchableOpacity
+                                  style={styles.changeImageButton}
+                                  onPress={handleImageRemoved}
+                                >
+                                  <Text style={styles.changeImageButtonText}>
+                                    Change Image
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            </>
+                          )}
 
-                            <Input
-                              label="Explanation / Notes"
-                              placeholder="Add explanation or additional notes"
-                              value={backContent}
-                              onChangeText={setBackContent}
-                              multiline
-                              numberOfLines={3}
-                            />
-                          </>
-                        )}
-                      </View>
-
-                      <View style={styles.modalButtons}>
-                        <TouchableOpacity
-                          style={[styles.modalButton, styles.cancelButton]}
-                          onPress={() => {
-                            setShowCreateModal(false);
-                            setCardType("text");
-                            setFrontContent("");
-                            setBackContent("");
-                            setLabels([]);
-                            if (uploadedImage) {
-                              deleteImage(uploadedImage.fileId);
-                            }
-                          }}
-                        >
-                          <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <View style={styles.modalButton}>
-                          <Button
-                            title="Create"
-                            onPress={handleCreateCard}
-                            loading={creating}
+                          <Input
+                            label="Explanation / Notes"
+                            placeholder="Add explanation or additional notes"
+                            value={backContent}
+                            onChangeText={setBackContent}
+                            multiline
+                            numberOfLines={3}
                           />
-                        </View>
+                        </>
+                      )}
+                    </ScrollView>
+
+                    <View style={styles.modalButtons}>
+                      <TouchableOpacity
+                        style={[styles.modalButton, styles.cancelButton]}
+                        onPress={() => {
+                          setShowCreateModal(false);
+                          setCardType("text");
+                          setFrontContent("");
+                          setBackContent("");
+                          setLabels([]);
+                          if (uploadedImage) {
+                            deleteImage(uploadedImage.fileId);
+                          }
+                        }}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <View style={styles.modalButton}>
+                        <Button
+                          title="Create"
+                          onPress={handleCreateCard}
+                          loading={creating}
+                        />
                       </View>
                     </View>
-                  </ScrollView>
+                  </View>
                 </View>
               </TouchableWithoutFeedback>
             </View>
@@ -685,6 +667,15 @@ export default function DeckDetailScreen() {
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Quiz Mode Selection Modal */}
+      <QuizModeModal
+        visible={showQuizModeModal}
+        onClose={() => setShowQuizModeModal(false)}
+        diagramCount={diagramCount}
+        textCount={textCount}
+        onSelectMode={handleQuizModeSelect}
+      />
     </SafeAreaView>
   );
 }
@@ -929,19 +920,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  modalScrollContent: {
-    flexGrow: 1,
-    justifyContent: "flex-end",
-  },
   modalContent: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 24,
-    maxHeight: "90%",
+    height: "90%",
   },
   modalScroll: {
-    marginBottom: 16,
+    flex: 1,
+  },
+  modalScrollContent: {
+    paddingBottom: 16,
   },
   modalTitleContainer: {
     flexDirection: "row",
