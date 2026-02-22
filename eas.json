@@ -6,13 +6,54 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "69907afc003b9e3d9152",
+        "EXPO_PUBLIC_APPWRITE_ENDPOINT": "https://sgp.cloud.appwrite.io/v1",
+        "EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL": "https://69908753001854f67944.sgp.appwrite.run",
+        "EXPO_PUBLIC_ANALYZE_DIAGRAM_FUNCTION_URL": "https://6993e90c003a8698c721.sgp.appwrite.run",
+        "EXPO_PUBLIC_RESOLVE_DOUBT_FUNCTION_URL": "https://6999622d0001d07766ca.sgp.appwrite.run",
+        "EXPO_PUBLIC_AI_DIAGRAM_ENABLED": "true",
+        "EXPO_PUBLIC_AI_QUIZ_ENABLED": "true",
+        "EXPO_PUBLIC_QUALITY_CHECK_ENABLED": "true",
+        "EXPO_PUBLIC_AI_MIN_CONFIDENCE": "0.7",
+        "EXPO_PUBLIC_AI_MAX_LABELS": "15",
+        "EXPO_PUBLIC_AI_TIMEOUT": "30000"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "69907afc003b9e3d9152",
+        "EXPO_PUBLIC_APPWRITE_ENDPOINT": "https://sgp.cloud.appwrite.io/v1",
+        "EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL": "https://69908753001854f67944.sgp.appwrite.run",
+        "EXPO_PUBLIC_ANALYZE_DIAGRAM_FUNCTION_URL": "https://6993e90c003a8698c721.sgp.appwrite.run",
+        "EXPO_PUBLIC_RESOLVE_DOUBT_FUNCTION_URL": "https://6999622d0001d07766ca.sgp.appwrite.run",
+        "EXPO_PUBLIC_AI_DIAGRAM_ENABLED": "true",
+        "EXPO_PUBLIC_AI_QUIZ_ENABLED": "true",
+        "EXPO_PUBLIC_QUALITY_CHECK_ENABLED": "true",
+        "EXPO_PUBLIC_AI_MIN_CONFIDENCE": "0.7",
+        "EXPO_PUBLIC_AI_MAX_LABELS": "15",
+        "EXPO_PUBLIC_AI_TIMEOUT": "30000"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "69907afc003b9e3d9152",
+        "EXPO_PUBLIC_APPWRITE_ENDPOINT": "https://sgp.cloud.appwrite.io/v1",
+        "EXPO_PUBLIC_GENERATE_FLASHCARDS_FUNCTION_URL": "https://69908753001854f67944.sgp.appwrite.run",
+        "EXPO_PUBLIC_ANALYZE_DIAGRAM_FUNCTION_URL": "https://6993e90c003a8698c721.sgp.appwrite.run",
+        "EXPO_PUBLIC_RESOLVE_DOUBT_FUNCTION_URL": "https://6999622d0001d07766ca.sgp.appwrite.run",
+        "EXPO_PUBLIC_AI_DIAGRAM_ENABLED": "true",
+        "EXPO_PUBLIC_AI_QUIZ_ENABLED": "true",
+        "EXPO_PUBLIC_QUALITY_CHECK_ENABLED": "true",
+        "EXPO_PUBLIC_AI_MIN_CONFIDENCE": "0.7",
+        "EXPO_PUBLIC_AI_MAX_LABELS": "15",
+        "EXPO_PUBLIC_AI_TIMEOUT": "30000"
+      }
     }
   },
   "submit": {

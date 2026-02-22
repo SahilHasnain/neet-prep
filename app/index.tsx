@@ -121,24 +121,37 @@ export default function Index() {
             );
 
             if (hasDueCard) {
-              setFirstDeckWithDueCards(deck.deck_id);
+              setFirstDeckWithDueCards((prev) => {
+                // Only update if changed to prevent infinite loops
+                return prev !== deck.deck_id ? deck.deck_id : prev;
+              });
               return;
             }
           }
 
           // Fallback: use first deck with cards
           const deckWithCards = decks.find((deck) => deck.card_count > 0);
-          setFirstDeckWithDueCards(deckWithCards?.deck_id);
+          setFirstDeckWithDueCards((prev) => {
+            const newValue = deckWithCards?.deck_id;
+            return prev !== newValue ? newValue : prev;
+          });
         } catch (error) {
           console.error("Error finding deck with due cards:", error);
           // Fallback: use first deck with cards
           const deckWithCards = decks.find((deck) => deck.card_count > 0);
-          setFirstDeckWithDueCards(deckWithCards?.deck_id);
+          setFirstDeckWithDueCards((prev) => {
+            const newValue = deckWithCards?.deck_id;
+            return prev !== newValue ? newValue : prev;
+          });
         }
+      } else if (dueCardIds.length === 0) {
+        // Clear when no due cards
+        setFirstDeckWithDueCards(undefined);
       }
     };
     findDeckWithDueCards();
-  }, [dueCardIds, decks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dueCardIds.length, decks.length]);
 
   const handleCreateDeck = async () => {
     if (!newDeckTitle.trim()) {
