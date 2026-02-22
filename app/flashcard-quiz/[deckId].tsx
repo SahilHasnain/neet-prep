@@ -5,7 +5,7 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -30,11 +30,16 @@ import { generateConceptId } from "../../src/utils/concept-mapper";
 type QuizMode = "mcq" | "true_false" | "fill_blank" | null;
 
 export default function FlashcardQuizScreen() {
-  const { deckId } = useLocalSearchParams<{ deckId: string }>();
+  const { deckId, mode: initialMode } = useLocalSearchParams<{
+    deckId: string;
+    mode?: string;
+  }>();
   const router = useRouter();
   const { flashcards, loading } = useFlashcards(deckId);
 
-  const [quizMode, setQuizMode] = useState<QuizMode>(null);
+  const [quizMode, setQuizMode] = useState<QuizMode>(
+    (initialMode as QuizMode) || null,
+  );
   const [questions, setQuestions] = useState<FlashcardQuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
@@ -48,6 +53,19 @@ export default function FlashcardQuizScreen() {
   const currentQuestion = questions[currentIndex];
   const progress =
     questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+
+  // Auto-start quiz if mode is provided via query param
+  useEffect(() => {
+    if (
+      initialMode &&
+      !generating &&
+      questions.length === 0 &&
+      textCards.length > 0
+    ) {
+      startQuiz(initialMode as QuizMode);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMode, textCards.length]);
 
   const startQuiz = async (mode: QuizMode) => {
     if (!mode) return;
