@@ -147,20 +147,20 @@ export function FlashCard({
           style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}
           pointerEvents={isFlipped ? "auto" : "none"}
         >
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            onPress={handleFlip}
-            activeOpacity={1}
+          <ScrollView
+            contentContainerStyle={styles.backContent}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            style={styles.backScrollView}
           >
-            <View style={styles.backContentWrapper} pointerEvents="box-none">
-              <ScrollView
-                contentContainerStyle={styles.backContent}
-                showsVerticalScrollIndicator={false}
-                bounces={true}
-              >
-                <Text style={styles.text}>{back}</Text>
-              </ScrollView>
-            </View>
+            <Text style={styles.text}>{back}</Text>
+          </ScrollView>
+          <TouchableOpacity
+            style={styles.flipBackButton}
+            onPress={handleFlip}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.flipBackButtonText}>Flip Back</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -199,15 +199,16 @@ const styles = StyleSheet.create({
   },
   cardBack: {
     backgroundColor: "#10b981",
+    padding: 0,
+  },
+  backScrollView: {
+    flex: 1,
   },
   backContent: {
     flexGrow: 1,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingHorizontal: 8,
-  },
-  backContentWrapper: {
-    flex: 1,
+    paddingTop: 28,
+    paddingBottom: 50,
+    paddingHorizontal: 28,
   },
   text: {
     fontSize: 22,
@@ -282,10 +283,12 @@ const styles = StyleSheet.create({
   },
   flipBackButton: {
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingVertical: 16,
-    alignItems: "center",
+    bottom: 20,
+    right: 28,
+  },
+  flipBackButtonText: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
