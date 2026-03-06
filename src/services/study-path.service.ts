@@ -301,9 +301,10 @@ export class StudyPathService {
     topicSequence: string[],
     priorityLevels?: { [topicId: string]: 'high' | 'medium' | 'low' }
   ): Promise<void> {
-    // Check for existing progress for this path
+    // Get existing progress for this path
+    let existingProgress: any[] = [];
     try {
-      const existingProgress = await databases.listDocuments(
+      const response = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.TOPIC_PROGRESS,
         [
@@ -311,20 +312,22 @@ export class StudyPathService {
           Query.limit(100)
         ]
       );
-
-      // If progress already exists for this path, skip initialization
-      if (existingProgress.documents.length > 0) {
-        console.log('Topic progress already exists for this path, skipping initialization');
-        return;
-      }
+      existingProgress = response.documents;
     } catch (error) {
-      console.log('No existing progress found, creating new');
+      console.log('No existing progress found');
     }
 
-    // Create progress for each topic
+    // Create progress for each topic that doesn't already exist
     for (let i = 0; i < topicSequence.length; i++) {
       const topicId = topicSequence[i];
       
+      // Check if progress already exists for this specific topic
+      const exists = existingProgress.some(p => p.topic_id === topicId);
+      if (exists) {
+        console.log(`Topic progress for ${topicId} already exists, skipping`);
+        continue;
+      }
+
       // First topic is unlocked, rest are locked
       const status = i === 0 ? 'unlocked' : 'locked';
       const priority = priorityLevels?.[topicId] || 'medium';
@@ -348,12 +351,14 @@ export class StudyPathService {
             priority
           }
         );
+        console.log(`Created progress for topic ${topicId} with status: ${status}`);
       } catch (error: any) {
         // If document already exists, skip it
         if (error.code === 409) {
-          console.log(`Topic progress for ${topicId} already exists, skipping`);
+          console.log(`Topic progress for ${topicId} already exists (409), skipping`);
           continue;
         }
+        console.error(`Error creating progress for ${topicId}:`, error);
         throw error;
       }
     }
