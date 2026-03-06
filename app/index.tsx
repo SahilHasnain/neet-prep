@@ -6,18 +6,18 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DeckCard } from "../src/components/flashcard/DeckCard";
@@ -26,8 +26,8 @@ import { Input } from "../src/components/ui/Input";
 import { NEET_SUBJECTS, NEET_TOPICS } from "../src/config/neet.config";
 import { useDecks } from "../src/hooks/useDecks";
 import {
-  getSubjectIconFamily,
-  getSubjectIconName,
+    getSubjectIconFamily,
+    getSubjectIconName,
 } from "../src/utils/neet-helpers";
 
 // Dev flag to test empty state - set to true to force empty state
@@ -246,6 +246,14 @@ export default function Index() {
         <View style={styles.quickActions}>
           <TouchableOpacity
             style={styles.quickActionButton}
+            onPress={() => router.push("/study-path/" as any)}
+          >
+            <Ionicons name="map" size={16} color="#8b5cf6" />
+            <Text style={styles.quickActionText}>Study Path</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionButton}
             onPress={() => router.push("/templates/" as any)}
           >
             <Ionicons name="albums" size={16} color="#3b82f6" />
@@ -311,20 +319,27 @@ export default function Index() {
           </View>
           <Text style={styles.emptyTitle}>Start Your NEET Journey</Text>
           <Text style={styles.emptyText}>
-            Create flashcard decks for Physics, Chemistry, and Biology to ace
-            your exam
+            Not sure where to start? Take our diagnostic quiz to get a personalized study path
           </Text>
 
           <TouchableOpacity
             style={styles.primaryCTA}
-            onPress={() => setShowCreateModal(true)}
+            onPress={() => router.push("/diagnostic/" as any)}
           >
-            <Ionicons name="add-circle" size={20} color="#fff" />
-            <Text style={styles.primaryCTAText}>Create Deck</Text>
+            <Ionicons name="map" size={20} color="#fff" />
+            <Text style={styles.primaryCTAText}>Take Diagnostic Quiz</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryCTA}
+            onPress={() => setShowCreateModal(true)}
+          >
+            <Ionicons name="add-circle" size={20} color="#3b82f6" />
+            <Text style={styles.secondaryCTAText}>Create Deck Manually</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.secondaryCTA, { marginTop: 12 }]}
             onPress={() => router.push("/templates/" as any)}
           >
             <Ionicons name="albums" size={20} color="#3b82f6" />

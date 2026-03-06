@@ -217,3 +217,132 @@ Logs all quiz attempts with detailed wrong answer tracking.
 - Create: Any authenticated user
 - Update: User (owner)
 - Delete: User (owner)
+
+
+---
+
+## Collection: diagnostic_results
+
+Stores diagnostic quiz results for personalized study path generation.
+
+### Attributes
+
+| Field            | Type          | Required | Indexed | Default | Description                    |
+| ---------------- | ------------- | -------- | ------- | ------- | ------------------------------ |
+| result_id        | string(36)    | Yes      | Unique  | -       | Unique identifier              |
+| user_id          | string(36)    | Yes      | Key     | -       | User ID                        |
+| total_score      | integer       | Yes      | -       | -       | Overall score (0-100)          |
+| physics_score    | integer       | Yes      | -       | -       | Physics score (0-100)          |
+| chemistry_score  | integer       | Yes      | -       | -       | Chemistry score (0-100)        |
+| biology_score    | integer       | Yes      | -       | -       | Biology score (0-100)          |
+| weak_topics      | string(10000) | Yes      | -       | -       | JSON array of weak topic IDs   |
+| strong_topics    | string(10000) | Yes      | -       | -       | JSON array of strong topic IDs |
+| detailed_results | string(50000) | Yes      | -       | -       | JSON object with all answers   |
+| completed_at     | datetime      | Yes      | -       | -       | Completion timestamp           |
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)
+
+---
+
+## Collection: study_paths
+
+Stores personalized learning paths generated from diagnostic results.
+
+### Attributes
+
+| Field               | Type          | Required | Indexed | Default | Description                      |
+| ------------------- | ------------- | -------- | ------- | ------- | -------------------------------- |
+| path_id             | string(36)    | Yes      | Unique  | -       | Unique identifier                |
+| user_id             | string(36)    | Yes      | Key     | -       | User ID                          |
+| diagnostic_id       | string(36)    | Yes      | Key     | -       | Reference to diagnostic result   |
+| topic_sequence      | string(50000) | Yes      | -       | -       | JSON array of ordered topic IDs  |
+| current_topic_id    | string(50)    | No       | -       | -       | Currently active topic           |
+| progress_percentage | integer       | Yes      | -       | -       | Overall progress (0-100)         |
+| topics_completed    | integer       | Yes      | -       | -       | Number of completed topics       |
+| total_topics        | integer       | Yes      | -       | -       | Total topics in path             |
+| status              | string(20)    | Yes      | -       | -       | active, completed, paused        |
+| created_at          | datetime      | Yes      | -       | -       | Creation timestamp               |
+| updated_at          | datetime      | Yes      | -       | -       | Last update timestamp            |
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)
+
+---
+
+## Collection: topic_progress
+
+Tracks individual topic progress within study paths.
+
+### Attributes
+
+| Field              | Type       | Required | Indexed   | Default | Description                           |
+| ------------------ | ---------- | -------- | --------- | ------- | ------------------------------------- |
+| progress_id        | string(36) | Yes      | Unique    | -       | Unique identifier                     |
+| user_id            | string(36) | Yes      | Composite | -       | User ID                               |
+| path_id            | string(36) | Yes      | Key       | -       | Study path ID                         |
+| topic_id           | string(50) | Yes      | Composite | -       | Topic ID from knowledge graph         |
+| status             | string(20) | Yes      | -         | -       | locked, unlocked, in_progress, completed |
+| mastery_level      | integer    | Yes      | -         | -       | Mastery percentage (0-100)            |
+| time_spent_minutes | integer    | Yes      | -         | -       | Total time spent on topic             |
+| quiz_attempts      | integer    | Yes      | -         | -       | Number of quiz attempts               |
+| quiz_average_score | integer    | Yes      | -         | -       | Average quiz score (0-100)            |
+| started_at         | datetime   | No       | -         | -       | When topic was started                |
+| completed_at       | datetime   | No       | -         | -       | When topic was completed              |
+| last_accessed      | datetime   | No       | -         | -       | Last access timestamp                 |
+
+### Indexes
+
+- Unique composite: (user_id, topic_id)
+- Key: path_id
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)
+
+---
+
+## Collection: daily_tasks
+
+Stores daily study tasks generated from study paths.
+
+### Attributes
+
+| Field              | Type        | Required | Indexed   | Default | Description                      |
+| ------------------ | ----------- | -------- | --------- | ------- | -------------------------------- |
+| task_id            | string(36)  | Yes      | Unique    | -       | Unique identifier                |
+| user_id            | string(36)  | Yes      | Composite | -       | User ID                          |
+| path_id            | string(36)  | Yes      | Key       | -       | Study path ID                    |
+| topic_id           | string(50)  | Yes      | -         | -       | Topic ID from knowledge graph    |
+| task_type          | string(50)  | Yes      | -         | -       | study, practice, review, quiz    |
+| title              | string(200) | Yes      | -         | -       | Task title                       |
+| description        | string(500) | No       | -         | -       | Task description                 |
+| estimated_minutes  | integer     | Yes      | -         | -       | Estimated time to complete       |
+| status             | string(20)  | Yes      | -         | -       | pending, in_progress, completed, skipped |
+| scheduled_date     | datetime    | Yes      | Composite | -       | Scheduled date                   |
+| completed_at       | datetime    | No       | -         | -       | Completion timestamp             |
+| created_at         | datetime    | Yes      | -         | -       | Creation timestamp               |
+
+### Indexes
+
+- Unique: task_id
+- Composite key: (user_id, scheduled_date)
+- Key: path_id
+
+### Permissions
+
+- Read: User (owner)
+- Create: Any authenticated user
+- Update: User (owner)
+- Delete: User (owner)

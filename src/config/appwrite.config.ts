@@ -9,6 +9,9 @@ export const APPWRITE_CONFIG = {
   apiKey: process.env.APPWRITE_API_KEY!,
 } as const;
 
+// AI Configuration
+export const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY!;
+
 // Database and Collection IDs
 export const DATABASE_ID = "flashcard_db";
 
@@ -22,6 +25,11 @@ export const COLLECTIONS = {
   QUIZ_ATTEMPTS: "quiz_attempts",
   CARD_REVIEWS: "card_reviews",
   DOUBTS: "doubts",
+  DIAGNOSTIC_RESULTS: "diagnostic_results",
+  STUDY_PATHS: "study_paths",
+  TOPIC_PROGRESS: "topic_progress",
+  DAILY_TASKS: "daily_tasks",
+  DIAGNOSTIC_QUESTIONS: "diagnostic_questions",
 } as const;
 
 // Storage Buckets
