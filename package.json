@@ -15,6 +15,7 @@
     "setup:doubt": "ts-node scripts/setup-doubt-feature.ts",
     "setup:study-path": "ts-node scripts/setup-study-path-feature.ts",
     "setup:diagnostic": "ts-node scripts/add-diagnostic-attributes.ts",
+    "setup:ai-study-path": "ts-node scripts/add-ai-study-path-fields.ts",
     "fix:study-path-permissions": "ts-node scripts/fix-study-path-permissions.ts",
     "fix:card-reviews": "ts-node scripts/fix-card-reviews-permissions.ts",
     "build:dev": "eas build --platform android --profile development",

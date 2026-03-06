@@ -12,6 +12,39 @@ import { databases } from './appwrite';
 export class StudyPathService {
   // Save diagnostic results
   static async saveDiagnosticResult(result: Omit<DiagnosticResult, 'result_id'>): Promise<DiagnosticResult> {
+    try {
+      // Check if a diagnostic result already exists for this user with same scores
+      const existing = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.DIAGNOSTIC_RESULTS,
+        [
+          Query.equal('user_id', result.user_id),
+          Query.equal('total_score', result.total_score),
+          Query.orderDesc('completed_at'),
+          Query.limit(1)
+        ]
+      );
+
+      // If found within last 5 minutes, return existing (avoid duplicates)
+      if (existing.documents.length > 0) {
+        const existingDoc = existing.documents[0];
+        const existingTime = new Date(existingDoc.completed_at as string).getTime();
+        const currentTime = new Date().getTime();
+        
+        if (currentTime - existingTime < 5 * 60 * 1000) { // 5 minutes
+          return {
+            ...existingDoc,
+            weak_topics: JSON.parse(existingDoc.weak_topics as string),
+            strong_topics: JSON.parse(existingDoc.strong_topics as string),
+            detailed_results: JSON.parse(existingDoc.detailed_results as string)
+          } as unknown as DiagnosticResult;
+        }
+      }
+    } catch (error) {
+      console.log('No existing diagnostic found, creating new one');
+    }
+
+    // Create new diagnostic result
     const docId = ID.unique();
     const doc = await databases.createDocument(
       DATABASE_ID,
@@ -34,43 +67,195 @@ export class StudyPathService {
     } as unknown as DiagnosticResult;
   }
 
-  // Generate study path from diagnostic results
+  // Generate study path from diagnostic results using AI
   static async generateStudyPath(
     userId: string,
     diagnosticId: string,
-    weakTopics: string[]
+    weakTopics: string[],
+    strongTopics: string[],
+    totalScore: number,
+    physicsScore: number,
+    chemistryScore: number,
+    biologyScore: number
   ): Promise<StudyPath> {
-    // Build topic sequence based on prerequisites
-    const topicSequence = this.buildTopicSequence(weakTopics);
-    
-    const docId = ID.unique();
-    const now = new Date().toISOString();
+    // Archive any existing active study path
+    await this.archiveActiveStudyPath(userId);
 
-    const doc = await databases.createDocument(
-      DATABASE_ID,
-      COLLECTIONS.STUDY_PATHS,
-      docId,
-      {
-        path_id: docId,
-        user_id: userId,
-        diagnostic_id: diagnosticId,
-        topic_sequence: JSON.stringify(topicSequence),
-        progress_percentage: 0,
-        topics_completed: 0,
-        total_topics: topicSequence.length,
-        status: 'active',
-        created_at: now,
-        updated_at: now
-      }
+    // Get all available topics from knowledge graph
+    const { KNOWLEDGE_GRAPH } = await import('../config/knowledge-graph.config');
+    const availableTopics = KNOWLEDGE_GRAPH.map(topic => ({
+      id: topic.id,
+      name: topic.name,
+      subject: topic.subject,
+      prerequisites: topic.prerequisites,
+      difficulty: topic.difficulty,
+      estimatedHours: topic.estimatedHours,
+      neetWeightage: topic.neetWeightage
+    }));
+
+    // Use AI to generate personalized study path
+    const { StudyPathAIService } = await import('./study-path-ai.service');
+    const aiPath = await StudyPathAIService.generatePersonalizedStudyPath(
+      weakTopics,
+      strongTopics,
+      totalScore,
+      physicsScore,
+      chemistryScore,
+      biologyScore,
+      availableTopics
     );
 
-    // Initialize topic progress for all topics
-    await this.initializeTopicProgress(userId, docId, topicSequence);
+    const topicSequence = aiPath.topicSequence;
+    
+    const now = new Date().toISOString();
+
+    // Create study path with unique ID
+    let doc;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      try {
+        const docId = ID.unique();
+        doc = await databases.createDocument(
+          DATABASE_ID,
+          COLLECTIONS.STUDY_PATHS,
+          docId,
+          {
+            path_id: docId,
+            user_id: userId,
+            diagnostic_id: diagnosticId,
+            topic_sequence: JSON.stringify(topicSequence),
+            progress_percentage: 0,
+            topics_completed: 0,
+            total_topics: topicSequence.length,
+            status: 'active',
+            created_at: now,
+            updated_at: now,
+            ai_reasoning: aiPath.reasoning,
+            estimated_weeks: aiPath.estimatedCompletionWeeks
+          }
+        );
+        break; // Success, exit loop
+      } catch (error: any) {
+        attempts++;
+        if (error.code === 409 && attempts < maxAttempts) {
+          console.log(`Document ID collision, retrying... (${attempts}/${maxAttempts})`);
+          await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
+          continue;
+        }
+        throw error; // Re-throw if not a collision or max attempts reached
+      }
+    }
+
+    if (!doc) {
+      throw new Error('Failed to create study path after multiple attempts');
+    }
+
+    // Initialize topic progress for all topics with AI priority levels
+    await this.initializeTopicProgress(userId, doc.path_id as string, topicSequence, aiPath.priorityLevel);
 
     return {
       ...doc,
       topic_sequence: JSON.parse(doc.topic_sequence as string)
     } as unknown as StudyPath;
+  }
+
+  // Archive active study path (mark as replaced)
+  private static async archiveActiveStudyPath(userId: string): Promise<void> {
+    try {
+      const existingPath = await this.getUserStudyPath(userId);
+      if (existingPath) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          COLLECTIONS.STUDY_PATHS,
+          existingPath.path_id,
+          {
+            status: 'archived',
+            updated_at: new Date().toISOString()
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error archiving study path:', error);
+      // Continue even if archiving fails
+    }
+  }
+
+  // Revert to previous study path
+  static async revertToPreviousPath(userId: string): Promise<StudyPath | null> {
+    try {
+      // Get current active path
+      const currentPath = await this.getUserStudyPath(userId);
+      
+      // Get most recent archived path
+      const archivedPaths = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.STUDY_PATHS,
+        [
+          Query.equal('user_id', userId),
+          Query.equal('status', 'archived'),
+          Query.orderDesc('created_at'),
+          Query.limit(1)
+        ]
+      );
+
+      if (archivedPaths.documents.length === 0) {
+        return null; // No previous path to revert to
+      }
+
+      const previousPath = archivedPaths.documents[0];
+
+      // Archive current path
+      if (currentPath) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          COLLECTIONS.STUDY_PATHS,
+          currentPath.path_id,
+          {
+            status: 'replaced',
+            updated_at: new Date().toISOString()
+          }
+        );
+      }
+
+      // Reactivate previous path
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.STUDY_PATHS,
+        previousPath.$id,
+        {
+          status: 'active',
+          updated_at: new Date().toISOString()
+        }
+      );
+
+      return {
+        ...previousPath,
+        topic_sequence: JSON.parse(previousPath.topic_sequence as string)
+      } as unknown as StudyPath;
+    } catch (error) {
+      console.error('Error reverting to previous path:', error);
+      return null;
+    }
+  }
+
+  // Get all study paths for user (including archived)
+  static async getAllUserStudyPaths(userId: string): Promise<StudyPath[]> {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.STUDY_PATHS,
+      [
+        Query.equal('user_id', userId),
+        Query.orderDesc('created_at'),
+        Query.limit(10)
+      ]
+    );
+
+    return response.documents.map(doc => ({
+      ...doc,
+      topic_sequence: JSON.parse(doc.topic_sequence as string)
+    })) as unknown as StudyPath[];
   }
 
   // Build optimal topic sequence respecting prerequisites
@@ -113,31 +298,64 @@ export class StudyPathService {
   private static async initializeTopicProgress(
     userId: string,
     pathId: string,
-    topicSequence: string[]
+    topicSequence: string[],
+    priorityLevels?: { [topicId: string]: 'high' | 'medium' | 'low' }
   ): Promise<void> {
+    // Check for existing progress for this path
+    try {
+      const existingProgress = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.TOPIC_PROGRESS,
+        [
+          Query.equal('path_id', pathId),
+          Query.limit(100)
+        ]
+      );
+
+      // If progress already exists for this path, skip initialization
+      if (existingProgress.documents.length > 0) {
+        console.log('Topic progress already exists for this path, skipping initialization');
+        return;
+      }
+    } catch (error) {
+      console.log('No existing progress found, creating new');
+    }
+
+    // Create progress for each topic
     for (let i = 0; i < topicSequence.length; i++) {
       const topicId = topicSequence[i];
       
       // First topic is unlocked, rest are locked
       const status = i === 0 ? 'unlocked' : 'locked';
+      const priority = priorityLevels?.[topicId] || 'medium';
 
-      const docId = ID.unique();
-      await databases.createDocument(
-        DATABASE_ID,
-        COLLECTIONS.TOPIC_PROGRESS,
-        docId,
-        {
-          progress_id: docId,
-          user_id: userId,
-          path_id: pathId,
-          topic_id: topicId,
-          status,
-          mastery_level: 0,
-          time_spent_minutes: 0,
-          quiz_attempts: 0,
-          quiz_average_score: 0
+      try {
+        const docId = ID.unique();
+        await databases.createDocument(
+          DATABASE_ID,
+          COLLECTIONS.TOPIC_PROGRESS,
+          docId,
+          {
+            progress_id: docId,
+            user_id: userId,
+            path_id: pathId,
+            topic_id: topicId,
+            status,
+            mastery_level: 0,
+            time_spent_minutes: 0,
+            quiz_attempts: 0,
+            quiz_average_score: 0,
+            priority
+          }
+        );
+      } catch (error: any) {
+        // If document already exists, skip it
+        if (error.code === 409) {
+          console.log(`Topic progress for ${topicId} already exists, skipping`);
+          continue;
         }
-      );
+        throw error;
+      }
     }
   }
 

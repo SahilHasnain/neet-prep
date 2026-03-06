@@ -216,6 +216,88 @@ Return ONLY the JSON array, no other text.`;
     }
   }
 
+  // Generate AI-powered personalized study path
+  static async generatePersonalizedStudyPath(
+    weakTopics: string[],
+    strongTopics: string[],
+    totalScore: number,
+    physicsScore: number,
+    chemistryScore: number,
+    biologyScore: number,
+    availableTopics: Array<{
+      id: string;
+      name: string;
+      subject: string;
+      prerequisites: string[];
+      difficulty: string;
+      estimatedHours: number;
+      neetWeightage: number;
+    }>
+  ): Promise<{
+    topicSequence: string[];
+    reasoning: string;
+    estimatedCompletionWeeks: number;
+    priorityLevel: { [topicId: string]: 'high' | 'medium' | 'low' };
+  }> {
+    try {
+      const prompt = `Generate a personalized NEET study path based on diagnostic results.
+
+Student Performance:
+- Overall: ${totalScore}%
+- Physics: ${physicsScore}%
+- Chemistry: ${chemistryScore}%
+- Biology: ${biologyScore}%
+
+Weak Topics: ${weakTopics.join(', ')}
+Strong Topics: ${strongTopics.join(', ')}
+
+Available Topics (with prerequisites):
+${JSON.stringify(availableTopics, null, 2)}
+
+Create an optimal learning sequence that:
+1. Respects prerequisite dependencies
+2. Prioritizes high NEET weightage topics
+3. Starts with foundation topics if scores are low
+4. Balances subjects based on performance gaps
+5. Considers difficulty progression
+6. Focuses on weak areas while maintaining strong areas
+
+Return JSON:
+{
+  "topicSequence": ["topic_id_1", "topic_id_2", ...],
+  "reasoning": "2-3 sentences explaining the path strategy",
+  "estimatedCompletionWeeks": 12,
+  "priorityLevel": {
+    "topic_id_1": "high",
+    "topic_id_2": "medium"
+  }
+}
+
+Ensure:
+- All prerequisites come before dependent topics
+- Sequence length: 8-15 topics (manageable scope)
+- Mix of subjects to avoid burnout
+- High priority for topics with low scores + high NEET weightage
+
+Return ONLY the JSON object, no other text.`;
+
+      const content = await this.callGroqAPI(prompt);
+      
+      // Clean up response
+      let jsonStr = content.trim();
+      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[0];
+      }
+      
+      return JSON.parse(jsonStr);
+    } catch (error) {
+      console.error('Error generating AI study path:', error);
+      throw error;
+    }
+  }
+
   // Generate diagnostic quiz questions in batches
   static async generateDiagnosticQuestions(): Promise<Array<{
     id: string;

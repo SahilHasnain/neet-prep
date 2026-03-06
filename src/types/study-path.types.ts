@@ -31,9 +31,11 @@ export interface StudyPath {
   progress_percentage: number;
   topics_completed: number;
   total_topics: number;
-  status: 'active' | 'completed' | 'paused';
+  status: 'active' | 'completed' | 'paused' | 'archived' | 'replaced';
   created_at: string;
   updated_at: string;
+  ai_reasoning?: string; // AI explanation for the path strategy
+  estimated_weeks?: number; // AI-estimated completion time
 }
 
 export interface TopicProgress {
@@ -49,6 +51,7 @@ export interface TopicProgress {
   started_at?: string;
   completed_at?: string;
   last_accessed?: string;
+  priority?: 'high' | 'medium' | 'low'; // AI-assigned priority level
 }
 
 export interface DailyTask {
