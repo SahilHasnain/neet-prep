@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { VideoLessons } from '../../../src/components/study-path/VideoLessons';
 import { getDependents, getPrerequisites, getTopicById } from '../../../src/config/knowledge-graph.config';
 import { useStudyPath } from '../../../src/hooks/useStudyPath';
 import { StudyPathAIService } from '../../../src/services/study-path-ai.service';
@@ -181,6 +182,11 @@ export default function TopicDetailScreen() {
               <Text className={THEME_CLASSES.heading3}>{topic.neetWeightage}%</Text>
             </View>
           </View>
+        </View>
+
+        {/* Video Lessons */}
+        <View className="mb-4">
+          <VideoLessons topicId={topicId as string} topicName={topic.name} />
         </View>
 
         {/* AI Study Tips */}

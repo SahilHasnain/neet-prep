@@ -183,6 +183,7 @@ export class StudyPathService {
             updated_at: new Date().toISOString()
           }
         );
+        console.log(`Archived study path ${existingPath.path_id}`);
       }
     } catch (error) {
       console.error('Error archiving study path:', error);
@@ -309,35 +310,29 @@ export class StudyPathService {
     topicSequence: string[],
     priorityLevels?: { [topicId: string]: 'high' | 'medium' | 'low' }
   ): Promise<void> {
-    // Get existing progress for this path
-    let existingProgress: any[] = [];
-    try {
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.TOPIC_PROGRESS,
-        [
-          Query.equal('path_id', pathId),
-          Query.limit(100)
-        ]
-      );
-      existingProgress = response.documents;
-    } catch (error) {
-      console.log('No existing progress found');
+    // Get knowledge graph to determine subjects
+    const { KNOWLEDGE_GRAPH } = await import('../config/knowledge-graph.config');
+    const topicMap = new Map(KNOWLEDGE_GRAPH.map(t => [t.id, t]));
+    
+    // Track first topic of each subject
+    const firstTopicBySubject = new Map<string, string>();
+    
+    for (const topicId of topicSequence) {
+      const topic = topicMap.get(topicId);
+      if (topic && !firstTopicBySubject.has(topic.subject)) {
+        firstTopicBySubject.set(topic.subject, topicId);
+      }
     }
+    
+    console.log('First topics by subject:', Object.fromEntries(firstTopicBySubject));
 
-    // Create progress for each topic that doesn't already exist
+    // Create progress for each topic
     for (let i = 0; i < topicSequence.length; i++) {
       const topicId = topicSequence[i];
       
-      // Check if progress already exists for this specific topic
-      const exists = existingProgress.some(p => p.topic_id === topicId);
-      if (exists) {
-        console.log(`Topic progress for ${topicId} already exists, skipping`);
-        continue;
-      }
-
-      // First topic is unlocked, rest are locked
-      const status = i === 0 ? 'unlocked' : 'locked';
+      // Unlock first topic of each subject (Physics, Chemistry, Biology)
+      const isFirstOfSubject = Array.from(firstTopicBySubject.values()).includes(topicId);
+      const status = isFirstOfSubject ? 'unlocked' : 'locked';
       const priority = priorityLevels?.[topicId] || 'medium';
 
       try {
@@ -361,13 +356,8 @@ export class StudyPathService {
         );
         console.log(`Created progress for topic ${topicId} with status: ${status}`);
       } catch (error: any) {
-        // If document already exists, skip it
-        if (error.code === 409) {
-          console.log(`Topic progress for ${topicId} already exists (409), skipping`);
-          continue;
-        }
         console.error(`Error creating progress for ${topicId}:`, error);
-        throw error;
+        // Don't throw, just log and continue
       }
     }
   }
@@ -450,13 +440,35 @@ export class StudyPathService {
       );
     }
 
-    // Unlock dependent topics
-    const dependents = getDependents(topicId);
+    // Get all progress for this path
     const allProgress = await this.getTopicProgress(pathId);
+    
+    // Get the study path to know which topics are in the sequence
+    const studyPath = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.STUDY_PATHS,
+      pathId
+    );
+    const topicSequence = JSON.parse(studyPath.topic_sequence as string) as string[];
+    
+    // Only consider topics that are in the current study path
+    const topicsInPath = new Set(topicSequence);
+
+    // Unlock dependent topics that are in the path
+    const dependents = getDependents(topicId);
 
     for (const dependent of dependents) {
+      // Skip if this dependent topic is not in the current study path
+      if (!topicsInPath.has(dependent.id)) {
+        continue;
+      }
+
       const prereqs = getPrerequisites(dependent.id);
-      const allPrereqsCompleted = prereqs.every(prereq => {
+      
+      // Check if all prerequisites are completed
+      // Only check prerequisites that are in the current path
+      const prereqsInPath = prereqs.filter(p => topicsInPath.has(p.id));
+      const allPrereqsCompleted = prereqsInPath.every(prereq => {
         const prereqProgress = allProgress.find(p => p.topic_id === prereq.id);
         return prereqProgress?.status === 'completed';
       });
@@ -470,6 +482,7 @@ export class StudyPathService {
             depProgress.progress_id,
             { status: 'unlocked' }
           );
+          console.log(`Unlocked topic ${dependent.id} after completing ${topicId}`);
         }
       }
     }
