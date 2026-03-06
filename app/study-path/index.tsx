@@ -126,176 +126,274 @@ export default function StudyPathScreen() {
   const inProgressCount = topicsWithProgress.filter(t => t.progress?.status === 'in_progress').length;
 
   return (
-    <ScrollView className={THEME_CLASSES.screen}>
-      <View className={THEME_CLASSES.section}>
-        {/* Header */}
-        <View className={`${THEME_CLASSES.cardGradient} mb-6`}>
-          <Text className="mb-2 text-2xl font-bold text-white">
-            Your Study Path
-          </Text>
-          <Text className="mb-4 text-sm text-text-secondary">
-            {studyPath.topics_completed} of {studyPath.total_topics} topics completed
-          </Text>
+    <ScrollView className={THEME_CLASSES.screen} showsVerticalScrollIndicator={false}>
+      <View className="px-4 pt-4 pb-6">
+        {/* Compact Header with Gradient */}
+        <View className="bg-gradient-to-br from-accent-primary via-accent-secondary to-biology rounded-2xl p-4 mb-4">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1 mr-3">
+              <Text className="text-xl font-bold text-white mb-0.5">
+                Your Study Path
+              </Text>
+              <Text className="text-xs text-white/70">
+                {studyPath.topics_completed}/{studyPath.total_topics} topics • {studyPath.progress_percentage}% complete
+              </Text>
+            </View>
+            <View className="w-14 h-14 rounded-2xl bg-white/20 items-center justify-center border-2 border-white/30">
+              <Text className="text-xl font-bold text-white">
+                {studyPath.progress_percentage}%
+              </Text>
+            </View>
+          </View>
           
-          {/* Progress Bar */}
-          <View className="h-3 overflow-hidden rounded-full bg-white/20">
+          {/* Compact Progress Bar */}
+          <View className="h-2 overflow-hidden rounded-full bg-white/20 mt-3">
             <View 
               className="h-full bg-white rounded-full"
               style={{ width: `${studyPath.progress_percentage}%` }}
             />
           </View>
-          <Text className="mt-2 text-sm font-semibold text-white">
-            {studyPath.progress_percentage}% Complete
-          </Text>
         </View>
 
-        {/* Stats */}
-        <View className="flex-row gap-3 mb-6">
-          <View className={`${THEME_CLASSES.card} flex-1`}>
-            <Text className="text-2xl font-bold text-accent-success">{completedCount}</Text>
-            <Text className={`${THEME_CLASSES.caption} mt-1`}>Completed</Text>
+        {/* Compact Stats Row */}
+        <View className="flex-row gap-2 mb-4">
+          <View className="flex-1 bg-background-secondary rounded-xl p-3 border border-accent-success/30">
+            <View className="flex-row items-center justify-between">
+              <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+              <Text className="text-2xl font-bold text-accent-success">{completedCount}</Text>
+            </View>
+            <Text className="text-xs text-text-tertiary mt-1">Done</Text>
           </View>
-          <View className={`${THEME_CLASSES.card} flex-1`}>
-            <Text className="text-2xl font-bold text-accent-primary">{unlockedCount}</Text>
-            <Text className={`${THEME_CLASSES.caption} mt-1`}>Unlocked</Text>
+          
+          <View className="flex-1 bg-background-secondary rounded-xl p-3 border border-accent-primary/30">
+            <View className="flex-row items-center justify-between">
+              <Ionicons name="lock-open" size={18} color="#8b5cf6" />
+              <Text className="text-2xl font-bold text-accent-primary">{unlockedCount}</Text>
+            </View>
+            <Text className="text-xs text-text-tertiary mt-1">Ready</Text>
           </View>
-          <View className={`${THEME_CLASSES.card} flex-1`}>
-            <Text className="text-2xl font-bold text-biology">{inProgressCount}</Text>
-            <Text className={`${THEME_CLASSES.caption} mt-1`}>In Progress</Text>
+          
+          <View className="flex-1 bg-background-secondary rounded-xl p-3 border border-biology/30">
+            <View className="flex-row items-center justify-between">
+              <Ionicons name="time" size={18} color="#ec4899" />
+              <Text className="text-2xl font-bold text-biology">{inProgressCount}</Text>
+            </View>
+            <Text className="text-xs text-text-tertiary mt-1">Active</Text>
           </View>
         </View>
 
-        {/* Retake Diagnostic Button */}
-        <TouchableOpacity
-          onPress={() => router.push('/diagnostic' as any)}
-          className="flex-row items-center justify-between p-4 mb-3 bg-background-secondary border border-border-subtle rounded-xl active:bg-interactive-hover"
-        >
-          <View className="flex-row items-center">
-            <View className="items-center justify-center w-10 h-10 mr-3 bg-biology/20 rounded-full">
-              <Ionicons name="refresh" size={20} color="#ec4899" />
+        {/* Compact Quick Actions - Inline */}
+        <View className="flex-row gap-2 mb-4">
+          {/* Daily Tasks - Primary CTA */}
+          <TouchableOpacity
+            onPress={() => router.push('/study-path/daily' as any)}
+            className="flex-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl p-3 active:opacity-90"
+          >
+            <View className="flex-row items-center justify-between mb-1">
+              <View className="w-9 h-9 rounded-lg bg-white/20 items-center justify-center">
+                <Ionicons name="calendar" size={18} color="#fff" />
+              </View>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
             </View>
-            <View>
-              <Text className={THEME_CLASSES.heading3}>
-                Retake Diagnostic Test
-              </Text>
-              <Text className={`${THEME_CLASSES.caption} mt-0.5`}>
-                Update your study path based on current knowledge
-              </Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#717171" />
-        </TouchableOpacity>
+            <Text className="text-sm font-bold text-white">
+              Today's Tasks
+            </Text>
+            <Text className="text-xs text-white/70">
+              Daily study plan
+            </Text>
+          </TouchableOpacity>
 
-        {/* Daily Tasks Button */}
-        <TouchableOpacity
-          onPress={() => router.push('/study-path/daily' as any)}
-          className="flex-row items-center justify-between p-4 mb-3 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl"
-        >
-          <View className="flex-row items-center">
-            <View className="items-center justify-center w-10 h-10 mr-3 bg-white/20 rounded-full">
-              <Ionicons name="calendar" size={20} color="#fff" />
+          {/* Retake Diagnostic */}
+          <TouchableOpacity
+            onPress={() => router.push('/diagnostic' as any)}
+            className="flex-1 bg-background-secondary border border-border-subtle rounded-xl p-3 active:bg-background-tertiary"
+          >
+            <View className="flex-row items-center justify-between mb-1">
+              <View className="w-9 h-9 rounded-lg bg-biology/20 items-center justify-center">
+                <Ionicons name="refresh" size={18} color="#ec4899" />
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#717171" />
             </View>
-            <View>
-              <Text className="text-base font-semibold text-white">
-                Today's Tasks
-              </Text>
-              <Text className="text-xs text-white/70 mt-0.5">
-                View your daily study schedule
-              </Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#fff" />
-        </TouchableOpacity>
+            <Text className="text-sm font-bold text-text-primary">
+              Retake Test
+            </Text>
+            <Text className="text-xs text-text-tertiary">
+              Update path
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* Revert to Previous Path Button */}
+        {/* Revert to Previous Path - Compact */}
         {showRevertOption && (
           <TouchableOpacity
             onPress={handleRevertPath}
-            className="flex-row items-center justify-between p-4 mb-6 bg-background-secondary border border-accent-warning/30 rounded-xl active:bg-interactive-hover"
+            className="flex-row items-center justify-between p-3 mb-4 bg-background-secondary border border-accent-warning/30 rounded-xl active:bg-background-tertiary"
           >
-            <View className="flex-row items-center">
-              <View className="items-center justify-center w-10 h-10 mr-3 bg-accent-warning/20 rounded-full">
-                <Ionicons name="arrow-undo" size={20} color="#f59e0b" />
+            <View className="flex-row items-center flex-1">
+              <View className="w-10 h-10 rounded-xl bg-accent-warning/20 items-center justify-center mr-3">
+                <Ionicons name="arrow-undo" size={18} color="#f59e0b" />
               </View>
-              <View>
-                <Text className={THEME_CLASSES.heading3}>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-text-primary">
                   Revert to Previous Path
                 </Text>
-                <Text className={`${THEME_CLASSES.caption} mt-0.5`}>
-                  Restore your previous study path
+                <Text className="text-xs text-text-tertiary">
+                  Restore previous study path
                 </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#717171" />
+            <Ionicons name="chevron-forward" size={18} color="#717171" />
           </TouchableOpacity>
         )}
 
-        {/* Topics List */}
-        <Text className={`${THEME_CLASSES.heading3} mb-3`}>Learning Path</Text>
+        {/* Enhanced Topics List */}
+        <View className="mb-4">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Learning Path
+            </Text>
+            <View className="flex-row items-center gap-1">
+              <View className="w-1.5 h-1.5 rounded-full bg-accent-success" />
+              <View className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
+              <View className="w-1.5 h-1.5 rounded-full bg-text-disabled" />
+            </View>
+          </View>
         
-        {topicsWithProgress.map((topic, index) => {
-          const isLocked = topic.progress?.status === 'locked';
-          const isCompleted = topic.progress?.status === 'completed';
-          const isUnlocked = topic.progress?.status === 'unlocked';
-          
-          return (
-            <TouchableOpacity
-              key={topic.id}
-              disabled={isLocked}
-              onPress={() => router.push(`/study-path/topic/${topic.id}` as any)}
-              className={`${THEME_CLASSES.card} mb-3 ${isLocked ? 'opacity-50' : ''} active:bg-background-tertiary`}
-            >
-              <View className="flex-row items-start">
-                {/* Status Icon */}
-                <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${
-                  isCompleted ? 'bg-accent-success/20' :
-                  isUnlocked ? 'bg-accent-primary/20' :
-                  'bg-background-tertiary'
-                }`}>
-                  {isCompleted ? (
-                    <Ionicons name="checkmark-circle" size={24} color="#10b981" />
-                  ) : isLocked ? (
-                    <Ionicons name="lock-closed" size={20} color="#525252" />
-                  ) : (
-                    <Text className="font-bold text-accent-primary">{index + 1}</Text>
-                  )}
-                </View>
-
-                {/* Topic Info */}
-                <View className="flex-1">
-                  <Text className={`${THEME_CLASSES.heading3} mb-1`}>
-                    {topic.name}
-                  </Text>
-                  <Text className={`${THEME_CLASSES.caption} mb-2`}>
-                    {topic.subject} • {topic.estimatedHours}h • {topic.difficulty}
-                  </Text>
+          {topicsWithProgress.map((topic, index) => {
+            const isLocked = topic.progress?.status === 'locked';
+            const isCompleted = topic.progress?.status === 'completed';
+            const isUnlocked = topic.progress?.status === 'unlocked';
+            const isInProgress = topic.progress?.status === 'in_progress';
+            
+            // Get subject color
+            const subjectColor = topic.subject === 'Physics' ? '#3b82f6' : 
+                                 topic.subject === 'Chemistry' ? '#10b981' : '#ec4899';
+            
+            return (
+              <View key={topic.id} className="mb-3">
+                <TouchableOpacity
+                  disabled={isLocked}
+                  onPress={() => router.push(`/study-path/topic/${topic.id}` as any)}
+                  className={`bg-background-secondary rounded-2xl overflow-hidden border ${
+                    isCompleted ? 'border-accent-success/30' :
+                    isInProgress ? 'border-accent-primary/30' :
+                    isUnlocked ? 'border-accent-primary/20' :
+                    'border-border-subtle'
+                  } ${isLocked ? 'opacity-50' : ''} active:bg-background-tertiary`}
+                >
+                  {/* Status Indicator Bar */}
+                  <View 
+                    className="h-1"
+                    style={{ 
+                      backgroundColor: isCompleted ? '#10b981' : 
+                                      isInProgress ? '#8b5cf6' : 
+                                      isUnlocked ? '#3b82f6' : '#272727' 
+                    }}
+                  />
                   
-                  {topic.progress && topic.progress.mastery_level > 0 && (
-                    <View className="mt-2">
-                      <View className="flex-row items-center justify-between mb-1">
-                        <Text className={THEME_CLASSES.caption}>Mastery</Text>
-                        <Text className={`${THEME_CLASSES.caption} font-semibold`}>
-                          {topic.progress.mastery_level}%
-                        </Text>
+                  <View className="p-4">
+                    <View className="flex-row items-start">
+                      {/* Status Icon */}
+                      <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-3 ${
+                        isCompleted ? 'bg-accent-success/20' :
+                        isInProgress ? 'bg-accent-primary/20' :
+                        isUnlocked ? 'bg-accent-secondary/20' :
+                        'bg-background-tertiary'
+                      }`}>
+                        {isCompleted ? (
+                          <Ionicons name="checkmark-circle" size={26} color="#10b981" />
+                        ) : isLocked ? (
+                          <Ionicons name="lock-closed" size={22} color="#525252" />
+                        ) : isInProgress ? (
+                          <Ionicons name="play-circle" size={26} color="#8b5cf6" />
+                        ) : (
+                          <Text className="text-lg font-bold text-accent-primary">{index + 1}</Text>
+                        )}
                       </View>
-                      <View className={THEME_CLASSES.progressBar}>
-                        <View 
-                          className={THEME_CLASSES.progressFill}
-                          style={{ width: `${topic.progress.mastery_level}%` }}
-                        />
-                      </View>
-                    </View>
-                  )}
-                </View>
 
-                {/* Arrow */}
-                {!isLocked && (
-                  <Ionicons name="chevron-forward" size={20} color="#717171" />
+                      {/* Topic Info */}
+                      <View className="flex-1">
+                        <View className="flex-row items-center mb-2 flex-wrap">
+                          <View 
+                            className="px-2.5 py-1 rounded-lg mr-2"
+                            style={{ backgroundColor: `${subjectColor}20` }}
+                          >
+                            <Text 
+                              className="text-xs font-bold"
+                              style={{ color: subjectColor }}
+                            >
+                              {topic.subject}
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center mr-2">
+                            <Ionicons name="time-outline" size={12} color="#717171" />
+                            <Text className="text-xs text-text-tertiary ml-1">
+                              {topic.estimatedHours}h
+                            </Text>
+                          </View>
+                          <View 
+                            className="px-2 py-0.5 rounded-lg"
+                            style={{ 
+                              backgroundColor: topic.difficulty === 'easy' ? '#10b98120' : 
+                                             topic.difficulty === 'medium' ? '#f59e0b20' : '#ef444420' 
+                            }}
+                          >
+                            <Text 
+                              className="text-xs font-bold capitalize"
+                              style={{ 
+                                color: topic.difficulty === 'easy' ? '#10b981' : 
+                                       topic.difficulty === 'medium' ? '#f59e0b' : '#ef4444' 
+                              }}
+                            >
+                              {topic.difficulty}
+                            </Text>
+                          </View>
+                        </View>
+                        
+                        <Text className="text-base font-bold text-text-primary mb-1">
+                          {topic.name}
+                        </Text>
+                        
+                        {topic.progress && topic.progress.mastery_level > 0 && (
+                          <View className="mt-2">
+                            <View className="flex-row items-center justify-between mb-1.5">
+                              <Text className="text-xs text-text-tertiary">
+                                Mastery Progress
+                              </Text>
+                              <Text className="text-xs font-bold text-accent-primary">
+                                {topic.progress.mastery_level}%
+                              </Text>
+                            </View>
+                            <View className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                              <View 
+                                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full"
+                                style={{ width: `${topic.progress.mastery_level}%` }}
+                              />
+                            </View>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Arrow */}
+                      {!isLocked && (
+                        <View className="w-8 h-8 rounded-xl bg-background-tertiary items-center justify-center ml-2">
+                          <Ionicons name="chevron-forward" size={18} color="#8b5cf6" />
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                
+                {/* Connection Line to Next Topic */}
+                {index < topicsWithProgress.length - 1 && (
+                  <View className="flex-row items-center ml-6 my-1">
+                    <View className="w-0.5 h-4 bg-border-primary" />
+                  </View>
                 )}
               </View>
-            </TouchableOpacity>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
     </ScrollView>
   );
