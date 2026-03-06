@@ -46,6 +46,30 @@ export class StudyPathAIService {
     }
   }
 
+  // Generate key points to highlight for a topic
+  static async generateKeyPoints(topicName: string): Promise<string[]> {
+    try {
+      const prompt = `Generate 5 key points that NEET students should highlight and remember for: "${topicName}"
+
+Format as a JSON array of strings. Each point should be:
+- A critical concept or fact
+- Concise (1-2 sentences max)
+- Exam-focused
+- Easy to remember
+
+Example: ["Newton's laws apply to all inertial frames", "Force = mass × acceleration (F=ma)"]
+
+Return ONLY the JSON array, no other text.`;
+
+      const content = await this.callGroqAPI(prompt);
+      const points = JSON.parse(content);
+      return Array.isArray(points) ? points.slice(0, 5) : [];
+    } catch (error) {
+      console.error('Error generating key points:', error);
+      return [];
+    }
+  }
+
   // Generate personalized study tips for a topic
   static async generateStudyTips(
     topicName: string,
@@ -75,6 +99,57 @@ Return ONLY the JSON array, no other text.`;
       return [];
     }
   }
+    static async generateKeyPoints(topicName: string): Promise<string[]> {
+      try {
+        const prompt = `Generate 5 key points that NEET students should highlight and remember for: "${topicName}"
+
+  Format as a JSON array of strings. Each point should be:
+  - A critical concept or fact
+  - Concise (1-2 sentences max)
+  - Exam-focused
+  - Easy to remember
+
+  Example: ["Newton's laws apply to all inertial frames", "Force = mass × acceleration (F=ma)"]
+
+  Return ONLY the JSON array, no other text.`;
+
+        const content = await this.callGroqAPI(prompt);
+        const points = JSON.parse(content);
+        return Array.isArray(points) ? points.slice(0, 5) : [];
+      } catch (error) {
+        console.error('Error generating key points:', error);
+        return [];
+      }
+    }
+
+    static async generateStudyTips(
+      topicName: string,
+      subject: string,
+      difficulty: string,
+      studentWeaknesses?: string[]
+    ): Promise<string[]> {
+      try {
+        const prompt = `Generate 5 concise, actionable study tips for NEET ${subject} topic: "${topicName}" (${difficulty} level).
+  ${studentWeaknesses ? `Student struggles with: ${studentWeaknesses.join(', ')}` : ''}
+
+  Format as a JSON array of strings. Each tip should be:
+  - Specific and actionable
+  - Focus on NEET exam patterns
+  - Include memory techniques or shortcuts
+  - Be under 100 characters
+
+  Example: ["Focus on NCERT diagrams - 60% of questions come from them", "Practice numerical problems daily"]
+
+  Return ONLY the JSON array, no other text.`;
+
+        const content = await this.callGroqAPI(prompt);
+        const tips = JSON.parse(content);
+        return Array.isArray(tips) ? tips : [];
+      } catch (error) {
+        console.error('Error generating study tips:', error);
+        return [];
+      }
+    }
 
   // Generate practice questions for a topic
   static async generatePracticeQuestions(
