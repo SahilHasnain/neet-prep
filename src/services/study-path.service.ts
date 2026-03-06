@@ -163,10 +163,6 @@ export class StudyPathService {
       // Continue even if task generation fails
     }
 
-    // Optionally create flashcard decks for topics (async, don't wait)
-    this.createFlashcardDecksForPath(userId, doc.path_id as string, topicSequence)
-      .catch(error => console.error('Error creating flashcard decks:', error));
-
     return {
       ...doc,
       topic_sequence: JSON.parse(doc.topic_sequence as string)
@@ -730,42 +726,5 @@ export class StudyPathService {
       completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
       streak
     };
-  }
-
-  // Create flashcard decks for study path topics
-  static async createFlashcardDecksForPath(
-    userId: string,
-    pathId: string,
-    topicIds: string[]
-  ): Promise<void> {
-    const { FlashcardService } = await import('./flashcard.service');
-    const { KNOWLEDGE_GRAPH } = await import('../config/knowledge-graph.config');
-    
-    for (const topicId of topicIds) {
-      const topic = KNOWLEDGE_GRAPH.find(t => t.id === topicId);
-      if (!topic) continue;
-
-      try {
-        // Check if deck already exists for this topic
-        const existingDecks = await FlashcardService.getDecksByTopic(topicId);
-        
-        if (existingDecks.length === 0) {
-          // Create a new deck for this topic
-          await FlashcardService.createTopicDeck(
-            userId,
-            topicId,
-            {
-              title: `${topic.name} - Flashcards`,
-              description: `Study flashcards for ${topic.name}`,
-              category: topic.subject,
-            }
-          );
-          console.log(`Created flashcard deck for topic: ${topic.name}`);
-        }
-      } catch (error) {
-        console.error(`Error creating deck for topic ${topicId}:`, error);
-        // Continue with other topics even if one fails
-      }
-    }
   }
 }

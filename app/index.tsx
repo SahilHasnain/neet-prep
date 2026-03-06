@@ -3,14 +3,12 @@
  * Primary entry point emphasizing guided learning
  */
 
-import { ReviewSession } from "@/src/components/flashcard/ReviewSession";
 import { THEME_CLASSES } from "@/src/config/theme.config";
-import { useSpacedRepetition } from "@/src/hooks/useSpacedRepetition";
 import { useStudyPath } from "@/src/hooks/useStudyPath";
 import { getOrCreateUserId } from "@/src/utils/user-id";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     ScrollView,
@@ -25,26 +23,13 @@ export default function Index() {
   const [userId, setUserId] = useState<string | null>(null);
   
   const { studyPath, topicsWithProgress, loading: pathLoading } = useStudyPath(userId || "");
-  const {
-    dueCount,
-    stats,
-    loading: reviewLoading,
-    refresh: refreshReviews,
-  } = useSpacedRepetition();
 
   // Initialize user ID on mount
   useEffect(() => {
     getOrCreateUserId().then(setUserId);
   }, []);
 
-  // Refresh when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (userId) {
-        refreshReviews();
-      }
-    }, [userId, refreshReviews]),
-  );
+
 
   if (!userId || pathLoading) {
     return (
@@ -72,13 +57,6 @@ export default function Index() {
         </View>
 
         <View className="px-4 -mt-4">
-          {/* Daily Review Card */}
-          {dueCount > 0 && (
-            <View className="mb-4">
-              <ReviewSession dueCount={dueCount} />
-            </View>
-          )}
-
           {/* Study Path Status */}
           {studyPath ? (
             <TouchableOpacity
@@ -157,15 +135,7 @@ export default function Index() {
                 Or explore pre-made content:
               </Text>
 
-              <TouchableOpacity
-                onPress={() => router.push("/templates/" as any)}
-                className="bg-background-tertiary rounded-lg p-3 flex-row items-center justify-center active:bg-interactive-hover"
-              >
-                <Ionicons name="albums" size={18} color="#8b5cf6" />
-                <Text className="text-accent-primary text-sm font-semibold ml-2">
-                  Browse Templates
-                </Text>
-              </TouchableOpacity>
+
             </View>
           )}
 
@@ -204,58 +174,7 @@ export default function Index() {
                 </Text>
               </TouchableOpacity>
             </View>
-
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => router.push("/templates/" as any)}
-                className="flex-1 bg-background-secondary rounded-xl p-4 border border-border-subtle active:bg-interactive-hover"
-              >
-                <View className="w-12 h-12 rounded-full bg-accent-success/20 items-center justify-center mb-2">
-                  <Ionicons name="albums" size={24} color="#10b981" />
-                </View>
-                <Text className={`${THEME_CLASSES.heading3} mb-1`}>
-                  Templates
-                </Text>
-                <Text className={THEME_CLASSES.caption}>
-                  Quick start
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => router.push("/insights/" as any)}
-                className="flex-1 bg-background-secondary rounded-xl p-4 border border-border-subtle active:bg-interactive-hover"
-              >
-                <View className="w-12 h-12 rounded-full bg-accent-warning/20 items-center justify-center mb-2">
-                  <Ionicons name="analytics" size={24} color="#f59e0b" />
-                </View>
-                <Text className={`${THEME_CLASSES.heading3} mb-1`}>
-                  Insights
-                </Text>
-                <Text className={THEME_CLASSES.caption}>
-                  Your stats
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
-
-          {/* Study Streak */}
-          {stats && stats.streak_days > 0 && (
-            <View className="bg-gradient-to-r from-accent-warning/20 to-accent-error/20 rounded-xl p-4 mb-4 border border-accent-warning/30">
-              <View className="flex-row items-center">
-                <View className="w-12 h-12 rounded-full bg-accent-warning/30 items-center justify-center mr-3">
-                  <Ionicons name="flame" size={28} color="#f59e0b" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-2xl font-bold text-text-primary">
-                    {stats.streak_days} Day Streak!
-                  </Text>
-                  <Text className={THEME_CLASSES.caption}>
-                    Keep it going! Review daily to maintain your streak
-                  </Text>
-                </View>
-              </View>
-            </View>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,5 +1,4 @@
 import { StudyNotes } from '@/src/components/study-path/StudyNotes';
-import { TopicFlashcards } from '@/src/components/study-path/TopicFlashcards';
 import { THEME_CLASSES } from '@/src/config/theme.config';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -19,7 +18,7 @@ export default function TopicDetailScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [studyTips, setStudyTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'videos' | 'quiz' | 'notes' | 'tips' | 'flashcards'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'videos' | 'quiz' | 'notes' | 'tips'>('overview');
 
   useEffect(() => {
     getOrCreateUserId().then(setUserId);
@@ -108,20 +107,8 @@ export default function TopicDetailScreen() {
   }
 
   const handleStartStudy = () => {
-    Alert.alert(
-      'Start Studying',
-      `Ready to study ${topic.name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Create Flashcards',
-          onPress: () => {
-            router.back();
-            router.push('/' as any);
-          }
-        }
-      ]
-    );
+    // Navigate to videos tab
+    setActiveTab('videos');
   };
 
   const handleCompleteTopic = () => {
@@ -147,7 +134,6 @@ export default function TopicDetailScreen() {
 
   const tabs = [
     { id: 'overview' as const, label: 'Overview', icon: 'information-circle' },
-    { id: 'flashcards' as const, label: 'Flashcards', icon: 'albums' },
     { id: 'videos' as const, label: 'Videos', icon: 'play-circle' },
     { id: 'quiz' as const, label: 'Quiz', icon: 'help-circle' },
     { id: 'notes' as const, label: 'Notes', icon: 'document-text' },
@@ -331,17 +317,6 @@ export default function TopicDetailScreen() {
         {activeTab === 'videos' && (
           <View className="pb-4">
             <VideoLessons topicId={topicId as string} topicName={topic.name} />
-          </View>
-        )}
-
-        {/* Flashcards Tab */}
-        {activeTab === 'flashcards' && userId && (
-          <View className="pb-4">
-            <TopicFlashcards 
-              topicId={topicId as string}
-              topicName={topic.name}
-              userId={userId}
-            />
           </View>
         )}
 
