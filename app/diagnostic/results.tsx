@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { getTopicById } from '../../src/config/knowledge-graph.config';
+import { THEME_CLASSES } from '../../src/config/theme.config';
 import { StudyPathAIService } from '../../src/services/study-path-ai.service';
 import { StudyPathService } from '../../src/services/study-path.service';
 import { getOrCreateUserId } from '../../src/utils/user-id';
@@ -83,18 +84,18 @@ export default function DiagnosticResultsScreen() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-blue-600';
-    if (score >= 40) return 'text-yellow-600';
-    return 'text-red-600';
+  const getScoreColorClass = (score: number) => {
+    if (score >= 80) return 'text-accent-success';
+    if (score >= 60) return 'text-accent-primary';
+    if (score >= 40) return 'text-accent-warning';
+    return 'text-accent-error';
   };
 
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-blue-100';
-    if (score >= 40) return 'bg-yellow-100';
-    return 'bg-red-100';
+  const getScoreBgClass = (score: number) => {
+    if (score >= 80) return 'bg-accent-success/20 border-accent-success/30';
+    if (score >= 60) return 'bg-accent-primary/20 border-accent-primary/30';
+    if (score >= 40) return 'bg-accent-warning/20 border-accent-warning/30';
+    return 'bg-accent-error/20 border-accent-error/30';
   };
 
   const handleGeneratePath = async () => {
@@ -180,17 +181,17 @@ export default function DiagnosticResultsScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="px-4 py-6">
+    <ScrollView className={THEME_CLASSES.screen}>
+      <View className={THEME_CLASSES.section}>
         {/* Overall Score */}
-        <View className="bg-white rounded-2xl p-6 mb-4 items-center">
-          <Text className="text-gray-600 text-sm mb-2">Your Overall Score</Text>
-          <View className={`w-32 h-32 rounded-full ${getScoreBg(totalScore)} items-center justify-center mb-3`}>
-            <Text className={`text-4xl font-bold ${getScoreColor(totalScore)}`}>
+        <View className={`${THEME_CLASSES.cardLarge} mb-4 items-center`}>
+          <Text className="text-text-secondary text-sm mb-2">Your Overall Score</Text>
+          <View className={`w-32 h-32 rounded-full ${getScoreBgClass(totalScore)} border-2 items-center justify-center mb-3`}>
+            <Text className={`text-4xl font-bold ${getScoreColorClass(totalScore)}`}>
               {totalScore}%
             </Text>
           </View>
-          <Text className="text-lg font-semibold text-gray-800">
+          <Text className={THEME_CLASSES.heading3}>
             {totalScore >= 80 ? 'Excellent!' : 
              totalScore >= 60 ? 'Good Job!' :
              totalScore >= 40 ? 'Keep Going!' :
@@ -199,22 +200,22 @@ export default function DiagnosticResultsScreen() {
         </View>
 
         {/* Subject-wise Scores */}
-        <View className="bg-white rounded-2xl p-6 mb-4">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
+        <View className={`${THEME_CLASSES.cardLarge} mb-4`}>
+          <Text className={`${THEME_CLASSES.heading3} mb-4`}>
             Subject-wise Performance
           </Text>
           
           {/* Physics */}
           <View className="mb-4">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm font-medium text-gray-700">Physics</Text>
-              <Text className={`text-sm font-bold ${getScoreColor(physicsScore)}`}>
+              <Text className="text-sm font-medium text-text-secondary">Physics</Text>
+              <Text className={`text-sm font-bold ${getScoreColorClass(physicsScore)}`}>
                 {physicsScore}%
               </Text>
             </View>
-            <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <View className={THEME_CLASSES.progressBar}>
               <View 
-                className="h-full bg-blue-600 rounded-full"
+                className="h-full bg-physics rounded-full"
                 style={{ width: `${physicsScore}%` }}
               />
             </View>
@@ -223,14 +224,14 @@ export default function DiagnosticResultsScreen() {
           {/* Chemistry */}
           <View className="mb-4">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm font-medium text-gray-700">Chemistry</Text>
-              <Text className={`text-sm font-bold ${getScoreColor(chemistryScore)}`}>
+              <Text className="text-sm font-medium text-text-secondary">Chemistry</Text>
+              <Text className={`text-sm font-bold ${getScoreColorClass(chemistryScore)}`}>
                 {chemistryScore}%
               </Text>
             </View>
-            <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <View className={THEME_CLASSES.progressBar}>
               <View 
-                className="h-full bg-green-600 rounded-full"
+                className="h-full bg-chemistry rounded-full"
                 style={{ width: `${chemistryScore}%` }}
               />
             </View>
@@ -239,14 +240,14 @@ export default function DiagnosticResultsScreen() {
           {/* Biology */}
           <View className="mb-0">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm font-medium text-gray-700">Biology</Text>
-              <Text className={`text-sm font-bold ${getScoreColor(biologyScore)}`}>
+              <Text className="text-sm font-medium text-text-secondary">Biology</Text>
+              <Text className={`text-sm font-bold ${getScoreColorClass(biologyScore)}`}>
                 {biologyScore}%
               </Text>
             </View>
-            <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <View className={THEME_CLASSES.progressBar}>
               <View 
-                className="h-full bg-purple-600 rounded-full"
+                className="h-full bg-biology rounded-full"
                 style={{ width: `${biologyScore}%` }}
               />
             </View>
@@ -255,23 +256,23 @@ export default function DiagnosticResultsScreen() {
 
         {/* AI Analysis */}
         {loadingAnalysis && (
-          <View className="bg-white rounded-2xl p-6 mb-4 items-center">
-            <ActivityIndicator size="small" color="#3B82F6" />
-            <Text className="text-sm text-gray-600 mt-2">Analyzing your performance...</Text>
+          <View className={`${THEME_CLASSES.card} mb-4 items-center`}>
+            <ActivityIndicator size="small" color="#8b5cf6" />
+            <Text className="text-sm text-text-secondary mt-2">Analyzing your performance...</Text>
           </View>
         )}
 
         {aiAnalysis && (
-          <View className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-4">
+          <View className="bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 rounded-2xl p-6 mb-4 border border-accent-primary/20">
             <View className="flex-row items-center mb-4">
-              <Ionicons name="sparkles" size={20} color="#3B82F6" />
-              <Text className="text-lg font-semibold text-gray-900 ml-2">AI Analysis</Text>
+              <Ionicons name="sparkles" size={20} color="#8b5cf6" />
+              <Text className={`${THEME_CLASSES.heading3} ml-2`}>AI Analysis</Text>
             </View>
 
             {/* Overall Analysis */}
             {aiAnalysis.overallAnalysis && (
-              <View className="bg-white rounded-xl p-4 mb-3">
-                <Text className="text-sm text-gray-700 leading-5">
+              <View className={`${THEME_CLASSES.card} mb-3`}>
+                <Text className="text-sm text-text-secondary leading-5">
                   {aiAnalysis.overallAnalysis}
                 </Text>
               </View>
@@ -279,14 +280,14 @@ export default function DiagnosticResultsScreen() {
 
             {/* Study Strategy */}
             {aiAnalysis.studyStrategy?.length > 0 && (
-              <View className="bg-white rounded-xl p-4 mb-3">
-                <Text className="text-sm font-semibold text-gray-900 mb-2">
+              <View className={`${THEME_CLASSES.card} mb-3`}>
+                <Text className="text-sm font-semibold text-text-primary mb-2">
                   Recommended Strategy
                 </Text>
                 {aiAnalysis.studyStrategy.map((strategy: string, index: number) => (
                   <View key={index} className="flex-row items-start mb-2">
-                    <Text className="text-blue-600 mr-2">•</Text>
-                    <Text className="flex-1 text-sm text-gray-700">{strategy}</Text>
+                    <Text className="text-accent-primary mr-2">•</Text>
+                    <Text className="flex-1 text-sm text-text-secondary">{strategy}</Text>
                   </View>
                 ))}
               </View>
@@ -294,14 +295,14 @@ export default function DiagnosticResultsScreen() {
 
             {/* Focus Areas */}
             {aiAnalysis.focusAreas?.length > 0 && (
-              <View className="bg-white rounded-xl p-4 mb-3">
-                <Text className="text-sm font-semibold text-gray-900 mb-2">
+              <View className={`${THEME_CLASSES.card} mb-3`}>
+                <Text className="text-sm font-semibold text-text-primary mb-2">
                   Priority Focus Areas
                 </Text>
                 {aiAnalysis.focusAreas.map((area: string, index: number) => (
-                  <View key={index} className="flex-row items-center bg-purple-50 px-3 py-2 rounded-lg mb-2">
-                    <Text className="text-purple-600 mr-2">→</Text>
-                    <Text className="flex-1 text-sm text-gray-700">{area}</Text>
+                  <View key={index} className="flex-row items-center bg-accent-primary/10 px-3 py-2 rounded-lg mb-2 border border-accent-primary/20">
+                    <Text className="text-accent-primary mr-2">→</Text>
+                    <Text className="flex-1 text-sm text-text-secondary">{area}</Text>
                   </View>
                 ))}
               </View>
@@ -309,24 +310,24 @@ export default function DiagnosticResultsScreen() {
 
             {/* Time Allocation */}
             {aiAnalysis.timeAllocation?.length > 0 && (
-              <View className="bg-white rounded-xl p-4">
-                <Text className="text-sm font-semibold text-gray-900 mb-3">
+              <View className={THEME_CLASSES.card}>
+                <Text className="text-sm font-semibold text-text-primary mb-3">
                   Suggested Time Allocation
                 </Text>
                 {aiAnalysis.timeAllocation.map((allocation: any, index: number) => (
                   <View key={index} className="mb-3 last:mb-0">
                     <View className="flex-row justify-between items-center mb-1">
-                      <Text className="text-sm text-gray-700">{allocation.subject}</Text>
-                      <Text className="text-sm font-semibold text-gray-900">
+                      <Text className="text-sm text-text-secondary">{allocation.subject}</Text>
+                      <Text className="text-sm font-semibold text-text-primary">
                         {allocation.percentage}%
                       </Text>
                     </View>
-                    <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <View className={THEME_CLASSES.progressBar}>
                       <View 
                         className={`h-full rounded-full ${
-                          allocation.subject === 'Physics' ? 'bg-blue-600' :
-                          allocation.subject === 'Chemistry' ? 'bg-green-600' :
-                          'bg-purple-600'
+                          allocation.subject === 'Physics' ? 'bg-physics' :
+                          allocation.subject === 'Chemistry' ? 'bg-chemistry' :
+                          'bg-biology'
                         }`}
                         style={{ width: `${allocation.percentage}%` }}
                       />
@@ -340,17 +341,17 @@ export default function DiagnosticResultsScreen() {
 
         {/* Weak Topics */}
         {weakTopics.length > 0 && (
-          <View className="bg-white rounded-2xl p-6 mb-4">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
+          <View className={`${THEME_CLASSES.cardLarge} mb-4`}>
+            <Text className={`${THEME_CLASSES.heading3} mb-3`}>
               Topics to Focus On
             </Text>
             {weakTopics.map(topicId => {
               const topic = getTopicById(topicId);
               return topic ? (
-                <View key={topicId} className="flex-row items-center bg-red-50 p-3 rounded-lg mb-2 last:mb-0">
-                  <View className="w-2 h-2 rounded-full bg-red-500 mr-3" />
-                  <Text className="flex-1 text-sm text-gray-800">{topic.name}</Text>
-                  <Text className="text-xs text-gray-500">{topic.subject}</Text>
+                <View key={topicId} className="flex-row items-center bg-accent-error/10 p-3 rounded-lg mb-2 last:mb-0 border border-accent-error/20">
+                  <View className="w-2 h-2 rounded-full bg-accent-error mr-3" />
+                  <Text className="flex-1 text-sm text-text-primary">{topic.name}</Text>
+                  <Text className="text-xs text-text-tertiary">{topic.subject}</Text>
                 </View>
               ) : null;
             })}
@@ -359,17 +360,17 @@ export default function DiagnosticResultsScreen() {
 
         {/* Strong Topics */}
         {strongTopics.length > 0 && (
-          <View className="bg-white rounded-2xl p-6 mb-4">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
+          <View className={`${THEME_CLASSES.cardLarge} mb-4`}>
+            <Text className={`${THEME_CLASSES.heading3} mb-3`}>
               Your Strong Areas
             </Text>
             {strongTopics.map(topicId => {
               const topic = getTopicById(topicId);
               return topic ? (
-                <View key={topicId} className="flex-row items-center bg-green-50 p-3 rounded-lg mb-2 last:mb-0">
-                  <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
-                  <Text className="flex-1 text-sm text-gray-800">{topic.name}</Text>
-                  <Text className="text-xs text-gray-500">{topic.subject}</Text>
+                <View key={topicId} className="flex-row items-center bg-accent-success/10 p-3 rounded-lg mb-2 last:mb-0 border border-accent-success/20">
+                  <View className="w-2 h-2 rounded-full bg-accent-success mr-3" />
+                  <Text className="flex-1 text-sm text-text-primary">{topic.name}</Text>
+                  <Text className="text-xs text-text-tertiary">{topic.subject}</Text>
                 </View>
               ) : null;
             })}
@@ -380,7 +381,7 @@ export default function DiagnosticResultsScreen() {
         <TouchableOpacity
           onPress={handleGeneratePath}
           disabled={generating}
-          className={`rounded-xl p-4 items-center mb-4 ${generating ? 'bg-blue-400' : 'bg-blue-600'}`}
+          className={`${THEME_CLASSES.buttonPrimary} mb-4 ${generating ? 'opacity-60' : ''}`}
         >
           {generating ? (
             <View className="flex-row items-center">
@@ -401,9 +402,9 @@ export default function DiagnosticResultsScreen() {
 
         <TouchableOpacity
           onPress={() => router.back()}
-          className="bg-gray-200 rounded-xl p-4 items-center"
+          className={THEME_CLASSES.buttonOutline}
         >
-          <Text className="text-gray-700 text-base font-medium">
+          <Text className="text-text-primary text-base font-medium">
             Retake Diagnostic
           </Text>
         </TouchableOpacity>

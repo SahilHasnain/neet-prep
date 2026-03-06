@@ -6,28 +6,28 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DeckCard } from "../src/components/flashcard/DeckCard";
 import { Button } from "../src/components/ui/Button";
 import { Input } from "../src/components/ui/Input";
 import { NEET_SUBJECTS, NEET_TOPICS } from "../src/config/neet.config";
+import { THEME_CLASSES } from "../src/config/theme.config";
 import { useDecks } from "../src/hooks/useDecks";
 import {
-    getSubjectIconFamily,
-    getSubjectIconName,
+  getSubjectIconFamily,
+  getSubjectIconName,
 } from "../src/utils/neet-helpers";
 
 // Dev flag to test empty state - set to true to force empty state
@@ -199,8 +199,8 @@ export default function Index() {
 
   if (loading && displayDecks.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.loadingText}>Loading your decks...</Text>
+      <View className="flex-1 bg-background-primary items-center justify-center">
+        <Text className="text-base text-text-secondary">Loading your decks...</Text>
       </View>
     );
   }
@@ -208,163 +208,164 @@ export default function Index() {
   // Don't render until userId is loaded
   if (!userId) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.loadingText}>Initializing...</Text>
+      <View className="flex-1 bg-background-primary items-center justify-center">
+        <Text className="text-base text-text-secondary">Initializing...</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <View style={styles.heroHeader}>
-        <View style={styles.heroContent}>
-          <Text style={styles.appTitle}>NeuroPrep</Text>
-          <Text style={styles.heroSubtitle}>
+    <SafeAreaView className={THEME_CLASSES.screen} edges={["top", "bottom"]}>
+      {/* Hero Header */}
+      <View className="bg-gradient-to-br from-accent-primary to-accent-secondary px-4 pt-2 pb-2">
+        <View className="mb-1.5">
+          <Text className="text-[22px] font-bold text-white mb-0.5">NeuroPrep</Text>
+          <Text className="text-xs text-white/90 font-medium">
             Master NEET with Smart Flashcards
           </Text>
         </View>
 
         {displayDecks.length > 0 && (
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{displayDecks.length}</Text>
-              <Text style={styles.statLabel}>Decks</Text>
+          <View className="flex-row justify-around items-center bg-white/15 rounded-lg py-1.5 mt-1.5">
+            <View className="items-center flex-1">
+              <Text className="text-lg font-bold text-white">{displayDecks.length}</Text>
+              <Text className="text-[10px] text-white/85 mt-0.5">Decks</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{totalCards}</Text>
-              <Text style={styles.statLabel}>Cards</Text>
+            <View className="w-px h-6 bg-white/30" />
+            <View className="items-center flex-1">
+              <Text className="text-lg font-bold text-white">{totalCards}</Text>
+              <Text className="text-[10px] text-white/85 mt-0.5">Cards</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{subjects.length}</Text>
-              <Text style={styles.statLabel}>Subjects</Text>
+            <View className="w-px h-6 bg-white/30" />
+            <View className="items-center flex-1">
+              <Text className="text-lg font-bold text-white">{subjects.length}</Text>
+              <Text className="text-[10px] text-white/85 mt-0.5">Subjects</Text>
             </View>
           </View>
         )}
 
-        <View style={styles.quickActions}>
+        <View className="flex-row gap-2 mt-2">
           <TouchableOpacity
-            style={styles.quickActionButton}
+            className="flex-1 flex-row items-center justify-center gap-1.5 bg-accent-primary/20 py-2 px-3 rounded-lg active:bg-accent-primary/30 border border-accent-primary/30"
             onPress={() => router.push("/study-path/" as any)}
           >
             <Ionicons name="map" size={16} color="#8b5cf6" />
-            <Text style={styles.quickActionText}>Study Path</Text>
+            <Text className="text-accent-primary text-[13px] font-semibold">Study Path</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickActionButton}
+            className="flex-1 flex-row items-center justify-center gap-1.5 bg-accent-secondary/20 py-2 px-3 rounded-lg active:bg-accent-secondary/30 border border-accent-secondary/30"
             onPress={() => router.push("/templates/" as any)}
           >
             <Ionicons name="albums" size={16} color="#3b82f6" />
-            <Text style={styles.quickActionText}>Templates</Text>
+            <Text className="text-accent-secondary text-[13px] font-semibold">Templates</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickActionButton}
+            className="flex-1 flex-row items-center justify-center gap-1.5 bg-accent-success/20 py-2 px-3 rounded-lg active:bg-accent-success/30 border border-accent-success/30"
             onPress={() => router.push("/insights/" as any)}
           >
             <Ionicons name="analytics" size={16} color="#10b981" />
-            <Text style={styles.quickActionText}>Insights</Text>
+            <Text className="text-accent-success text-[13px] font-semibold">Insights</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* Search Bar */}
       {displayDecks.length > 0 && (
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons
-              name="search"
-              size={18}
-              color="#6b7280"
-              style={styles.searchIcon}
-            />
+        <View className="px-4 py-2 bg-background-secondary">
+          <View className="flex-row items-center bg-background-tertiary rounded-lg px-2.5 h-[38px]">
+            <Ionicons name="search" size={18} color="#717171" />
             <TextInput
               placeholder="Search decks..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              style={styles.searchInput}
-              placeholderTextColor="#9ca3af"
+              className="flex-1 text-sm text-text-primary ml-1.5"
+              placeholderTextColor="#717171"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Ionicons
-                  name="close"
-                  size={18}
-                  color="#9ca3af"
-                  style={styles.clearIcon}
-                />
+                <Ionicons name="close" size={18} color="#717171" />
               </TouchableOpacity>
             )}
           </View>
         </View>
       )}
 
+      {/* Error State */}
       {error && (
-        <View style={styles.errorContainer}>
-          <View style={styles.errorContent}>
-            <Ionicons name="warning" size={20} color="#dc2626" />
-            <Text style={styles.errorText}>{error}</Text>
+        <View className="m-4 p-4 bg-accent-error/10 rounded-xl border-l-4 border-accent-error flex-row justify-between items-center">
+          <View className="flex-row items-center flex-1 mr-3">
+            <Ionicons name="warning" size={20} color="#ef4444" />
+            <Text className="text-accent-error text-sm ml-2">{error}</Text>
           </View>
-          <TouchableOpacity style={styles.retryButton} onPress={refresh}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+          <TouchableOpacity
+            className="bg-accent-error px-4 py-2 rounded-lg active:bg-accent-error/80"
+            onPress={refresh}
+          >
+            <Text className="text-white font-semibold text-sm">Retry</Text>
           </TouchableOpacity>
         </View>
       )}
 
+      {/* Empty State */}
       {displayDecks.length === 0 && !loading ? (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIllustration}>
-            <Ionicons name="library" size={64} color="#3b82f6" />
+        <View className="flex-1 justify-center items-center px-6">
+          <View className="w-[120px] h-[120px] rounded-full bg-accent-primary/20 justify-center items-center mb-6 border-2 border-accent-primary/30">
+            <Ionicons name="library" size={64} color="#8b5cf6" />
           </View>
-          <Text style={styles.emptyTitle}>Start Your NEET Journey</Text>
-          <Text style={styles.emptyText}>
+          <Text className={`${THEME_CLASSES.heading1} mb-2 text-center`}>
+            Start Your NEET Journey
+          </Text>
+          <Text className="text-base text-text-secondary text-center mb-6 leading-6">
             Not sure where to start? Take our diagnostic quiz to get a personalized study path
           </Text>
 
           <TouchableOpacity
-            style={styles.primaryCTA}
+            className={`${THEME_CLASSES.buttonPrimary} flex-row gap-2 w-full max-w-[300px] mb-3`}
             onPress={() => router.push("/diagnostic/" as any)}
           >
             <Ionicons name="map" size={20} color="#fff" />
-            <Text style={styles.primaryCTAText}>Take Diagnostic Quiz</Text>
+            <Text className="text-white text-base font-semibold">Take Diagnostic Quiz</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.secondaryCTA}
+            className={`${THEME_CLASSES.buttonOutline} flex-row gap-2 w-full max-w-[300px] mb-3`}
             onPress={() => setShowCreateModal(true)}
           >
-            <Ionicons name="add-circle" size={20} color="#3b82f6" />
-            <Text style={styles.secondaryCTAText}>Create Deck Manually</Text>
+            <Ionicons name="add-circle" size={20} color="#8b5cf6" />
+            <Text className="text-accent-primary text-base font-semibold">Create Deck Manually</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondaryCTA, { marginTop: 12 }]}
+            className={`${THEME_CLASSES.buttonOutline} flex-row gap-2 w-full max-w-[300px]`}
             onPress={() => router.push("/templates/" as any)}
           >
-            <Ionicons name="albums" size={20} color="#3b82f6" />
-            <Text style={styles.secondaryCTAText}>Browse Templates</Text>
+            <Ionicons name="albums" size={20} color="#8b5cf6" />
+            <Text className="text-accent-primary text-base font-semibold">Browse Templates</Text>
           </TouchableOpacity>
         </View>
       ) : filteredDecks.length === 0 && searchQuery ? (
-        <View style={styles.noResultsContainer}>
-          <Ionicons name="search" size={64} color="#9ca3af" />
-          <Text style={styles.emptyTitle}>No Results Found</Text>
-          <Text style={styles.noResultsText}>
+        <View className="flex-1 justify-center items-center px-6">
+          <Ionicons name="search" size={64} color="#717171" />
+          <Text className={`${THEME_CLASSES.heading1} mb-2 text-center`}>
+            No Results Found
+          </Text>
+          <Text className="text-base text-text-secondary text-center mb-6">
             Try a different search term or create a new deck
           </Text>
           <TouchableOpacity
-            style={styles.primaryCTA}
+            className={`${THEME_CLASSES.buttonPrimary} w-full max-w-[300px]`}
             onPress={() => {
               setSearchQuery("");
               setShowCreateModal(true);
             }}
           >
-            <Text style={styles.primaryCTAText}>+ Create New Deck</Text>
+            <Text className="text-white text-base font-semibold">+ Create New Deck</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.listContent}>
+        <ScrollView className="flex-1 px-4 pb-20">
           {dueCount > 0 && (
             <ReviewSession dueCount={dueCount} deckId={firstDeckWithDueCards} />
           )}
@@ -375,18 +376,18 @@ export default function Index() {
             const { Component: IconComponent, name: iconName } =
               getSubjectIconComponent(subject);
             return (
-              <View key={subject} style={styles.subjectGroup}>
-                <View style={styles.subjectGroupHeader}>
-                  <View style={styles.subjectGroupTitleContainer}>
+              <View key={subject} className="mb-6">
+                <View className="flex-row justify-between items-center mb-3">
+                  <View className="flex-row items-center gap-2">
                     <IconComponent
                       name={iconName as any}
                       size={20}
-                      color="#1f2937"
+                      color="#ffffff"
                     />
-                    <Text style={styles.subjectGroupTitle}>{subject}</Text>
+                    <Text className={THEME_CLASSES.heading3}>{subject}</Text>
                   </View>
-                  <View style={styles.subjectBadge}>
-                    <Text style={styles.subjectBadgeText}>
+                  <View className="bg-accent-primary/20 px-2.5 py-1 rounded-full border border-accent-primary/30">
+                    <Text className="text-accent-primary text-sm font-semibold">
                       {subjectDecks.length}
                     </Text>
                   </View>
@@ -404,9 +405,17 @@ export default function Index() {
         </ScrollView>
       )}
 
+      {/* FAB */}
       {displayDecks.length > 0 && (
         <TouchableOpacity
-          style={styles.fab}
+          className="absolute right-5 bottom-[50px] w-14 h-14 rounded-full bg-accent-primary justify-center items-center active:bg-accent-primary/80"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
           onPress={() => setShowCreateModal(true)}
           activeOpacity={0.8}
         >
@@ -414,26 +423,32 @@ export default function Index() {
         </TouchableOpacity>
       )}
 
+      {/* Create Deck Modal */}
       <Modal visible={showCreateModal} animationType="slide" transparent>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.modalOverlay}
+          className="flex-1 bg-black/50"
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalOverlay}>
+            <View className="flex-1">
               <TouchableWithoutFeedback>
-                <View style={styles.modalWrapper}>
+                <View className="flex-1 justify-end">
                   <ScrollView
-                    contentContainerStyle={styles.modalScrollContent}
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>Create NEET Deck</Text>
+                    <View className="bg-background-secondary rounded-t-[20px] p-6 max-h-[90%]">
+                      <Text className={`${THEME_CLASSES.heading1} mb-6`}>
+                        Create NEET Deck
+                      </Text>
 
-                      <View style={styles.subjectSelector}>
-                        <Text style={styles.inputLabel}>Subject *</Text>
-                        <View style={styles.subjectButtons}>
+                      {/* Subject Selector */}
+                      <View className="mb-4">
+                        <Text className="text-sm font-semibold mb-2 text-text-secondary">
+                          Subject *
+                        </Text>
+                        <View className="flex-row gap-2">
                           {subjects.map((subject) => {
                             const { Component: IconComponent, name: iconName } =
                               getSubjectIconComponent(subject);
@@ -441,27 +456,26 @@ export default function Index() {
                             return (
                               <TouchableOpacity
                                 key={subject}
-                                style={[
-                                  styles.subjectButton,
-                                  isActive && styles.subjectButtonActive,
-                                ]}
+                                className={`flex-1 py-3 px-2 rounded-lg border-2 items-center ${
+                                  isActive
+                                    ? "border-accent-primary bg-accent-primary/10"
+                                    : "border-border-primary"
+                                }`}
                                 onPress={() => {
                                   setSelectedSubject(subject);
                                   setSelectedTopic("");
                                 }}
                               >
-                                <View style={styles.subjectButtonContent}>
+                                <View className="flex-row items-center gap-1">
                                   <IconComponent
                                     name={iconName as any}
                                     size={16}
-                                    color={isActive ? "#3b82f6" : "#6b7280"}
+                                    color={isActive ? "#8b5cf6" : "#717171"}
                                   />
                                   <Text
-                                    style={[
-                                      styles.subjectButtonText,
-                                      isActive &&
-                                        styles.subjectButtonTextActive,
-                                    ]}
+                                    className={`text-xs font-medium text-center ${
+                                      isActive ? "text-accent-primary font-semibold" : "text-text-tertiary"
+                                    }`}
                                   >
                                     {subject}
                                   </Text>
@@ -472,34 +486,33 @@ export default function Index() {
                         </View>
                       </View>
 
+                      {/* Topic Selector */}
                       {selectedSubject && topics.length > 0 && (
-                        <View style={styles.topicSelector}>
-                          <Text style={styles.inputLabel}>
+                        <View className="mb-4">
+                          <Text className="text-sm font-semibold mb-2 text-text-secondary">
                             Topic (Optional)
                           </Text>
                           <ScrollView
-                            style={styles.topicList}
+                            className="max-h-[150px] border border-border-primary rounded-lg p-2"
                             nestedScrollEnabled
                           >
                             {topics.map((topic) => (
                               <TouchableOpacity
                                 key={topic}
-                                style={[
-                                  styles.topicItem,
-                                  selectedTopic === topic &&
-                                    styles.topicItemActive,
-                                ]}
+                                className={`py-2 px-3 rounded-md mb-1 ${
+                                  selectedTopic === topic ? "bg-accent-primary/10" : ""
+                                }`}
                                 onPress={() => {
                                   setSelectedTopic(topic);
                                   setNewDeckTitle(topic);
                                 }}
                               >
                                 <Text
-                                  style={[
-                                    styles.topicItemText,
-                                    selectedTopic === topic &&
-                                      styles.topicItemTextActive,
-                                  ]}
+                                  className={`text-sm ${
+                                    selectedTopic === topic
+                                      ? "text-accent-primary font-semibold"
+                                      : "text-text-secondary"
+                                  }`}
                                 >
                                   {topic}
                                 </Text>
@@ -527,16 +540,16 @@ export default function Index() {
                         numberOfLines={3}
                       />
 
-                      <View style={styles.modalButtons}>
+                      <View className="flex-row gap-3 mt-2">
                         <TouchableOpacity
-                          style={[styles.modalButton, styles.cancelButton]}
+                          className="flex-1 bg-background-tertiary rounded-lg py-3 items-center justify-center active:bg-interactive-hover"
                           onPress={() => setShowCreateModal(false)}
                           disabled={creating}
                         >
-                          <Text style={styles.cancelButtonText}>Cancel</Text>
+                          <Text className="text-base font-semibold text-text-secondary">Cancel</Text>
                         </TouchableOpacity>
 
-                        <View style={styles.modalButton}>
+                        <View className="flex-1">
                           <Button
                             title="Create Deck"
                             onPress={handleCreateDeck}
@@ -555,426 +568,3 @@ export default function Index() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-  },
-  heroHeader: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  heroContent: {
-    marginBottom: 6,
-  },
-  appTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 1,
-  },
-  heroSubtitle: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.9)",
-    fontWeight: "500",
-  },
-  quickActions: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
-  quickActionButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: "#fff",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  quickActionText: {
-    color: "#1f2937",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  templatesButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  templatesButtonText: {
-    color: "#3b82f6",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  insightsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  insightsButtonText: {
-    color: "#10b981",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: 8,
-    paddingVertical: 6,
-    marginTop: 6,
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  statLabel: {
-    fontSize: 10,
-    color: "rgba(255, 255, 255, 0.85)",
-    marginTop: 1,
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: "#fff",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f3f4f6",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    height: 38,
-  },
-  searchIcon: {
-    marginRight: 6,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: "#1f2937",
-    padding: 0,
-  },
-  clearIcon: {
-    padding: 2,
-  },
-  loadingText: { fontSize: 16, color: "#666" },
-  errorContainer: {
-    margin: 16,
-    padding: 16,
-    backgroundColor: "#fef2f2",
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ef4444",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  errorContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    marginRight: 12,
-  },
-  errorText: {
-    color: "#dc2626",
-    fontSize: 14,
-    marginLeft: 8,
-  },
-  retryButton: {
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  emptyIllustration: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#e0f2fe",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  primaryCTA: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    width: "100%",
-    maxWidth: 300,
-    shadowColor: "#3b82f6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  primaryCTAText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  secondaryCTA: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#fff",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    width: "100%",
-    maxWidth: 300,
-    borderWidth: 2,
-    borderColor: "#3b82f6",
-  },
-  secondaryCTAText: {
-    color: "#3b82f6",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  noResultsContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  noResultsText: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  quickStartContainer: {
-    marginTop: 16,
-    width: "100%",
-  },
-  quickStartTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 16,
-  },
-  subjectSection: { marginBottom: 24 },
-  subjectTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    gap: 8,
-  },
-  subjectTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  topicGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  topicChip: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    shadowColor: "#3b82f6",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  topicChipText: { color: "#fff", fontSize: 12, fontWeight: "500" },
-  listContent: { padding: 16, paddingBottom: 80 },
-  subjectGroup: { marginBottom: 24 },
-  subjectGroupHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  subjectGroupTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  subjectGroupTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  subjectBadge: {
-    backgroundColor: "#e0f2fe",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  subjectBadgeText: {
-    color: "#3b82f6",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  fab: {
-    position: "absolute",
-    right: 20,
-    bottom: 50,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#3b82f6",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalWrapper: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  modalScrollContent: {
-    flexGrow: 1,
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    maxHeight: "90%",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 24,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#374151",
-  },
-  subjectSelector: { marginBottom: 16 },
-  subjectButtons: { flexDirection: "row", gap: 8 },
-  subjectButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-    alignItems: "center",
-  },
-  subjectButtonActive: {
-    borderColor: "#3b82f6",
-    backgroundColor: "#eff6ff",
-  },
-  subjectButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  subjectButtonText: {
-    fontSize: 12,
-    color: "#6b7280",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  subjectButtonTextActive: { color: "#3b82f6", fontWeight: "600" },
-  topicSelector: { marginBottom: 16 },
-  topicList: {
-    maxHeight: 150,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
-    padding: 8,
-  },
-  topicItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    marginBottom: 4,
-  },
-  topicItemActive: { backgroundColor: "#eff6ff" },
-  topicItemText: { fontSize: 14, color: "#374151" },
-  topicItemTextActive: { color: "#3b82f6", fontWeight: "600" },
-  modalButtons: { flexDirection: "row", gap: 12, marginTop: 8 },
-  modalButton: { flex: 1 },
-  cancelButton: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cancelButtonText: { fontSize: 16, fontWeight: "600", color: "#6b7280" },
-});

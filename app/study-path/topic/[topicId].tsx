@@ -1,3 +1,4 @@
+import { THEME_CLASSES } from '@/src/config/theme.config';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -12,6 +13,9 @@ export default function TopicDetailScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [studyTips, setStudyTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
+  const [practiceQuestions, setPracticeQuestions] = useState<any[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
 
   useEffect(() => {
     getOrCreateUserId().then(setUserId);
@@ -49,10 +53,30 @@ export default function TopicDetailScreen() {
     }
   };
 
+  const loadPracticeQuestions = async () => {
+    if (!topic) return;
+    
+    setLoadingQuestions(true);
+    try {
+      const questions = await StudyPathAIService.generatePracticeQuestions(
+        topic.name,
+        topic.subject,
+        5
+      );
+      setPracticeQuestions(questions);
+      setShowQuestions(true);
+    } catch (error) {
+      console.error('Error loading practice questions:', error);
+      Alert.alert('Error', 'Failed to generate practice questions');
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
   if (!topic) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center">
-        <Text className="text-gray-600">Topic not found</Text>
+      <View className={`${THEME_CLASSES.screen} items-center justify-center`}>
+        <Text className={THEME_CLASSES.body}>Topic not found</Text>
       </View>
     );
   }
@@ -98,9 +122,9 @@ export default function TopicDetailScreen() {
   const isLocked = topicProgress?.progress?.status === 'locked';
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <ScrollView className={THEME_CLASSES.screen}>
       {/* Header */}
-      <View className="bg-gradient-to-br from-blue-500 to-purple-600 px-4 pt-12 pb-6">
+      <View className="bg-gradient-to-br from-accent-primary to-accent-secondary px-4 pt-12 pb-6">
         <TouchableOpacity
           onPress={() => router.back()}
           className="mb-4"
@@ -111,15 +135,15 @@ export default function TopicDetailScreen() {
         <Text className="text-white text-2xl font-bold mb-2">
           {topic.name}
         </Text>
-        <Text className="text-blue-100 text-sm mb-4">
+        <Text className="text-text-secondary text-sm mb-4">
           {topic.description}
         </Text>
 
         {/* Status Badge */}
         <View className={`self-start px-3 py-1 rounded-full ${
-          isCompleted ? 'bg-green-500' :
-          isLocked ? 'bg-gray-500' :
-          'bg-blue-500'
+          isCompleted ? 'bg-accent-success/30 border border-accent-success/50' :
+          isLocked ? 'bg-text-disabled/30 border border-text-disabled/50' :
+          'bg-accent-primary/30 border border-accent-primary/50'
         }`}>
           <Text className="text-white text-xs font-semibold">
             {isCompleted ? '✓ Completed' :
@@ -129,90 +153,154 @@ export default function TopicDetailScreen() {
         </View>
       </View>
 
-      <View className="px-4 py-6">
+      <View className={THEME_CLASSES.section}>
         {/* Topic Info */}
-        <View className="bg-white rounded-xl p-4 mb-4">
+        <View className={`${THEME_CLASSES.card} mb-4`}>
           <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center mr-3">
-              <Ionicons name="information-circle" size={24} color="#3b82f6" />
+            <View className="w-10 h-10 rounded-full bg-accent-primary/20 items-center justify-center mr-3">
+              <Ionicons name="information-circle" size={24} color="#8b5cf6" />
             </View>
-            <Text className="text-lg font-semibold text-gray-900">Topic Details</Text>
+            <Text className={THEME_CLASSES.heading3}>Topic Details</Text>
           </View>
 
           <View className="space-y-2">
-            <View className="flex-row justify-between py-2 border-b border-gray-100">
-              <Text className="text-gray-600">Subject</Text>
-              <Text className="font-semibold text-gray-900">{topic.subject}</Text>
+            <View className="flex-row justify-between py-2 border-b border-border-subtle">
+              <Text className={THEME_CLASSES.body}>Subject</Text>
+              <Text className={THEME_CLASSES.heading3}>{topic.subject}</Text>
             </View>
-            <View className="flex-row justify-between py-2 border-b border-gray-100">
-              <Text className="text-gray-600">Difficulty</Text>
-              <Text className="font-semibold text-gray-900 capitalize">{topic.difficulty}</Text>
+            <View className="flex-row justify-between py-2 border-b border-border-subtle">
+              <Text className={THEME_CLASSES.body}>Difficulty</Text>
+              <Text className={`${THEME_CLASSES.heading3} capitalize`}>{topic.difficulty}</Text>
             </View>
-            <View className="flex-row justify-between py-2 border-b border-gray-100">
-              <Text className="text-gray-600">Estimated Time</Text>
-              <Text className="font-semibold text-gray-900">{topic.estimatedHours} hours</Text>
+            <View className="flex-row justify-between py-2 border-b border-border-subtle">
+              <Text className={THEME_CLASSES.body}>Estimated Time</Text>
+              <Text className={THEME_CLASSES.heading3}>{topic.estimatedHours} hours</Text>
             </View>
             <View className="flex-row justify-between py-2">
-              <Text className="text-gray-600">NEET Weightage</Text>
-              <Text className="font-semibold text-gray-900">{topic.neetWeightage}%</Text>
+              <Text className={THEME_CLASSES.body}>NEET Weightage</Text>
+              <Text className={THEME_CLASSES.heading3}>{topic.neetWeightage}%</Text>
             </View>
           </View>
         </View>
 
         {/* AI Study Tips */}
-        <View className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 mb-4 border border-purple-200">
+        <View className="bg-biology/10 rounded-xl p-4 mb-4 border border-biology/30">
           <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center mr-3">
-              <Ionicons name="bulb" size={24} color="#8b5cf6" />
+            <View className="w-10 h-10 rounded-full bg-biology/20 items-center justify-center mr-3">
+              <Ionicons name="bulb" size={24} color="#ec4899" />
             </View>
-            <Text className="text-lg font-semibold text-gray-900">AI Study Tips</Text>
+            <Text className={THEME_CLASSES.heading3}>AI Study Tips</Text>
           </View>
           
           {loadingTips ? (
             <View className="py-4 items-center">
-              <ActivityIndicator color="#8b5cf6" />
-              <Text className="text-gray-600 text-sm mt-2">Generating personalized tips...</Text>
+              <ActivityIndicator color="#ec4899" />
+              <Text className={`${THEME_CLASSES.bodySmall} mt-2`}>Generating personalized tips...</Text>
             </View>
           ) : studyTips.length > 0 ? (
             <View className="space-y-2">
               {studyTips.map((tip, index) => (
                 <View key={index} className="flex-row items-start py-2">
-                  <Text className="text-purple-600 font-bold mr-2">{index + 1}.</Text>
-                  <Text className="flex-1 text-gray-700">{tip}</Text>
+                  <Text className="text-biology-light font-bold mr-2">{index + 1}.</Text>
+                  <Text className={`flex-1 ${THEME_CLASSES.body}`}>{tip}</Text>
                 </View>
               ))}
             </View>
           ) : (
             <TouchableOpacity
               onPress={loadStudyTips}
-              className="bg-purple-600 rounded-lg p-3 items-center"
+              className="bg-biology rounded-lg p-3 items-center active:bg-biology/80"
             >
               <Text className="text-white font-semibold">Generate Study Tips</Text>
             </TouchableOpacity>
           )}
         </View>
 
+        {/* AI Practice Questions */}
+        <View className="bg-accent-success/10 rounded-xl p-4 mb-4 border border-accent-success/30">
+          <View className="flex-row items-center mb-3">
+            <View className="w-10 h-10 rounded-full bg-accent-success/20 items-center justify-center mr-3">
+              <Ionicons name="help-circle" size={24} color="#10b981" />
+            </View>
+            <Text className={THEME_CLASSES.heading3}>Practice Questions</Text>
+          </View>
+          
+          {loadingQuestions ? (
+            <View className="py-4 items-center">
+              <ActivityIndicator color="#10b981" />
+              <Text className={`${THEME_CLASSES.bodySmall} mt-2`}>Generating questions...</Text>
+            </View>
+          ) : showQuestions && practiceQuestions.length > 0 ? (
+            <View className="space-y-3">
+              {practiceQuestions.map((q, index) => (
+                <View key={index} className="bg-background-tertiary rounded-lg p-3 border border-border-secondary">
+                  <Text className={`${THEME_CLASSES.bodySmall} font-semibold mb-2`}>
+                    Q{index + 1}. {q.question}
+                  </Text>
+                  {q.options.map((option: string, optIndex: number) => (
+                    <View 
+                      key={optIndex} 
+                      className={`flex-row items-center p-2 rounded mt-1 ${
+                        optIndex === q.correctAnswer ? 'bg-accent-success/20' : 'bg-background-secondary'
+                      }`}
+                    >
+                      <Text className={`text-xs font-semibold mr-2 ${
+                        optIndex === q.correctAnswer ? 'text-accent-success' : 'text-text-tertiary'
+                      }`}>
+                        {String.fromCharCode(65 + optIndex)}.
+                      </Text>
+                      <Text className={`flex-1 text-xs ${
+                        optIndex === q.correctAnswer ? 'text-accent-success font-medium' : 'text-text-secondary'
+                      }`}>
+                        {option}
+                      </Text>
+                      {optIndex === q.correctAnswer && (
+                        <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      )}
+                    </View>
+                  ))}
+                  {q.explanation && (
+                    <View className="mt-2 p-2 bg-accent-secondary/10 rounded">
+                      <Text className="text-xs text-accent-secondary">
+                        <Text className="font-semibold">Explanation: </Text>
+                        {q.explanation}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={loadPracticeQuestions}
+              className="bg-accent-success rounded-lg p-3 items-center active:bg-accent-success/80"
+            >
+              <Text className="text-white font-semibold">Generate Practice Questions</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         {/* Progress */}
         {topicProgress?.progress && topicProgress.progress.mastery_level > 0 && (
-          <View className="bg-white rounded-xl p-4 mb-4">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">Your Progress</Text>
+          <View className={`${THEME_CLASSES.card} mb-4`}>
+            <Text className={`${THEME_CLASSES.heading3} mb-3`}>Your Progress</Text>
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-gray-600">Mastery Level</Text>
-              <Text className="font-semibold text-gray-900">
+              <Text className={THEME_CLASSES.body}>Mastery Level</Text>
+              <Text className={THEME_CLASSES.heading3}>
                 {topicProgress.progress.mastery_level}%
               </Text>
             </View>
-            <View className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
+            <View className={`${THEME_CLASSES.progressBar} mb-4`}>
               <View 
-                className="h-full bg-blue-600 rounded-full"
+                className={THEME_CLASSES.progressFill}
                 style={{ width: `${topicProgress.progress.mastery_level}%` }}
               />
             </View>
             <View className="flex-row justify-between text-sm">
-              <Text className="text-gray-600">
+              <Text className={THEME_CLASSES.body}>
                 Time: {topicProgress.progress.time_spent_minutes} min
               </Text>
-              <Text className="text-gray-600">
+              <Text className={THEME_CLASSES.body}>
                 Quizzes: {topicProgress.progress.quiz_attempts}
               </Text>
             </View>
@@ -221,17 +309,17 @@ export default function TopicDetailScreen() {
 
         {/* Prerequisites */}
         {prerequisites.length > 0 && (
-          <View className="bg-white rounded-xl p-4 mb-4">
+          <View className={`${THEME_CLASSES.card} mb-4`}>
             <View className="flex-row items-center mb-3">
               <Ionicons name="arrow-down-circle" size={20} color="#f59e0b" />
-              <Text className="text-lg font-semibold text-gray-900 ml-2">
+              <Text className={`${THEME_CLASSES.heading3} ml-2`}>
                 Prerequisites ({prerequisites.length})
               </Text>
             </View>
             {prerequisites.map(prereq => (
-              <View key={prereq.id} className="flex-row items-center py-2 border-b border-gray-100">
+              <View key={prereq.id} className="flex-row items-center py-2 border-b border-border-subtle">
                 <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                <Text className="ml-2 text-gray-700">{prereq.name}</Text>
+                <Text className={`ml-2 ${THEME_CLASSES.body}`}>{prereq.name}</Text>
               </View>
             ))}
           </View>
@@ -239,20 +327,20 @@ export default function TopicDetailScreen() {
 
         {/* Dependents */}
         {dependents.length > 0 && (
-          <View className="bg-white rounded-xl p-4 mb-4">
+          <View className={`${THEME_CLASSES.card} mb-4`}>
             <View className="flex-row items-center mb-3">
-              <Ionicons name="arrow-up-circle" size={20} color="#8b5cf6" />
-              <Text className="text-lg font-semibold text-gray-900 ml-2">
+              <Ionicons name="arrow-up-circle" size={20} color="#ec4899" />
+              <Text className={`${THEME_CLASSES.heading3} ml-2`}>
                 Unlocks ({dependents.length})
               </Text>
             </View>
-            <Text className="text-sm text-gray-600 mb-3">
+            <Text className={`${THEME_CLASSES.bodySmall} mb-3`}>
               Complete this topic to unlock:
             </Text>
             {dependents.map(dep => (
-              <View key={dep.id} className="flex-row items-center py-2 border-b border-gray-100">
-                <Ionicons name="lock-closed" size={16} color="#9ca3af" />
-                <Text className="ml-2 text-gray-700">{dep.name}</Text>
+              <View key={dep.id} className="flex-row items-center py-2 border-b border-border-subtle">
+                <Ionicons name="lock-closed" size={16} color="#717171" />
+                <Text className={`ml-2 ${THEME_CLASSES.body}`}>{dep.name}</Text>
               </View>
             ))}
           </View>
@@ -263,7 +351,7 @@ export default function TopicDetailScreen() {
           <View className="space-y-3">
             <TouchableOpacity
               onPress={handleStartStudy}
-              className="bg-blue-600 rounded-xl p-4 items-center"
+              className={THEME_CLASSES.buttonPrimary}
             >
               <Text className="text-white text-base font-semibold">
                 {isCompleted ? 'Review Topic' : 'Start Studying'}
@@ -273,7 +361,7 @@ export default function TopicDetailScreen() {
             {!isCompleted && (
               <TouchableOpacity
                 onPress={handleCompleteTopic}
-                className="bg-green-600 rounded-xl p-4 items-center"
+                className={THEME_CLASSES.buttonSuccess}
               >
                 <Text className="text-white text-base font-semibold">
                   Mark as Completed
@@ -284,12 +372,12 @@ export default function TopicDetailScreen() {
         )}
 
         {isLocked && (
-          <View className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <View className="bg-accent-warning/10 border border-accent-warning/30 rounded-xl p-4">
             <View className="flex-row items-center mb-2">
               <Ionicons name="lock-closed" size={20} color="#f59e0b" />
-              <Text className="ml-2 text-yellow-800 font-semibold">Topic Locked</Text>
+              <Text className="ml-2 text-accent-warning font-semibold">Topic Locked</Text>
             </View>
-            <Text className="text-yellow-700 text-sm">
+            <Text className={THEME_CLASSES.bodySmall}>
               Complete the prerequisite topics first to unlock this topic.
             </Text>
           </View>

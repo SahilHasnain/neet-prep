@@ -3,7 +3,8 @@
  * Shows review stats, streak, and forecast
  */
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { THEME_CLASSES } from "../../config/theme.config";
 import { ReviewSessionStats } from "../../types/flashcard.types";
 
 interface ReviewCalendarProps {
@@ -16,256 +17,122 @@ export const ReviewCalendar = ({ stats }: ReviewCalendarProps) => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Review Statistics</Text>
+    <View className={`${THEME_CLASSES.card} mb-4`}>
+      <View className="flex-row justify-between items-center mb-3">
+        <Text className="text-base font-semibold text-text-primary">Review Statistics</Text>
         {stats.streak_days > 0 && (
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakIcon}>🔥</Text>
-            <Text style={styles.streakText}>
-              {stats.streak_days} day streak
+          <View className="flex-row items-center bg-accent-warning/20 px-2 py-1 rounded-full gap-1 border border-accent-warning/30">
+            <Text className="text-sm">🔥</Text>
+            <Text className="text-xs font-semibold text-accent-warning">
+              {stats.streak_days}d
             </Text>
           </View>
         )}
       </View>
 
-      <View style={styles.statsGrid}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.reviewed_today}</Text>
-          <Text style={styles.statLabel}>Reviewed Today</Text>
+      <View className="flex-row gap-2 mb-3">
+        <View className="flex-1 bg-background-tertiary p-2 rounded-lg items-center">
+          <Text className="text-xl font-bold text-text-primary">
+            {stats.reviewed_today}
+          </Text>
+          <Text className="text-[10px] text-text-tertiary font-semibold">
+            Today
+          </Text>
         </View>
 
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.total_due}</Text>
-          <Text style={styles.statLabel}>Due Now</Text>
+        <View className="flex-1 bg-background-tertiary p-2 rounded-lg items-center">
+          <Text className="text-xl font-bold text-text-primary">
+            {stats.total_due}
+          </Text>
+          <Text className="text-[10px] text-text-tertiary font-semibold">
+            Due
+          </Text>
         </View>
 
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.new_cards}</Text>
-          <Text style={styles.statLabel}>New</Text>
+        <View className="flex-1 bg-background-tertiary p-2 rounded-lg items-center">
+          <Text className="text-xl font-bold text-text-primary">
+            {stats.new_cards}
+          </Text>
+          <Text className="text-[10px] text-text-tertiary font-semibold">New</Text>
         </View>
 
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.learning_cards}</Text>
-          <Text style={styles.statLabel}>Learning</Text>
+        <View className="flex-1 bg-background-tertiary p-2 rounded-lg items-center">
+          <Text className="text-xl font-bold text-text-primary">
+            {stats.learning_cards}
+          </Text>
+          <Text className="text-[10px] text-text-tertiary font-semibold">
+            Learning
+          </Text>
         </View>
       </View>
 
-      <View style={styles.progressSection}>
-        <Text style={styles.sectionTitle}>Card Status</Text>
-        <View style={styles.progressBar}>
+      <View className="mb-3">
+        <View className="flex-row h-2 rounded-full overflow-hidden mb-2">
           <View
-            style={[
-              styles.progressSegment,
-              styles.newSegment,
-              { flex: stats.new_cards || 0.1 },
-            ]}
+            className="h-full bg-accent-secondary"
+            style={{ flex: stats.new_cards || 0.1 }}
           />
           <View
-            style={[
-              styles.progressSegment,
-              styles.learningSegment,
-              { flex: stats.learning_cards || 0.1 },
-            ]}
+            className="h-full bg-accent-warning"
+            style={{ flex: stats.learning_cards || 0.1 }}
           />
           <View
-            style={[
-              styles.progressSegment,
-              styles.reviewSegment,
-              { flex: stats.review_cards || 0.1 },
-            ]}
+            className="h-full bg-accent-primary"
+            style={{ flex: stats.review_cards || 0.1 }}
           />
           <View
-            style={[
-              styles.progressSegment,
-              styles.masteredSegment,
-              { flex: stats.mastered_cards || 0.1 },
-            ]}
+            className="h-full bg-accent-success"
+            style={{ flex: stats.mastered_cards || 0.1 }}
           />
         </View>
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#3b82f6" }]} />
-            <Text style={styles.legendText}>New ({stats.new_cards})</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#f59e0b" }]} />
-            <Text style={styles.legendText}>
-              Learning ({stats.learning_cards})
+        <View className="flex-row flex-wrap gap-2">
+          <View className="flex-row items-center gap-1">
+            <View className="w-2 h-2 rounded-full bg-accent-secondary" />
+            <Text className="text-[10px] text-text-tertiary">
+              New {stats.new_cards}
             </Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#8b5cf6" }]} />
-            <Text style={styles.legendText}>Review ({stats.review_cards})</Text>
+          <View className="flex-row items-center gap-1">
+            <View className="w-2 h-2 rounded-full bg-accent-warning" />
+            <Text className="text-[10px] text-text-tertiary">
+              Learning {stats.learning_cards}
+            </Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#10b981" }]} />
-            <Text style={styles.legendText}>
-              Mastered ({stats.mastered_cards})
+          <View className="flex-row items-center gap-1">
+            <View className="w-2 h-2 rounded-full bg-accent-primary" />
+            <Text className="text-[10px] text-text-tertiary">
+              Review {stats.review_cards}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <View className="w-2 h-2 rounded-full bg-accent-success" />
+            <Text className="text-[10px] text-text-tertiary">
+              Mastered {stats.mastered_cards}
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.forecastSection}>
-        <Text style={styles.sectionTitle}>Upcoming Reviews</Text>
-        <View style={styles.forecastGrid}>
-          <View style={styles.forecastCard}>
-            <Text style={styles.forecastValue}>{stats.forecast.tomorrow}</Text>
-            <Text style={styles.forecastLabel}>Tomorrow</Text>
+      <View className="pt-3 border-t border-border-subtle">
+        <View className="flex-row gap-2">
+          <View className="flex-1 bg-accent-secondary/10 p-2 rounded-lg items-center border border-accent-secondary/20">
+            <Text className="text-lg font-bold text-accent-secondary">
+              {stats.forecast.tomorrow}
+            </Text>
+            <Text className="text-[10px] text-accent-secondary font-semibold">
+              Tomorrow
+            </Text>
           </View>
-          <View style={styles.forecastCard}>
-            <Text style={styles.forecastValue}>{stats.forecast.next_week}</Text>
-            <Text style={styles.forecastLabel}>Next 7 Days</Text>
+          <View className="flex-1 bg-accent-secondary/10 p-2 rounded-lg items-center border border-accent-secondary/20">
+            <Text className="text-lg font-bold text-accent-secondary">
+              {stats.forecast.next_week}
+            </Text>
+            <Text className="text-[10px] text-accent-secondary font-semibold">
+              Next 7d
+            </Text>
           </View>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1f2937",
-  },
-  streakBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fef3c7",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 4,
-  },
-  streakIcon: {
-    fontSize: 16,
-  },
-  streakText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#92400e",
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 24,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: "45%",
-    backgroundColor: "#f9fafb",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#1f2937",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#6b7280",
-    fontWeight: "600",
-  },
-  progressSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 12,
-  },
-  progressBar: {
-    flexDirection: "row",
-    height: 12,
-    borderRadius: 6,
-    overflow: "hidden",
-    marginBottom: 12,
-  },
-  progressSegment: {
-    height: "100%",
-  },
-  newSegment: {
-    backgroundColor: "#3b82f6",
-  },
-  learningSegment: {
-    backgroundColor: "#f59e0b",
-  },
-  reviewSegment: {
-    backgroundColor: "#8b5cf6",
-  },
-  masteredSegment: {
-    backgroundColor: "#10b981",
-  },
-  legend: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  legendText: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  forecastSection: {
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-  },
-  forecastGrid: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  forecastCard: {
-    flex: 1,
-    backgroundColor: "#eff6ff",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-  },
-  forecastValue: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#1e40af",
-    marginBottom: 4,
-  },
-  forecastLabel: {
-    fontSize: 12,
-    color: "#3b82f6",
-    fontWeight: "600",
-  },
-});

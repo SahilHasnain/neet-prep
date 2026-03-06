@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { DIAGNOSTIC_QUESTIONS } from '../../src/config/diagnostic-quiz.config';
 import { DiagnosticQuestion, DiagnosticQuestionsService } from '../../src/services/diagnostic-questions.service';
+import { THEME_CLASSES } from '@/src/config/theme.config';
 
 export default function DiagnosticQuizScreen() {
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([]);
@@ -38,12 +39,12 @@ export default function DiagnosticQuizScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="mt-4 text-gray-600 text-center px-6">
+      <View className="flex-1 bg-background-primary items-center justify-center">
+        <ActivityIndicator size="large" color="#8b5cf6" />
+        <Text className="mt-4 text-text-secondary text-center px-6">
           Generating personalized diagnostic questions...
         </Text>
-        <Text className="mt-2 text-sm text-gray-500 text-center px-6">
+        <Text className="mt-2 text-sm text-text-tertiary text-center px-6">
           This may take a moment
         </Text>
       </View>
@@ -52,14 +53,14 @@ export default function DiagnosticQuizScreen() {
 
   if (questions.length === 0) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center px-6">
-        <Text className="text-xl font-bold text-gray-900 mb-2">Error</Text>
-        <Text className="text-gray-600 text-center mb-4">
+      <View className="flex-1 bg-background-primary items-center justify-center px-6">
+        <Text className="text-xl font-bold text-text-primary mb-2">Error</Text>
+        <Text className="text-text-secondary text-center mb-4">
           Failed to load diagnostic questions
         </Text>
         <TouchableOpacity
           onPress={loadQuestions}
-          className="bg-blue-600 rounded-xl px-6 py-3"
+          className={THEME_CLASSES.buttonPrimary}
         >
           <Text className="text-white font-semibold">Retry</Text>
         </TouchableOpacity>
@@ -155,20 +156,20 @@ export default function DiagnosticQuizScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className={THEME_CLASSES.screen}>
       {/* Progress Bar */}
-      <View className="bg-white px-4 py-3 border-b border-gray-200">
+      <View className="bg-background-secondary px-4 py-3 border-b border-border-subtle">
         <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-sm font-medium text-gray-600">
+          <Text className="text-sm font-medium text-text-secondary">
             Question {currentQuestion + 1} of {questions.length}
           </Text>
-          <Text className="text-sm font-medium text-blue-600">
+          <Text className="text-sm font-medium text-accent-primary">
             {Math.round(progress)}%
           </Text>
         </View>
-        <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <View className={THEME_CLASSES.progressBar}>
           <View 
-            className="h-full bg-blue-600 rounded-full"
+            className={THEME_CLASSES.progressFill}
             style={{ width: `${progress}%` }}
           />
         </View>
@@ -177,15 +178,15 @@ export default function DiagnosticQuizScreen() {
       <ScrollView className="flex-1 px-4 py-6">
         {/* Subject Badge */}
         <View className="mb-4">
-          <View className={`self-start px-3 py-1 rounded-full ${
-            question.subject === 'Physics' ? 'bg-blue-100' :
-            question.subject === 'Chemistry' ? 'bg-green-100' :
-            'bg-purple-100'
+          <View className={`self-start px-3 py-1 rounded-full border ${
+            question.subject === 'Physics' ? 'bg-physics/20 border-physics/30' :
+            question.subject === 'Chemistry' ? 'bg-chemistry/20 border-chemistry/30' :
+            'bg-biology/20 border-biology/30'
           }`}>
             <Text className={`text-xs font-semibold ${
-              question.subject === 'Physics' ? 'text-blue-700' :
-              question.subject === 'Chemistry' ? 'text-green-700' :
-              'text-purple-700'
+              question.subject === 'Physics' ? 'text-physics' :
+              question.subject === 'Chemistry' ? 'text-chemistry' :
+              'text-biology'
             }`}>
               {question.subject}
             </Text>
@@ -193,7 +194,7 @@ export default function DiagnosticQuizScreen() {
         </View>
 
         {/* Question */}
-        <Text className="text-xl font-semibold text-gray-900 mb-6">
+        <Text className={`${THEME_CLASSES.heading2} mb-6`}>
           {question.question}
         </Text>
 
@@ -203,15 +204,15 @@ export default function DiagnosticQuizScreen() {
             <TouchableOpacity
               key={index}
               onPress={() => handleAnswer(index)}
-              className="bg-white p-4 rounded-xl border-2 border-gray-200 active:border-blue-500"
+              className="bg-background-secondary p-4 rounded-xl border-2 border-border-subtle active:border-accent-primary"
             >
               <View className="flex-row items-center">
-                <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-3">
-                  <Text className="text-sm font-semibold text-gray-700">
+                <View className="w-8 h-8 rounded-full bg-background-tertiary items-center justify-center mr-3">
+                  <Text className="text-sm font-semibold text-text-primary">
                     {String.fromCharCode(65 + index)}
                   </Text>
                 </View>
-                <Text className="flex-1 text-base text-gray-800">
+                <Text className="flex-1 text-base text-text-primary">
                   {option}
                 </Text>
               </View>
@@ -221,16 +222,16 @@ export default function DiagnosticQuizScreen() {
 
         {/* Difficulty Indicator */}
         <View className="mt-6 flex-row items-center">
-          <Text className="text-sm text-gray-500 mr-2">Difficulty:</Text>
-          <View className={`px-2 py-1 rounded ${
-            question.difficulty === 'easy' ? 'bg-green-100' :
-            question.difficulty === 'medium' ? 'bg-yellow-100' :
-            'bg-red-100'
+          <Text className="text-sm text-text-tertiary mr-2">Difficulty:</Text>
+          <View className={`px-2 py-1 rounded border ${
+            question.difficulty === 'easy' ? 'bg-accent-success/20 border-accent-success/30' :
+            question.difficulty === 'medium' ? 'bg-accent-warning/20 border-accent-warning/30' :
+            'bg-accent-error/20 border-accent-error/30'
           }`}>
             <Text className={`text-xs font-medium ${
-              question.difficulty === 'easy' ? 'text-green-700' :
-              question.difficulty === 'medium' ? 'text-yellow-700' :
-              'text-red-700'
+              question.difficulty === 'easy' ? 'text-accent-success' :
+              question.difficulty === 'medium' ? 'text-accent-warning' :
+              'text-accent-error'
             }`}>
               {question.difficulty.toUpperCase()}
             </Text>

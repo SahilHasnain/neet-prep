@@ -1,4 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { THEME_CLASSES } from '../../config/theme.config';
 
 interface ButtonProps {
   title: string;
@@ -11,51 +12,23 @@ interface ButtonProps {
 export function Button({ title, onPress, variant = 'primary', loading, disabled }: ButtonProps) {
   const isDisabled = disabled || loading;
 
+  const getButtonClass = () => {
+    if (variant === 'secondary') return THEME_CLASSES.buttonSecondary;
+    if (variant === 'danger') return 'bg-accent-error rounded-xl p-3 items-center active:bg-accent-error/80';
+    return THEME_CLASSES.buttonPrimary;
+  };
+
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        variant === 'primary' && styles.primary,
-        variant === 'secondary' && styles.secondary,
-        variant === 'danger' && styles.danger,
-        isDisabled && styles.disabled,
-      ]}
+      className={`${getButtonClass()} ${isDisabled ? 'opacity-50' : ''}`}
       onPress={onPress}
       disabled={isDisabled}
     >
       {loading ? (
         <ActivityIndicator color="#fff" />
       ) : (
-        <Text style={styles.text}>{title}</Text>
+        <Text className="text-white text-base font-semibold">{title}</Text>
       )}
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  primary: {
-    backgroundColor: '#007AFF',
-  },
-  secondary: {
-    backgroundColor: '#6c757d',
-  },
-  danger: {
-    backgroundColor: '#dc3545',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  text: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
