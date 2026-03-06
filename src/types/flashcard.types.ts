@@ -23,6 +23,7 @@ export interface FlashcardDeck {
   title: string;
   description?: string;
   category?: string;
+  topic_id?: string; // Linked study path topic
   is_public: boolean;
   card_count: number;
   created_at: string;
@@ -73,6 +74,7 @@ export interface CreateDeckDTO {
   title: string;
   description?: string;
   category?: string;
+  topic_id?: string; // Link to study path topic
   is_public?: boolean;
 }
 
@@ -80,6 +82,7 @@ export interface UpdateDeckDTO {
   title?: string;
   description?: string;
   category?: string;
+  topic_id?: string; // Link to study path topic
   is_public?: boolean;
 }
 

@@ -24,6 +24,7 @@ Stores information about flashcard decks created by users.
 | title       | string(100) | Yes      | -       | -       | Deck title            |
 | description | string(500) | No       | -       | -       | Deck description      |
 | category    | string(50)  | No       | Key     | -       | Category/topic        |
+| topic_id    | string(50)  | No       | Key     | -       | Linked study path topic |
 | is_public   | boolean     | No       | -       | false   | Public visibility     |
 | card_count  | integer     | No       | -       | 0       | Number of cards       |
 | created_at  | datetime    | Yes      | -       | -       | Creation timestamp    |
@@ -147,6 +148,7 @@ flashcard_decks (1) ──< (N) ai_generation_logs
 - `deck_id_idx` (unique) on deck_id
 - `user_id_idx` (key) on user_id
 - `category_idx` (key) on category
+- `topic_id_idx` (key) on topic_id
 
 ### flashcards
 

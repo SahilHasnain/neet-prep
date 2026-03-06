@@ -6,18 +6,19 @@
 import type { FlashcardTemplate } from "../config/templates.config";
 import { getTemplateById } from "../config/templates.config";
 import type {
-  CreateFlashcardDTO,
-  FlashcardDeck,
+    CreateFlashcardDTO,
+    FlashcardDeck,
 } from "../types/flashcard.types";
 import { FlashcardService } from "./flashcard.service";
 
 export class TemplateService {
   /**
-   * Create a deck from a template
+   * Create a deck from a template, optionally linked to a topic
    */
   static async createDeckFromTemplate(
     userId: string,
     templateId: string,
+    topicId?: string,
   ): Promise<FlashcardDeck | null> {
     try {
       const template = getTemplateById(templateId);
@@ -26,11 +27,12 @@ export class TemplateService {
         return null;
       }
 
-      // Create the deck
+      // Create the deck (with optional topic link)
       const deck = await FlashcardService.createDeck(userId, {
         title: template.title,
         description: template.description,
         category: template.category,
+        topic_id: topicId,
         is_public: false,
       });
 

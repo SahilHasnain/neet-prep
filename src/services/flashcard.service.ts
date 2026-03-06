@@ -6,13 +6,13 @@
 import { ID, Query } from "react-native-appwrite";
 import { COLLECTIONS } from "../config/appwrite.config";
 import type {
-  CreateDeckDTO,
-  CreateFlashcardDTO,
-  Flashcard,
-  FlashcardDeck,
-  PaginatedResponse,
-  UpdateDeckDTO,
-  UpdateFlashcardDTO,
+    CreateDeckDTO,
+    CreateFlashcardDTO,
+    Flashcard,
+    FlashcardDeck,
+    PaginatedResponse,
+    UpdateDeckDTO,
+    UpdateFlashcardDTO,
 } from "../types/flashcard.types";
 import { DATABASE_ID, databases } from "./appwrite";
 
@@ -35,6 +35,7 @@ export class FlashcardService {
         title: data.title,
         description: data.description || "",
         category: data.category || "",
+        topic_id: data.topic_id || null,
         is_public: data.is_public || false,
         card_count: 0,
         created_at: now,
@@ -215,5 +216,37 @@ export class FlashcardService {
     }
 
     return createdCards;
+  }
+
+  // Topic-based deck operations
+  static async getDecksByTopic(topicId: string): Promise<FlashcardDeck[]> {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.FLASHCARD_DECKS,
+      [
+        Query.equal("topic_id", topicId),
+        Query.orderDesc("updated_at"),
+      ],
+    );
+
+    return response.documents as unknown as FlashcardDeck[];
+  }
+
+  static async createTopicDeck(
+    userId: string,
+    topicId: string,
+    data: Omit<CreateDeckDTO, 'topic_id'>,
+  ): Promise<FlashcardDeck> {
+    return this.createDeck(userId, {
+      ...data,
+      topic_id: topicId,
+    });
+  }
+
+  static async linkDeckToTopic(
+    deckId: string,
+    topicId: string,
+  ): Promise<FlashcardDeck> {
+    return this.updateDeck(deckId, { topic_id: topicId });
   }
 }
