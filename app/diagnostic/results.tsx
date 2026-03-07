@@ -7,6 +7,7 @@ import { THEME_CLASSES } from '../../src/config/theme.config';
 import { StudyPathAIService } from '../../src/services/study-path-ai.service';
 import { StudyPathService } from '../../src/services/study-path.service';
 import { getOrCreateUserId } from '../../src/utils/user-id';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DiagnosticResultsScreen() {
   const params = useLocalSearchParams();
@@ -181,8 +182,9 @@ export default function DiagnosticResultsScreen() {
   };
 
   return (
-    <ScrollView className={THEME_CLASSES.screen}>
-      <View className={THEME_CLASSES.section}>
+    <SafeAreaView className="flex-1 bg-background-primary">
+      <ScrollView className="flex-1">
+        <View className={THEME_CLASSES.section}>
         {/* Overall Score */}
         <View className={`${THEME_CLASSES.cardLarge} mb-4 items-center`}>
           <Text className="text-text-secondary text-sm mb-2">Your Overall Score</Text>
@@ -410,5 +412,6 @@ export default function DiagnosticResultsScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }

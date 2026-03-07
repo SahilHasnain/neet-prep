@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { DIAGNOSTIC_QUESTIONS } from '../../src/config/diagnostic-quiz.config';
 import { DiagnosticQuestion, DiagnosticQuestionsService } from '../../src/services/diagnostic-questions.service';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DiagnosticQuizScreen() {
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([]);
@@ -39,7 +40,7 @@ export default function DiagnosticQuizScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background-primary items-center justify-center">
+      <SafeAreaView className="flex-1 bg-background-primary items-center justify-center">
         <ActivityIndicator size="large" color="#8b5cf6" />
         <Text className="mt-4 text-text-secondary text-center px-6">
           Generating personalized diagnostic questions...
@@ -47,13 +48,13 @@ export default function DiagnosticQuizScreen() {
         <Text className="mt-2 text-sm text-text-tertiary text-center px-6">
           This may take a moment
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <View className="flex-1 bg-background-primary items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-background-primary items-center justify-center px-6">
         <Text className="text-xl font-bold text-text-primary mb-2">Error</Text>
         <Text className="text-text-secondary text-center mb-4">
           Failed to load diagnostic questions
@@ -64,7 +65,7 @@ export default function DiagnosticQuizScreen() {
         >
           <Text className="text-white font-semibold">Retry</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -156,7 +157,7 @@ export default function DiagnosticQuizScreen() {
   };
 
   return (
-    <View className={THEME_CLASSES.screen}>
+    <SafeAreaView className={THEME_CLASSES.screen}>
       {/* Progress Bar */}
       <View className="bg-background-secondary px-4 py-3 border-b border-border-subtle">
         <View className="flex-row justify-between items-center mb-2">
@@ -220,24 +221,8 @@ export default function DiagnosticQuizScreen() {
           ))}
         </View>
 
-        {/* Difficulty Indicator */}
-        <View className="mt-6 flex-row items-center">
-          <Text className="text-sm text-text-tertiary mr-2">Difficulty:</Text>
-          <View className={`px-2 py-1 rounded border ${
-            question.difficulty === 'easy' ? 'bg-accent-success/20 border-accent-success/30' :
-            question.difficulty === 'medium' ? 'bg-accent-warning/20 border-accent-warning/30' :
-            'bg-accent-error/20 border-accent-error/30'
-          }`}>
-            <Text className={`text-xs font-medium ${
-              question.difficulty === 'easy' ? 'text-accent-success' :
-              question.difficulty === 'medium' ? 'text-accent-warning' :
-              'text-accent-error'
-            }`}>
-              {question.difficulty.toUpperCase()}
-            </Text>
-          </View>
-        </View>
+
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
