@@ -38,6 +38,10 @@ interface AINotesModalProps {
     score: number;
     missedConcepts: string[];
   };
+  preselectedNote?: {
+    language: string;
+    format: string;
+  } | null;
 }
 
 type ViewState = 'selection' | 'loading' | 'viewing';
@@ -52,7 +56,8 @@ export function AINotesModal({
   difficulty,
   progress,
   weakAreas,
-  quizPerformance
+  quizPerformance,
+  preselectedNote
 }: AINotesModalProps) {
   const [viewState, setViewState] = useState<ViewState>('selection');
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('english');
@@ -60,7 +65,54 @@ export function AINotesModal({
   const [notes, setNotes] = useState<GeneratedNotes | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
-  const handleGenerate = async () => {
+  // Load preselected note when modal opens
+  React.useEffect(() => {
+    if (visible && preselectedNote) {
+      setViewState('loading'); // Show loading immediately
+      setSelectedLanguage(preselectedNote.language as Language);
+      setSelectedFormat(preselectedNote.format as NoteFormat);
+      loadPreselectedNote(preselectedNote.language as Language, preselectedNote.format as NoteFormat);
+    } else if (visible && !preselectedNote) {
+      // Reset to selection view for new notes
+      setViewState('selection');
+      setNotes(null);
+    }
+  }, [visible, preselectedNote]);
+
+  const loadPreselectedNote = async (language: Language, format: NoteFormat) => {
+    try {
+      const existingNotes = await AINotesService.getExistingNotes(
+        userId,
+        topicId,
+        language,
+        format
+      );
+
+      if (existingNotes) {
+        const notesWithUnlocks = AINotesService.calculateUnlockedSections(existingNotes, progress);
+        setNotes(notesWithUnlocks);
+        
+        // Auto-expand first unlocked section
+        const firstUnlocked = notesWithUnlocks.sections.find(s => s.isUnlocked);
+        if (firstUnlocked) {
+          setExpandedSections(new Set([firstUnlocked.id]));
+        }
+        
+        setViewState('viewing');
+      } else {
+        // Note not found, show selection
+        setViewState('selection');
+      }
+    } catch (error) {
+      console.error('Error loading note:', error);
+      setViewState('selection');
+    }
+  };
+
+  const handleGenerate = async (lang?: Language, fmt?: NoteFormat) => {
+    const language = lang || selectedLanguage;
+    const format = fmt || selectedFormat;
+    
     setViewState('loading');
     
     try {
@@ -68,8 +120,8 @@ export function AINotesModal({
       const existingNotes = await AINotesService.getExistingNotes(
         userId,
         topicId,
-        selectedLanguage,
-        selectedFormat
+        language,
+        format
       );
 
       if (existingNotes) {
@@ -87,14 +139,14 @@ export function AINotesModal({
         return;
       }
 
-      // Generate new notes
+      // Generate new notes (only if they don't exist)
       console.log('🤖 Generating new notes with AI...');
       const generatedNotes = await AINotesService.generateNotes({
         topicName,
         subject,
         difficulty,
-        language: selectedLanguage,
-        format: selectedFormat,
+        language,
+        format,
         weakAreas,
         quizPerformance
       });
@@ -117,7 +169,7 @@ export function AINotesModal({
       console.error('Error generating notes:', error);
       Alert.alert(
         'Generation Failed',
-        'Failed to generate notes. Please check your internet connection and try again.',
+        'Failed to load notes. Please check your internet connection and try again.',
         [{ text: 'OK', onPress: () => setViewState('selection') }]
       );
     }
@@ -198,13 +250,21 @@ export function AINotesModal({
   const getUnlockMessage = (condition: any) => {
     switch (condition.type) {
       case 'video':
-        return `Watch ${condition.threshold}% of videos to unlock`;
+        return condition.threshold > 0 
+          ? `Watch ${condition.threshold}% of videos to unlock`
+          : 'Watch videos to unlock';
       case 'quiz':
         return 'Complete a quiz to unlock';
+      case 'mastery':
+        return condition.threshold > 0
+          ? `Reach ${condition.threshold}% mastery to unlock`
+          : 'Improve your mastery to unlock';
       case 'always':
         return 'Unlocked';
       default:
-        return `Reach ${condition.threshold}% mastery to unlock`;
+        return condition.threshold > 0
+          ? `Reach ${condition.threshold}% mastery to unlock`
+          : 'Keep learning to unlock';
     }
   };
 
@@ -219,37 +279,39 @@ export function AINotesModal({
       onRequestClose={handleClose}
     >
       <View className="flex-1 bg-background-primary">
-        {/* Header */}
-        <View className="bg-accent-primary px-4 pt-12 pb-4">
-          <View className="flex-row items-center justify-between mb-3">
-            <TouchableOpacity onPress={handleClose} className="p-2">
-              <Ionicons name="close" size={24} color="#fff" />
+        {/* Compact Header */}
+        <View className="bg-accent-primary px-4 pt-3 pb-3 border-b border-accent-primary/20">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity onPress={handleClose} className="p-1">
+              <Ionicons name="close" size={22} color="#fff" />
             </TouchableOpacity>
-            <Text className="text-white text-lg font-bold flex-1 text-center">
-              AI Study Notes
-            </Text>
-            {viewState === 'viewing' && notes && (
-              <TouchableOpacity onPress={handleShare} className="p-2">
-                <Ionicons name="share-outline" size={24} color="#fff" />
+            <View className="flex-1 mx-3">
+              <Text className="text-white text-base font-bold text-center">
+                AI Study Notes
+              </Text>
+              <Text className="text-white/70 text-xs text-center mt-0.5">{topicName}</Text>
+            </View>
+            {viewState === 'viewing' && notes ? (
+              <TouchableOpacity onPress={handleShare} className="p-1">
+                <Ionicons name="share-outline" size={22} color="#fff" />
               </TouchableOpacity>
+            ) : (
+              <View className="w-6" />
             )}
-            {viewState === 'viewing' && !notes && <View className="w-10" />}
           </View>
           
-          <Text className="text-white/90 text-center text-sm mb-2">{topicName}</Text>
-          
           {viewState === 'viewing' && notes && (
-            <View className="flex-row items-center justify-center gap-4">
+            <View className="flex-row items-center justify-center gap-3 mt-2">
               <View className="flex-row items-center">
-                <Ionicons name="lock-open" size={16} color="#fff" />
+                <Ionicons name="lock-open" size={14} color="#fff" />
                 <Text className="text-white/80 text-xs ml-1">
-                  {unlockedCount}/{totalCount} sections
+                  {unlockedCount}/{totalCount}
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Ionicons name="time" size={16} color="#fff" />
+                <Ionicons name="time" size={14} color="#fff" />
                 <Text className="text-white/80 text-xs ml-1">
-                  {notes.metadata.estimatedReadTime} min read
+                  {notes.metadata.estimatedReadTime}m
                 </Text>
               </View>
             </View>
@@ -406,14 +468,18 @@ export function AINotesModal({
           <View className="flex-1 items-center justify-center px-6">
             <ActivityIndicator size="large" color="#8b5cf6" />
             <Text className="text-text-primary text-lg font-semibold mt-6">
-              Generating Your Notes...
+              {preselectedNote ? 'Loading Notes...' : 'Generating Your Notes...'}
             </Text>
-            <Text className="text-text-secondary text-center mt-2">
-              Creating personalized {selectedFormat.split('-').join(' ')} notes in {selectedLanguage}
-            </Text>
-            <Text className="text-text-tertiary text-xs text-center mt-4">
-              This may take 5-15 seconds
-            </Text>
+            {!preselectedNote && (
+              <>
+                <Text className="text-text-secondary text-center mt-2">
+                  Creating personalized {selectedFormat.split('-').join(' ')} notes in {selectedLanguage}
+                </Text>
+                <Text className="text-text-tertiary text-xs text-center mt-4">
+                  This may take 5-15 seconds
+                </Text>
+              </>
+            )}
           </View>
         )}
 
@@ -421,20 +487,20 @@ export function AINotesModal({
         {viewState === 'viewing' && notes && (
           <>
             {/* Settings Bar */}
-            <View className="bg-background-secondary px-4 py-3 border-b border-border-subtle flex-row items-center justify-between">
+            <View className="bg-background-secondary px-4 py-2 border-b border-border-subtle flex-row items-center justify-between">
               <View className="flex-row items-center">
-                <Ionicons name="language" size={16} color="#8b5cf6" />
-                <Text className="text-text-secondary text-sm ml-1">
-                  {selectedLanguage === 'english' ? 'English' : 'Hinglish'}
+                <Ionicons name="language" size={14} color="#8b5cf6" />
+                <Text className="text-text-secondary text-xs ml-1">
+                  {selectedLanguage === 'english' ? 'EN' : 'HI'}
                 </Text>
-                <Text className="text-text-tertiary text-sm mx-2">•</Text>
-                <Ionicons name={getFormatIcon(selectedFormat) as any} size={16} color="#8b5cf6" />
-                <Text className="text-text-secondary text-sm ml-1">
-                  {selectedFormat.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                <Text className="text-text-tertiary text-xs mx-1.5">•</Text>
+                <Ionicons name={getFormatIcon(selectedFormat) as any} size={14} color="#8b5cf6" />
+                <Text className="text-text-secondary text-xs ml-1">
+                  {selectedFormat.split('-')[0]}
                 </Text>
               </View>
-              <TouchableOpacity onPress={handleChangeSettings}>
-                <Text className="text-accent-primary text-sm font-semibold">Change</Text>
+              <TouchableOpacity onPress={handleChangeSettings} className="py-1">
+                <Text className="text-accent-primary text-xs font-semibold">Change</Text>
               </TouchableOpacity>
             </View>
 

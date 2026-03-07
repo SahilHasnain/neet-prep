@@ -13,7 +13,7 @@ import { useTopicDetail } from '@/src/hooks/useTopicDetail';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TopicDetailScreen() {
@@ -23,6 +23,9 @@ export default function TopicDetailScreen() {
   const [showAINotes, setShowAINotes] = useState(false);
   const [showGuidedSession, setShowGuidedSession] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
+  const [existingNotes, setExistingNotes] = useState<any[]>([]);
+  const [loadingNotes, setLoadingNotes] = useState(true);
+  const [selectedNoteToView, setSelectedNoteToView] = useState<{language: string, format: string} | null>(null);
   
   const topic = getTopicById(topicId as string);
   const prerequisites = getPrerequisites(topicId as string);
@@ -48,6 +51,60 @@ export default function TopicDetailScreen() {
     topic?.subject || '',
     topic?.difficulty || ''
   );
+
+  // Load existing notes when component mounts or userId changes
+  React.useEffect(() => {
+    if (userId && topicId) {
+      loadExistingNotes();
+    }
+  }, [userId, topicId]);
+
+  const loadExistingNotes = async () => {
+    if (!userId) return;
+    
+    setLoadingNotes(true);
+    try {
+      const { databases } = await import('@/src/services/appwrite');
+      const { DATABASE_ID, COLLECTIONS } = await import('@/src/config/appwrite.config');
+      const { Query } = await import('react-native-appwrite');
+      
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.AI_NOTES,
+        [
+          Query.equal('user_id', userId),
+          Query.equal('topic_id', topicId as string)
+        ]
+      );
+      
+      setExistingNotes(response.documents);
+    } catch (error) {
+      console.error('Error loading existing notes:', error);
+      setExistingNotes([]);
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  const handleNotesModalClose = () => {
+    setShowAINotes(false);
+    setSelectedNoteToView(null);
+    // Reload notes in case new ones were generated
+    loadExistingNotes();
+  };
+
+  const handleViewNote = (note: any) => {
+    setSelectedNoteToView({
+      language: note.language,
+      format: note.format
+    });
+    setShowAINotes(true);
+  };
+
+  const handleGenerateNewNote = () => {
+    setSelectedNoteToView(null);
+    setShowAINotes(true);
+  };
 
   const handleQuizComplete = async (score: number, totalQuestions: number, timeSpent: number) => {
     const result = await baseHandleQuizComplete(score, totalQuestions, timeSpent);
@@ -220,44 +277,106 @@ export default function TopicDetailScreen() {
 
         {activeTab === 'notes' && (
           <View className="pb-4">
-            <View className={`${THEME_CLASSES.card} items-center py-8`}>
-              <View className="bg-accent-primary/10 rounded-full p-6 mb-4">
-                <Ionicons name="sparkles" size={48} color="#8b5cf6" />
+            {loadingNotes ? (
+              <View className={`${THEME_CLASSES.card} items-center py-8`}>
+                <ActivityIndicator size="large" color="#8b5cf6" />
+                <Text className="text-text-secondary mt-4">Loading notes...</Text>
               </View>
-              <Text className={`${THEME_CLASSES.heading2} mb-2 text-center`}>
-                AI-Generated Study Notes
-              </Text>
-              <Text className={`${THEME_CLASSES.body} text-center mb-6 px-4`}>
-                Get personalized, comprehensive notes tailored to your learning progress and performance
-              </Text>
-              
-              <View className="w-full px-4 mb-6">
-                <View className="flex-row items-center mb-3">
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text className="text-text-secondary text-sm ml-2">Progressive unlocking based on your progress</Text>
-                </View>
-                <View className="flex-row items-center mb-3">
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text className="text-text-secondary text-sm ml-2">Available in English or Hinglish</Text>
-                </View>
-                <View className="flex-row items-center mb-3">
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text className="text-text-secondary text-sm ml-2">Multiple formats: Comprehensive, Formulas, Quick Revision</Text>
-                </View>
-                <View className="flex-row items-center">
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  <Text className="text-text-secondary text-sm ml-2">Personalized based on your weak areas</Text>
-                </View>
-              </View>
+            ) : existingNotes.length > 0 ? (
+              <View>
+                <Text className={`${THEME_CLASSES.heading3} mb-4`}>Your Saved Notes</Text>
 
-              <TouchableOpacity
-                onPress={() => setShowAINotes(true)}
-                className={THEME_CLASSES.buttonPrimary}
-              >
-                <Ionicons name="sparkles" size={20} color="#fff" />
-                <Text className="text-white font-bold ml-2">Generate AI Notes</Text>
-              </TouchableOpacity>
-            </View>
+                {existingNotes.map((note) => (
+                  <TouchableOpacity
+                    key={note.$id}
+                    onPress={() => handleViewNote(note)}
+                    className="bg-background-secondary border border-border-secondary rounded-xl p-4 mb-3 active:bg-background-tertiary"
+                  >
+                    <View className="flex-row items-start justify-between mb-2">
+                      <View className="flex-1">
+                        <View className="flex-row items-center mb-2">
+                          <Ionicons 
+                            name={
+                              note.format === 'comprehensive' ? 'book' :
+                              note.format === 'formula-sheet' ? 'calculator' :
+                              note.format === 'quick-revision' ? 'flash' :
+                              'document-text'
+                            } 
+                            size={20} 
+                            color="#8b5cf6" 
+                          />
+                          <Text className="text-text-primary font-bold ml-2 capitalize">
+                            {(note.format as string).split('-').join(' ')}
+                          </Text>
+                        </View>
+                        <View className="flex-row items-center flex-wrap gap-2">
+                          <View className="bg-accent-primary/20 px-2 py-1 rounded">
+                            <Text className="text-accent-primary text-xs font-semibold">
+                              {note.language === 'english' ? 'English' : 'Hinglish'}
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center">
+                            <Ionicons name="time" size={12} color="#717171" />
+                            <Text className="text-text-tertiary text-xs ml-1">
+                              {note.estimated_read_time}m read
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center">
+                            <Ionicons name="eye" size={12} color="#717171" />
+                            <Text className="text-text-tertiary text-xs ml-1">
+                              {note.access_count} views
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color="#717171" />
+                    </View>
+                    <Text className="text-text-tertiary text-xs mt-2">
+                      Last accessed: {new Date(note.last_accessed as string).toLocaleDateString()}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <View className={`${THEME_CLASSES.card} items-center py-8`}>
+                <View className="bg-accent-primary/10 rounded-full p-6 mb-4">
+                  <Ionicons name="sparkles" size={48} color="#8b5cf6" />
+                </View>
+                <Text className={`${THEME_CLASSES.heading2} mb-2 text-center`}>
+                  AI-Generated Study Notes
+                </Text>
+                <Text className={`${THEME_CLASSES.body} text-center mb-6 px-4`}>
+                  Get personalized, comprehensive notes tailored to your learning progress and performance
+                </Text>
+                
+                <View className="w-full px-4 mb-6">
+                  <View className="flex-row items-center mb-3">
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    <Text className="text-text-secondary text-sm ml-2">Progressive unlocking based on your progress</Text>
+                  </View>
+                  <View className="flex-row items-center mb-3">
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    <Text className="text-text-secondary text-sm ml-2">Available in English or Hinglish</Text>
+                  </View>
+                  <View className="flex-row items-center mb-3">
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    <Text className="text-text-secondary text-sm ml-2">Multiple formats: Comprehensive, Formulas, Quick Revision</Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    <Text className="text-text-secondary text-sm ml-2">Personalized based on your weak areas</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => setShowAINotes(true)}
+                  className={THEME_CLASSES.buttonPrimary}
+                >
+                  <Ionicons name="sparkles" size={20} color="#fff" />
+                  <Text className="text-white font-bold ml-2">Generate AI Notes</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
 
@@ -265,6 +384,23 @@ export default function TopicDetailScreen() {
           <StudyTipsTab studyTips={studyTips} loadingTips={loadingTips} onLoadTips={loadStudyTips} />
         )}
       </ScrollView>
+
+      {/* Floating Action Button for Notes Tab */}
+      {activeTab === 'notes' && existingNotes.length > 0 && !loadingNotes && (
+        <TouchableOpacity
+          onPress={handleGenerateNewNote}
+          className="absolute bottom-16 right-6 bg-accent-primary rounded-full p-4 shadow-lg"
+          style={{
+            shadowColor: '#8b5cf6',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
 
       <MicroInterventionModal
         visible={showMicroIntervention}
@@ -275,7 +411,7 @@ export default function TopicDetailScreen() {
 
       <AINotesModal
         visible={showAINotes}
-        onClose={() => setShowAINotes(false)}
+        onClose={handleNotesModalClose}
         userId={userId || ''}
         topicId={topicId as string}
         topicName={topic.name}
@@ -295,6 +431,7 @@ export default function TopicDetailScreen() {
               }
             : undefined
         }
+        preselectedNote={selectedNoteToView}
       />
 
       <GuidedStudySession

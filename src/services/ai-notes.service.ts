@@ -20,7 +20,7 @@ export interface NoteSection {
   title: string;
   content: string;
   unlockCondition: {
-    type: 'video' | 'quiz' | 'always';
+    type: 'video' | 'quiz' | 'mastery' | 'always';
     threshold: number; // percentage
   };
   isUnlocked: boolean;
@@ -561,6 +561,10 @@ Return ONLY valid JSON.`;
             break;
           case 'always':
             isUnlocked = true;
+            break;
+          default:
+            // For any other type (mastery, etc.), check mastery level
+            isUnlocked = progress.masteryLevel >= section.unlockCondition.threshold;
             break;
         }
       }

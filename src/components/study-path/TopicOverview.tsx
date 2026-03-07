@@ -42,6 +42,68 @@ export function TopicOverview({
 }: TopicOverviewProps) {
   return (
     <View className="pb-4">
+      {/* Primary Action - Guided Session */}
+      {!isLocked && onStartGuidedSession && (
+        <TouchableOpacity 
+          onPress={onStartGuidedSession} 
+          className="bg-gradient-to-r from-accent-primary to-accent-secondary rounded-2xl p-5 mb-4 shadow-lg"
+          style={{
+            shadowColor: '#8b5cf6',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center flex-1">
+              <View className="bg-white/20 rounded-full p-2.5 mr-3">
+                <Ionicons name="school" size={28} color="#fff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white text-lg font-bold">Start Guided Session</Text>
+                <Text className="text-white/90 text-sm mt-1">Recommended • 25 minutes</Text>
+              </View>
+            </View>
+            <View className="bg-white/20 rounded-full p-2">
+              <Ionicons name="arrow-forward" size={22} color="#fff" />
+            </View>
+          </View>
+          <View className="bg-white/10 rounded-lg p-2.5 mt-2">
+            <Text className="text-white/90 text-xs">
+              📚 Video lesson + 💡 Interactive quiz + 🎯 Instant feedback
+            </Text>
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {/* Secondary Actions */}
+      {!isLocked && (
+        <View className="flex-row gap-3 mb-4">
+          {!isCompleted && (
+            <TouchableOpacity onPress={onStartStudy} className="flex-1 bg-background-secondary border border-border-subtle rounded-xl p-3 active:bg-background-tertiary">
+              <View className="items-center">
+                <View className="bg-accent-primary/20 rounded-full p-2 mb-2">
+                  <Ionicons name="play-circle" size={20} color="#8b5cf6" />
+                </View>
+                <Text className="text-text-primary text-xs font-semibold text-center">Free Study</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {!isCompleted && (
+            <TouchableOpacity onPress={onCompleteTopic} className="flex-1 bg-background-secondary border border-accent-success/30 rounded-xl p-3 active:bg-background-tertiary">
+              <View className="items-center">
+                <View className="bg-accent-success/20 rounded-full p-2 mb-2">
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                </View>
+                <Text className="text-accent-success text-xs font-semibold text-center">Mark Done</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
       {/* Topic Info */}
       <View className={`${THEME_CLASSES.card} mb-4`}>
         <View className="flex-row items-center mb-3">
@@ -163,39 +225,6 @@ export function TopicOverview({
               <Text className={`ml-2 ${THEME_CLASSES.body}`}>{dep.name}</Text>
             </View>
           ))}
-        </View>
-      )}
-
-      {/* Action Buttons */}
-      {!isLocked && (
-        <View className="mb-8">
-          {onStartGuidedSession && (
-            <TouchableOpacity 
-              onPress={onStartGuidedSession} 
-              className="bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl p-4 flex-row items-center justify-center border-2 border-accent-primary/50 mb-3"
-            >
-              <View className="bg-white/20 rounded-full p-2 mr-3">
-                <Ionicons name="school" size={24} color="#fff" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-white text-base font-bold">Start Guided Session</Text>
-                <Text className="text-white/80 text-xs mt-0.5">25-min structured learning</Text>
-              </View>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity onPress={onStartStudy} className={`${THEME_CLASSES.buttonPrimary} mb-3`}>
-            <Text className="text-white text-base font-semibold">
-              {isCompleted ? 'Review Topic' : 'Free Study Mode'}
-            </Text>
-          </TouchableOpacity>
-
-          {!isCompleted && (
-            <TouchableOpacity onPress={onCompleteTopic} className={THEME_CLASSES.buttonSuccess}>
-              <Text className="text-white text-base font-semibold">Mark as Completed</Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
 
