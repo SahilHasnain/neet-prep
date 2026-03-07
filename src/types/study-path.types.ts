@@ -52,6 +52,16 @@ export interface TopicProgress {
   completed_at?: string;
   last_accessed?: string;
   priority?: 'high' | 'medium' | 'low'; // AI-assigned priority level
+  conceptual_gaps?: ConceptualGap[]; // Detected prerequisite gaps
+}
+
+export interface ConceptualGap {
+  prerequisite_id: string;
+  prerequisite_name: string;
+  gap_severity: 'critical' | 'moderate' | 'minor'; // How much it's blocking progress
+  detected_at: string;
+  sub_concepts?: string[]; // Specific sub-concepts within prerequisite that are weak
+  resolved?: boolean;
 }
 
 export interface DailyTask {

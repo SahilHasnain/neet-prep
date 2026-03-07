@@ -72,6 +72,7 @@ export function useStudyPath(userId: string) {
     studyPath,
     topicProgress,
     topicsWithProgress,
+    allProgress: topicProgress, // Expose raw progress array
     loading,
     error,
     refresh: loadStudyPath,

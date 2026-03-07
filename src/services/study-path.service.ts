@@ -392,7 +392,14 @@ export class StudyPathService {
       [Query.equal('path_id', pathId), Query.limit(100)]
     );
 
-    return response.documents as unknown as TopicProgress[];
+    // Deserialize conceptual_gaps
+    return response.documents.map(doc => {
+      const progress = doc as unknown as TopicProgress;
+      if (progress.conceptual_gaps && typeof progress.conceptual_gaps === 'string') {
+        progress.conceptual_gaps = JSON.parse(progress.conceptual_gaps as any);
+      }
+      return progress;
+    });
   }
 
   // Update topic progress
@@ -400,14 +407,26 @@ export class StudyPathService {
     progressId: string,
     updates: Partial<TopicProgress>
   ): Promise<TopicProgress> {
+    // Serialize conceptual_gaps if present
+    const serializedUpdates = { ...updates };
+    if (updates.conceptual_gaps) {
+      serializedUpdates.conceptual_gaps = JSON.stringify(updates.conceptual_gaps) as any;
+    }
+
     const doc = await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.TOPIC_PROGRESS,
       progressId,
-      updates
+      serializedUpdates
     );
 
-    return doc as unknown as TopicProgress;
+    // Deserialize conceptual_gaps in response
+    const result = doc as unknown as TopicProgress;
+    if (result.conceptual_gaps && typeof result.conceptual_gaps === 'string') {
+      result.conceptual_gaps = JSON.parse(result.conceptual_gaps as any);
+    }
+
+    return result;
   }
 
   // Complete a topic and unlock dependents
