@@ -3,9 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStudyPath } from '../../src/hooks/useStudyPath';
 import { getOrCreateUserId } from '../../src/utils/user-id';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function StudyPathScreen() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -318,15 +318,15 @@ export default function StudyPathScreen() {
                           <View 
                             className="px-2 py-0.5 rounded-lg"
                             style={{ 
-                              backgroundColor: topic.difficulty === 'easy' ? '#10b98120' : 
-                                             topic.difficulty === 'medium' ? '#f59e0b20' : '#ef444420' 
+                              backgroundColor: topic.difficulty === 'foundation' ? '#10b98120' : 
+                                             topic.difficulty === 'intermediate' ? '#f59e0b20' : '#ef444420' 
                             }}
                           >
                             <Text 
                               className="text-xs font-bold capitalize"
                               style={{ 
-                                color: topic.difficulty === 'easy' ? '#10b981' : 
-                                       topic.difficulty === 'medium' ? '#f59e0b' : '#ef4444' 
+                                color: topic.difficulty === 'foundation' ? '#10b981' : 
+                                       topic.difficulty === 'intermediate' ? '#f59e0b' : '#ef4444' 
                               }}
                             >
                               {topic.difficulty}
