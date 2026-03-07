@@ -21,6 +21,7 @@ interface TopicOverviewProps {
   allProgress: any[];
   topicId: string;
   onStartStudy: () => void;
+  onStartGuidedSession?: () => void;
   onCompleteTopic: () => void;
   onMicroIntervention: (gap: any) => void;
 }
@@ -35,6 +36,7 @@ export function TopicOverview({
   allProgress,
   topicId,
   onStartStudy,
+  onStartGuidedSession,
   onCompleteTopic,
   onMicroIntervention,
 }: TopicOverviewProps) {
@@ -167,9 +169,25 @@ export function TopicOverview({
       {/* Action Buttons */}
       {!isLocked && (
         <View className="space-y-3 mb-8">
+          {onStartGuidedSession && (
+            <TouchableOpacity 
+              onPress={onStartGuidedSession} 
+              className="bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl p-4 flex-row items-center justify-center border-2 border-accent-primary/50"
+            >
+              <View className="bg-white/20 rounded-full p-2 mr-3">
+                <Ionicons name="school" size={24} color="#fff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white text-base font-bold">Start Guided Session</Text>
+                <Text className="text-white/80 text-xs mt-0.5">25-min structured learning</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity onPress={onStartStudy} className={THEME_CLASSES.buttonPrimary}>
             <Text className="text-white text-base font-semibold">
-              {isCompleted ? 'Review Topic' : 'Start Studying'}
+              {isCompleted ? 'Review Topic' : 'Free Study Mode'}
             </Text>
           </TouchableOpacity>
 

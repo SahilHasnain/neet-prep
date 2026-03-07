@@ -1,5 +1,6 @@
 import { AINotesModal } from '@/src/components/study-path/AINotesModal';
 import { DependencyTree } from '@/src/components/study-path/DependencyTree';
+import { GuidedStudySession } from '@/src/components/study-path/GuidedStudySession';
 import { InteractiveQuiz } from '@/src/components/study-path/InteractiveQuiz';
 import { MicroInterventionModal } from '@/src/components/study-path/MicroInterventionModal';
 import { StudyTipsTab } from '@/src/components/study-path/StudyTipsTab';
@@ -20,6 +21,7 @@ export default function TopicDetailScreen() {
   const [showMicroIntervention, setShowMicroIntervention] = useState(false);
   const [interventionData, setInterventionData] = useState<any>(null);
   const [showAINotes, setShowAINotes] = useState(false);
+  const [showGuidedSession, setShowGuidedSession] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   
   const topic = getTopicById(topicId as string);
@@ -92,6 +94,27 @@ export default function TopicDetailScreen() {
 
   const handleStartStudy = () => setActiveTab('videos');
 
+  const handleStartGuidedSession = () => {
+    setShowGuidedSession(true);
+  };
+
+  const handleGuidedSessionComplete = async (masteryGained: number, timeSpent: number) => {
+    if (!userId || !topicProgress?.progress) return;
+    
+    const currentMastery = topicProgress.progress.mastery_level || 0;
+    const newMastery = Math.min(100, currentMastery + masteryGained);
+    
+    try {
+      const { StudyPathService } = await import('@/src/services/study-path.service');
+      await StudyPathService.updateTopicProgress(topicProgress.progress.progress_id, {
+        mastery_level: newMastery,
+        time_spent_minutes: (topicProgress.progress.time_spent_minutes || 0) + Math.ceil(timeSpent / 60)
+      });
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
+
   const tabs = [
     { id: 'overview' as const, label: 'Overview', icon: 'information-circle' },
     { id: 'dependencies' as const, label: 'Path', icon: 'git-network' },
@@ -152,6 +175,7 @@ export default function TopicDetailScreen() {
             allProgress={allProgress}
             topicId={topicId as string}
             onStartStudy={handleStartStudy}
+            onStartGuidedSession={handleStartGuidedSession}
             onCompleteTopic={handleCompleteTopic}
             onMicroIntervention={handleMicroIntervention}
           />
@@ -267,6 +291,20 @@ export default function TopicDetailScreen() {
               }
             : undefined
         }
+      />
+
+      <GuidedStudySession
+        visible={showGuidedSession}
+        onClose={() => setShowGuidedSession(false)}
+        topicId={topicId as string}
+        topicName={topic.name}
+        subject={topic.subject}
+        onVideoPress={() => {
+          setShowGuidedSession(false);
+          setActiveTab('videos');
+        }}
+        generateQuestions={generateQuizQuestions}
+        onSessionComplete={handleGuidedSessionComplete}
       />
     </SafeAreaView>
   );

@@ -4,8 +4,8 @@ const USER_ID_KEY = "@neuroprep_user_id";
 
 // Dev flag - set to true to use temp user for testing
 // This allows you to share data across all dev instances
-export const USE_TEMP_USER = false;
-const TEMP_USER_ID = "temp-user-123";
+export const USE_TEMP_USER = true;
+const TEMP_USER_ID = "user_mlx5qtcp_p0x04r50a1f";
 
 /**
  * Generates a unique user ID for anonymous users
