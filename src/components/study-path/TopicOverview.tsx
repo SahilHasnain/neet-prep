@@ -51,16 +51,16 @@ export function TopicOverview({
           <Text className={THEME_CLASSES.heading3}>Topic Details</Text>
         </View>
 
-        <View className="space-y-2">
-          <View className="flex-row justify-between py-2 border-b border-border-subtle">
+        <View>
+          <View className="flex-row justify-between py-2 border-b border-border-subtle mb-2">
             <Text className={THEME_CLASSES.body}>Subject</Text>
             <Text className={THEME_CLASSES.heading3}>{topic.subject}</Text>
           </View>
-          <View className="flex-row justify-between py-2 border-b border-border-subtle">
+          <View className="flex-row justify-between py-2 border-b border-border-subtle mb-2">
             <Text className={THEME_CLASSES.body}>Difficulty</Text>
             <Text className={`${THEME_CLASSES.heading3} capitalize`}>{topic.difficulty}</Text>
           </View>
-          <View className="flex-row justify-between py-2 border-b border-border-subtle">
+          <View className="flex-row justify-between py-2 border-b border-border-subtle mb-2">
             <Text className={THEME_CLASSES.body}>Estimated Time</Text>
             <Text className={THEME_CLASSES.heading3}>{topic.estimatedHours} hours</Text>
           </View>
@@ -168,11 +168,11 @@ export function TopicOverview({
 
       {/* Action Buttons */}
       {!isLocked && (
-        <View className="space-y-3 mb-8">
+        <View className="mb-8">
           {onStartGuidedSession && (
             <TouchableOpacity 
               onPress={onStartGuidedSession} 
-              className="bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl p-4 flex-row items-center justify-center border-2 border-accent-primary/50"
+              className="bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl p-4 flex-row items-center justify-center border-2 border-accent-primary/50 mb-3"
             >
               <View className="bg-white/20 rounded-full p-2 mr-3">
                 <Ionicons name="school" size={24} color="#fff" />
@@ -185,7 +185,7 @@ export function TopicOverview({
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity onPress={onStartStudy} className={THEME_CLASSES.buttonPrimary}>
+          <TouchableOpacity onPress={onStartStudy} className={`${THEME_CLASSES.buttonPrimary} mb-3`}>
             <Text className="text-white text-base font-semibold">
               {isCompleted ? 'Review Topic' : 'Free Study Mode'}
             </Text>

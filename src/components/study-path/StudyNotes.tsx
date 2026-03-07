@@ -166,9 +166,9 @@ export function StudyNotes({ topicId, topicName, userId }: StudyNotesProps) {
             <Text className={`${THEME_CLASSES.bodySmall} mt-2`}>Generating key points...</Text>
           </View>
         ) : aiSuggestions.length > 0 ? (
-          <View className="space-y-2">
+          <View>
             {aiSuggestions.map((suggestion, index) => (
-              <View key={index} className="bg-background-secondary rounded-lg p-3 flex-row items-start">
+              <View key={index} className="bg-background-secondary rounded-lg p-3 flex-row items-start mb-2">
                 <Text className="flex-1 text-text-primary text-sm">{suggestion}</Text>
                 <TouchableOpacity
                   onPress={() => handleAddSuggestion(suggestion)}
@@ -201,11 +201,11 @@ export function StudyNotes({ topicId, topicName, userId }: StudyNotesProps) {
                 <Text className="text-text-tertiary text-xs">
                   {new Date(note.created_at).toLocaleDateString()}
                 </Text>
-                <View className="flex-row items-center space-x-2">
+                <View className="flex-row items-center gap-3">
                   <TouchableOpacity onPress={() => handleToggleHighlight(note.note_id, note.is_highlighted)}>
                     <Ionicons name="star" size={20} color="#f59e0b" />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteNote(note.note_id)} className="ml-3">
+                  <TouchableOpacity onPress={() => handleDeleteNote(note.note_id)}>
                     <Ionicons name="trash-outline" size={20} color="#ef4444" />
                   </TouchableOpacity>
                 </View>
@@ -230,11 +230,11 @@ export function StudyNotes({ topicId, topicName, userId }: StudyNotesProps) {
                 <Text className="text-text-tertiary text-xs">
                   {new Date(note.created_at).toLocaleDateString()}
                 </Text>
-                <View className="flex-row items-center space-x-2">
+                <View className="flex-row items-center gap-3">
                   <TouchableOpacity onPress={() => handleToggleHighlight(note.note_id, note.is_highlighted)}>
                     <Ionicons name="star-outline" size={20} color="#717171" />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteNote(note.note_id)} className="ml-3">
+                  <TouchableOpacity onPress={() => handleDeleteNote(note.note_id)}>
                     <Ionicons name="trash-outline" size={20} color="#ef4444" />
                   </TouchableOpacity>
                 </View>

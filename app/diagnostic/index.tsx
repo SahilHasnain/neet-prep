@@ -1,9 +1,9 @@
+import { THEME_CLASSES } from '@/src/config/theme.config';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { DIAGNOSTIC_QUESTIONS } from '../../src/config/diagnostic-quiz.config';
 import { DiagnosticQuestion, DiagnosticQuestionsService } from '../../src/services/diagnostic-questions.service';
-import { THEME_CLASSES } from '@/src/config/theme.config';
 
 export default function DiagnosticQuizScreen() {
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([]);
@@ -199,12 +199,12 @@ export default function DiagnosticQuizScreen() {
         </Text>
 
         {/* Options */}
-        <View className="space-y-3">
+        <View>
           {question.options.map((option, index) => (
             <TouchableOpacity
               key={index}
               onPress={() => handleAnswer(index)}
-              className="bg-background-secondary p-4 rounded-xl border-2 border-border-subtle active:border-accent-primary"
+              className="bg-background-secondary p-4 rounded-xl border-2 border-border-subtle active:border-accent-primary mb-3"
             >
               <View className="flex-row items-center">
                 <View className="w-8 h-8 rounded-full bg-background-tertiary items-center justify-center mr-3">

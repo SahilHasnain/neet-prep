@@ -21,8 +21,8 @@ export function SessionIntro({ onStart }: SessionIntroProps) {
         This 25-minute focused session will guide you through structured learning
       </Text>
 
-      <View className="w-full max-w-md space-y-4 mb-8">
-        <View className="flex-row items-start">
+      <View className="w-full max-w-md mb-8">
+        <View className="flex-row items-start mb-4">
           <View className="w-8 h-8 rounded-full bg-accent-primary items-center justify-center mr-3">
             <Text className="text-white font-bold">1</Text>
           </View>
@@ -32,7 +32,7 @@ export function SessionIntro({ onStart }: SessionIntroProps) {
           </View>
         </View>
 
-        <View className="flex-row items-start">
+        <View className="flex-row items-start mb-4">
           <View className="w-8 h-8 rounded-full bg-accent-primary items-center justify-center mr-3">
             <Text className="text-white font-bold">2</Text>
           </View>
@@ -42,7 +42,7 @@ export function SessionIntro({ onStart }: SessionIntroProps) {
           </View>
         </View>
 
-        <View className="flex-row items-start">
+        <View className="flex-row items-start mb-4">
           <View className="w-8 h-8 rounded-full bg-accent-primary items-center justify-center mr-3">
             <Text className="text-white font-bold">3</Text>
           </View>

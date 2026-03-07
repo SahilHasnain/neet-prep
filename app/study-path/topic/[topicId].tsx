@@ -134,33 +134,37 @@ export default function TopicDetailScreen() {
       />
 
       {/* Tab Navigation */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        className="bg-background-secondary border-b border-border-subtle"
-        contentContainerClassName="px-2"
-      >
-        {tabs.map(tab => (
-          <TouchableOpacity
-            key={tab.id}
-            onPress={() => setActiveTab(tab.id)}
-            className={`flex-row items-center px-4 py-3 mr-2 rounded-t-lg ${
-              activeTab === tab.id ? 'bg-accent-primary/10 border-b-2 border-accent-primary' : ''
-            }`}
-          >
-            <Ionicons 
-              name={tab.icon as any} 
-              size={20} 
-              color={activeTab === tab.id ? '#8b5cf6' : '#717171'} 
-            />
-            <Text className={`ml-2 text-sm font-semibold ${
-              activeTab === tab.id ? 'text-accent-primary' : 'text-text-tertiary'
-            }`}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View className="bg-background-secondary border-b border-border-subtle">
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+          style={{ height: 48 }}
+        >
+          {tabs.map(tab => (
+            <TouchableOpacity
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              className="flex-row items-center justify-center px-3 h-full"
+              style={{ minHeight: 48 }}
+            >
+              <Ionicons 
+                name={tab.icon as any} 
+                size={18} 
+                color={activeTab === tab.id ? '#8b5cf6' : '#717171'} 
+              />
+              <Text className={`ml-1.5 text-xs font-medium ${
+                activeTab === tab.id ? 'text-accent-primary' : 'text-text-tertiary'
+              }`}>
+                {tab.label}
+              </Text>
+              {activeTab === tab.id && (
+                <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-primary" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Tab Content */}
       <ScrollView className="px-4 pt-4">
@@ -227,16 +231,16 @@ export default function TopicDetailScreen() {
                 Get personalized, comprehensive notes tailored to your learning progress and performance
               </Text>
               
-              <View className="w-full px-4 space-y-3 mb-6">
-                <View className="flex-row items-center">
+              <View className="w-full px-4 mb-6">
+                <View className="flex-row items-center mb-3">
                   <Ionicons name="checkmark-circle" size={20} color="#10b981" />
                   <Text className="text-text-secondary text-sm ml-2">Progressive unlocking based on your progress</Text>
                 </View>
-                <View className="flex-row items-center">
+                <View className="flex-row items-center mb-3">
                   <Ionicons name="checkmark-circle" size={20} color="#10b981" />
                   <Text className="text-text-secondary text-sm ml-2">Available in English or Hinglish</Text>
                 </View>
-                <View className="flex-row items-center">
+                <View className="flex-row items-center mb-3">
                   <Ionicons name="checkmark-circle" size={20} color="#10b981" />
                   <Text className="text-text-secondary text-sm ml-2">Multiple formats: Comprehensive, Formulas, Quick Revision</Text>
                 </View>

@@ -26,9 +26,9 @@ export function StudyTipsTab({ studyTips, loadingTips, onLoadTips }: StudyTipsTa
             <Text className={`${THEME_CLASSES.bodySmall} mt-2`}>Generating personalized tips...</Text>
           </View>
         ) : studyTips.length > 0 ? (
-          <View className="space-y-2">
+          <View>
             {studyTips.map((tip, index) => (
-              <View key={index} className="flex-row items-start py-2">
+              <View key={index} className="flex-row items-start py-2 mb-2">
                 <Text className="text-biology-light font-bold mr-2">{index + 1}.</Text>
                 <Text className={`flex-1 ${THEME_CLASSES.body}`}>{tip}</Text>
               </View>

@@ -38,8 +38,8 @@ export function ActiveRecallPhase({ topicName, onComplete, onReviewVideo }: Acti
           Quick Check: What Did You Learn?
         </Text>
         
-        <View className="space-y-4 mb-6">
-          <View className="bg-background-secondary rounded-xl p-4">
+        <View className="mb-6">
+          <View className="bg-background-secondary rounded-xl p-4 mb-4">
             <Text className={`${THEME_CLASSES.body} font-semibold mb-2`}>
               📝 In your own words, explain:
             </Text>
@@ -48,7 +48,7 @@ export function ActiveRecallPhase({ topicName, onComplete, onReviewVideo }: Acti
             </Text>
           </View>
 
-          <View className="bg-accent-warning/10 rounded-xl p-4 border border-accent-warning/30">
+          <View className="bg-accent-warning/10 rounded-xl p-4 border border-accent-warning/30 mb-4">
             <View className="flex-row items-start">
               <Ionicons name="information-circle" size={20} color="#f59e0b" />
               <View className="flex-1 ml-2">

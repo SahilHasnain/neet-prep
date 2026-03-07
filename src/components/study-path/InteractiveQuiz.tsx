@@ -208,10 +208,10 @@ export function InteractiveQuiz({
           </View>
         </View>
 
-        <View className="space-y-2">
+        <View>
           <TouchableOpacity
             onPress={handleRetakeQuiz}
-            className="bg-accent-primary rounded-lg p-3 items-center active:bg-accent-primary/80"
+            className="bg-accent-primary rounded-lg p-3 items-center active:bg-accent-primary/80 mb-2"
           >
             <Text className="text-white font-semibold">Retake Quiz</Text>
           </TouchableOpacity>
@@ -269,7 +269,7 @@ export function InteractiveQuiz({
         </Text>
 
         {/* Options */}
-        <View className="space-y-2">
+        <View>
           {currentQuestion.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
             const isCorrectAnswer = index === currentQuestion.correctAnswer;
@@ -281,7 +281,7 @@ export function InteractiveQuiz({
                 key={index}
                 onPress={() => handleSelectAnswer(index)}
                 disabled={showExplanation}
-                className={`flex-row items-center p-3 rounded-lg border ${
+                className={`flex-row items-center p-3 rounded-lg border mb-3 ${
                   showCorrect ? 'bg-accent-success/20 border-accent-success' :
                   showWrong ? 'bg-accent-error/20 border-accent-error' :
                   isSelected ? 'bg-accent-primary/20 border-accent-primary' :

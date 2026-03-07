@@ -37,9 +37,9 @@ export function ReviewPhase({ answers, totalQuestions, onComplete }: ReviewPhase
             📊 Confidence Analysis
           </Text>
           
-          <View className="space-y-3">
+          <View>
             {correctAndConfident > 0 && (
-              <View className="bg-accent-success/10 rounded-xl p-4 border border-accent-success/30">
+              <View className="bg-accent-success/10 rounded-xl p-4 border border-accent-success/30 mb-3">
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center flex-1">
                     <Ionicons name="checkmark-circle" size={20} color="#10b981" />
@@ -56,7 +56,7 @@ export function ReviewPhase({ answers, totalQuestions, onComplete }: ReviewPhase
             )}
             
             {correctButUnsure > 0 && (
-              <View className="bg-accent-warning/10 rounded-xl p-4 border border-accent-warning/30">
+              <View className="bg-accent-warning/10 rounded-xl p-4 border border-accent-warning/30 mb-3">
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center flex-1">
                     <Ionicons name="help-circle" size={20} color="#f59e0b" />
@@ -91,9 +91,9 @@ export function ReviewPhase({ answers, totalQuestions, onComplete }: ReviewPhase
           </View>
         </View>
 
-        <View className="w-full space-y-3 mb-6">
+        <View className="w-full mb-6">
           {correctCount === totalQuestions && (
-            <View className="bg-accent-success/10 rounded-xl p-4 border border-accent-success/30">
+            <View className="bg-accent-success/10 rounded-xl p-4 border border-accent-success/30 mb-3">
               <Text className="text-accent-success font-semibold text-center">
                 🎉 Perfect Score! You've mastered this topic!
               </Text>
@@ -101,7 +101,7 @@ export function ReviewPhase({ answers, totalQuestions, onComplete }: ReviewPhase
           )}
           
           {correctCount >= totalQuestions * 0.6 && correctCount < totalQuestions && (
-            <View className="bg-accent-info/10 rounded-xl p-4 border border-accent-info/30">
+            <View className="bg-accent-info/10 rounded-xl p-4 border border-accent-info/30 mb-3">
               <Text className="text-accent-info font-semibold text-center">
                 👍 Good job! Review the explanations to strengthen understanding
               </Text>

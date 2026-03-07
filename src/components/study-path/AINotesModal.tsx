@@ -9,14 +9,14 @@ import { AINotesService, GeneratedNotes, Language, NoteFormat } from '@/src/serv
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  ScrollView,
-  Share,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Modal,
+    ScrollView,
+    Share,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
@@ -239,7 +239,7 @@ export function AINotesModal({
           <Text className="text-white/90 text-center text-sm mb-2">{topicName}</Text>
           
           {viewState === 'viewing' && notes && (
-            <View className="flex-row items-center justify-center space-x-4">
+            <View className="flex-row items-center justify-center gap-4">
               <View className="flex-row items-center">
                 <Ionicons name="lock-open" size={16} color="#fff" />
                 <Text className="text-white/80 text-xs ml-1">
@@ -276,10 +276,10 @@ export function AINotesModal({
               <Text className={`${THEME_CLASSES.heading3} mb-3`}>
                 Choose Language
               </Text>
-              <View className="space-y-3">
+              <View>
                 <TouchableOpacity
                   onPress={() => setSelectedLanguage('english')}
-                  className={`p-4 rounded-xl border-2 ${
+                  className={`p-4 rounded-xl border-2 mb-3 ${
                     selectedLanguage === 'english'
                       ? 'bg-accent-primary/10 border-accent-primary'
                       : 'bg-background-secondary border-border-secondary'
@@ -348,12 +348,12 @@ export function AINotesModal({
               <Text className={`${THEME_CLASSES.heading3} mb-3`}>
                 Choose Format
               </Text>
-              <View className="space-y-3">
+              <View>
                 {(['comprehensive', 'formula-sheet', 'quick-revision', 'common-mistakes'] as NoteFormat[]).map(format => (
                   <TouchableOpacity
                     key={format}
                     onPress={() => setSelectedFormat(format)}
-                    className={`p-4 rounded-xl border-2 ${
+                    className={`p-4 rounded-xl border-2 mb-3 ${
                       selectedFormat === format
                         ? 'bg-accent-primary/10 border-accent-primary'
                         : 'bg-background-secondary border-border-secondary'
@@ -526,8 +526,8 @@ export function AINotesModal({
               {/* Progress Indicator */}
               <View className="bg-background-secondary rounded-xl p-4 mt-4 mb-8">
                 <Text className="text-text-secondary text-sm font-semibold mb-3">Your Progress</Text>
-                <View className="space-y-2">
-                  <View className="flex-row items-center justify-between">
+                <View>
+                  <View className="flex-row items-center justify-between mb-2">
                     <Text className="text-text-tertiary text-xs">Video Progress</Text>
                     <Text className="text-accent-primary text-xs font-bold">{progress.videoProgress}%</Text>
                   </View>

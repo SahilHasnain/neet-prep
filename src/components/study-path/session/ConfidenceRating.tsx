@@ -15,10 +15,10 @@ export function ConfidenceRating({ selectedConfidence, onSelect }: ConfidenceRat
       <Text className={`${THEME_CLASSES.body} font-semibold mb-3 text-center`}>
         How confident are you in this answer?
       </Text>
-      <View className="space-y-2">
+      <View className="mb-4">
         <TouchableOpacity
           onPress={() => onSelect('very-confident')}
-          className={`p-4 rounded-xl border-2 flex-row items-center ${
+          className={`p-4 rounded-xl border-2 flex-row items-center mb-2 ${
             selectedConfidence === 'very-confident'
               ? 'bg-accent-success/20 border-accent-success'
               : 'bg-background-secondary border-border-secondary'
@@ -47,7 +47,7 @@ export function ConfidenceRating({ selectedConfidence, onSelect }: ConfidenceRat
 
         <TouchableOpacity
           onPress={() => onSelect('somewhat')}
-          className={`p-4 rounded-xl border-2 flex-row items-center ${
+          className={`p-4 rounded-xl border-2 flex-row items-center mb-2 ${
             selectedConfidence === 'somewhat'
               ? 'bg-accent-info/20 border-accent-info'
               : 'bg-background-secondary border-border-secondary'

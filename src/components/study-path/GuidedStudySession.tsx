@@ -150,7 +150,7 @@ export function GuidedStudySession({
           <Text className="text-white/90 text-center text-sm mb-3">{topicName}</Text>
           
           {phase !== 'intro' && phase !== 'complete' && (
-            <View className="flex-row items-center justify-center space-x-6">
+            <View className="flex-row items-center justify-center gap-6">
               <View className="flex-row items-center">
                 <Ionicons name="time" size={18} color="#fff" />
                 <Text className="text-white font-bold ml-1">{formatTime(timeRemaining)}</Text>
@@ -231,7 +231,7 @@ export function GuidedStudySession({
                         {questions[currentQuestionIndex].question}
                       </Text>
 
-                      <View className="space-y-3 mb-4">
+                      <View className="mb-4">
                         {questions[currentQuestionIndex].options.map((option, index) => {
                           const isSelected = selectedAnswer === index;
                           const isCorrect = index === questions[currentQuestionIndex].correctAnswer;
@@ -243,7 +243,7 @@ export function GuidedStudySession({
                               key={index}
                               onPress={() => handleSelectAnswer(index)}
                               disabled={showExplanation}
-                              className={`p-4 rounded-xl border-2 ${
+                              className={`p-4 rounded-xl border-2 mb-3 ${
                                 showCorrect ? 'bg-accent-success/20 border-accent-success' :
                                 showWrong ? 'bg-accent-error/20 border-accent-error' :
                                 isSelected ? 'bg-accent-primary/20 border-accent-primary' :
@@ -349,14 +349,14 @@ export function GuidedStudySession({
                 <Text className={`${THEME_CLASSES.heading3} mb-4 text-center`}>
                   Session Stats
                 </Text>
-                <View className="space-y-3">
-                  <View className="flex-row justify-between">
+                <View>
+                  <View className="flex-row justify-between mb-3">
                     <Text className={THEME_CLASSES.body}>Quiz Score</Text>
                     <Text className={`${THEME_CLASSES.body} font-bold text-accent-success`}>
                       {Math.round((answers.filter(a => a.isCorrect).length / questions.length) * 100)}%
                     </Text>
                   </View>
-                  <View className="flex-row justify-between">
+                  <View className="flex-row justify-between mb-3">
                     <Text className={THEME_CLASSES.body}>Time Spent</Text>
                     <Text className={`${THEME_CLASSES.body} font-bold`}>
                       {formatTime(25 * 60 - timeRemaining)}

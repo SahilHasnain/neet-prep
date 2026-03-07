@@ -154,13 +154,13 @@ export function MicroInterventionModal({
                 )}
 
                 {/* Action Buttons */}
-                <View className="space-y-3 mb-4">
+                <View className="mb-4">
                   <TouchableOpacity
                     onPress={() => {
                       onClose();
                       router.push(`/study-path/topic/${interventionData.gap.prerequisite_id}`);
                     }}
-                    className={THEME_CLASSES.buttonPrimary}
+                    className={`${THEME_CLASSES.buttonPrimary} mb-3`}
                   >
                     <Text className="text-white text-base font-semibold">
                       Study {interventionData.gap.prerequisite_name}
