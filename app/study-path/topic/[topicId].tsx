@@ -299,10 +299,11 @@ export default function TopicDetailScreen() {
         topicId={topicId as string}
         topicName={topic.name}
         subject={topic.subject}
-        onVideoPress={() => {
-          setShowGuidedSession(false);
-          setActiveTab('videos');
-        }}
+        videoUrl={(() => {
+          const { getVideosForTopic, getYouTubeUrl } = require('@/src/config/video-lessons.config');
+          const videos = getVideosForTopic(topicId as string);
+          return videos.length > 0 ? getYouTubeUrl(videos[0].youtubeId) : undefined;
+        })()}
         generateQuestions={generateQuizQuestions}
         onSessionComplete={handleGuidedSessionComplete}
       />

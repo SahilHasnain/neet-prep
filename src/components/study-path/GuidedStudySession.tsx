@@ -21,7 +21,7 @@ interface GuidedStudySessionProps {
   topicId: string;
   topicName: string;
   subject: string;
-  onVideoPress: () => void;
+  videoUrl?: string; // Pass video URL directly instead of navigation
   generateQuestions: () => Promise<QuizQuestion[]>;
   onSessionComplete: (masteryGained: number, timeSpent: number) => void;
 }
@@ -32,7 +32,7 @@ export function GuidedStudySession({
   topicId,
   topicName,
   subject,
-  onVideoPress,
+  videoUrl,
   generateQuestions,
   onSessionComplete
 }: GuidedStudySessionProps) {
@@ -177,8 +177,23 @@ export function GuidedStudySession({
         <ScrollView className="flex-1 px-4 py-6" showsVerticalScrollIndicator={false}>
           {phase === 'intro' && <SessionIntro onStart={handleStartSession} />}
           
-          {phase === 'video' && (
-            <VideoPhase onVideoPress={onVideoPress} onComplete={handleVideoComplete} />
+          {phase === 'video' && videoUrl && (
+            <VideoPhase videoUrl={videoUrl} onComplete={handleVideoComplete} />
+          )}
+          
+          {phase === 'video' && !videoUrl && (
+            <View className="flex-1 justify-center items-center min-h-[400px]">
+              <Ionicons name="alert-circle" size={48} color="#ef4444" />
+              <Text className={`${THEME_CLASSES.body} mt-4 text-center`}>
+                No video available for this topic
+              </Text>
+              <TouchableOpacity
+                onPress={handleVideoComplete}
+                className={`${THEME_CLASSES.buttonPrimary} mt-4`}
+              >
+                <Text className="text-white font-bold">Skip to Active Recall</Text>
+              </TouchableOpacity>
+            </View>
           )}
           
           {phase === 'active-recall' && (
