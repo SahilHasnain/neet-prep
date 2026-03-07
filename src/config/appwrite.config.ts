@@ -21,6 +21,7 @@ export const COLLECTIONS = {
   TOPIC_PROGRESS: "topic_progress",
   DAILY_TASKS: "daily_tasks",
   DIAGNOSTIC_QUESTIONS: "diagnostic_questions",
+  AI_NOTES: "ai_notes",
 } as const;
 
 // Function IDs (if needed in future)

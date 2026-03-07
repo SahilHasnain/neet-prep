@@ -8,13 +8,15 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 interface VideoLessonsProps {
   topicId: string;
   topicName: string;
+  onVideoProgress?: (progress: number) => void;
 }
 
-export function VideoLessons({ topicId, topicName }: VideoLessonsProps) {
+export function VideoLessons({ topicId, topicName, onVideoProgress }: VideoLessonsProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
   const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'english' | 'hindi'>('all');
   const [playingVideo, setPlayingVideo] = useState<VideoLesson | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [watchedVideos, setWatchedVideos] = useState<Set<string>>(new Set());
 
   const videos = getVideosForTopic(topicId);
 
@@ -47,6 +49,16 @@ export function VideoLessons({ topicId, topicName }: VideoLessonsProps) {
   const handleCloseVideo = () => {
     setIsPlaying(false);
     setPlayingVideo(null);
+  };
+
+  const handleVideoEnd = (videoId: string) => {
+    const newWatched = new Set(watchedVideos);
+    newWatched.add(videoId);
+    setWatchedVideos(newWatched);
+    
+    // Calculate progress percentage
+    const progress = (newWatched.size / videos.length) * 100;
+    onVideoProgress?.(progress);
   };
 
   return (
@@ -183,6 +195,7 @@ export function VideoLessons({ topicId, topicName }: VideoLessonsProps) {
                 onChangeState={(state: string) => {
                   if (state === 'ended') {
                     setIsPlaying(false);
+                    handleVideoEnd(playingVideo.youtubeId);
                   }
                 }}
               />

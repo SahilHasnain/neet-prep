@@ -1,14 +1,14 @@
-# Naat Collection - Flashcard App
+# NEET Guided Learning App
 
-A React Native flashcard application with AI-powered card generation using Appwrite backend and GROQ AI.
+An AI-powered adaptive learning platform for NEET exam preparation with personalized study paths, gap detection, and micro-interventions.
 
 ## Features
 
-- 📚 Create and manage flashcard decks
-- 🤖 AI-powered flashcard generation using GROQ
-- 📊 Track learning progress with spaced repetition
-- 🎯 Multiple difficulty levels
-- 🏷️ Tag-based organization
+- 🎯 Diagnostic assessment with personalized study paths
+- 🧠 AI-powered gap detection and micro-interventions
+- 📚 Progressive AI-generated notes (multiple formats)
+- 📊 Prerequisite-aware knowledge graph
+- 🎓 Interactive quizzes with mastery tracking
 - 📱 Cross-platform (iOS, Android, Web)
 
 ## Tech Stack
@@ -77,16 +77,10 @@ npm start
 
 ## Documentation
 
-- [Implementation Plan](docs/flashcard-feature-plan.md)
-- [Phase 1 Setup Guide](docs/phase1-setup-guide.md)
-- [Database Schema](docs/database-schema.md)
-- [Function Documentation](appwrite-functions/generate-flashcards/README.md)
-
-## Development Phases
-
-- ✅ Phase 1: Backend Infrastructure & Database Setup
-- ⏳ Phase 2: Appwrite Function & AI Integration
-- ⏳ Phase 3: Frontend Implementation
+- [Study Path Implementation](docs/study-path-feature-plan.md)
+- [AI Notes Feature](docs/ai-notes-feature-summary.md)
+- [Gap Detection](docs/conceptual-dependency-mapping.md)
+- [Micro Interventions](docs/ai-study-path-implementation.md)
 
 ## Scripts
 

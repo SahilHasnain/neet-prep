@@ -1,7 +1,7 @@
+import { AINotesModal } from '@/src/components/study-path/AINotesModal';
 import { DependencyTree } from '@/src/components/study-path/DependencyTree';
 import { InteractiveQuiz } from '@/src/components/study-path/InteractiveQuiz';
 import { MicroInterventionModal } from '@/src/components/study-path/MicroInterventionModal';
-import { StudyNotes } from '@/src/components/study-path/StudyNotes';
 import { StudyTipsTab } from '@/src/components/study-path/StudyTipsTab';
 import { TopicHeader } from '@/src/components/study-path/TopicHeader';
 import { TopicOverview } from '@/src/components/study-path/TopicOverview';
@@ -19,6 +19,8 @@ export default function TopicDetailScreen() {
   const { topicId } = useLocalSearchParams();
   const [showMicroIntervention, setShowMicroIntervention] = useState(false);
   const [interventionData, setInterventionData] = useState<any>(null);
+  const [showAINotes, setShowAINotes] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
   
   const topic = getTopicById(topicId as string);
   const prerequisites = getPrerequisites(topicId as string);
@@ -168,7 +170,11 @@ export default function TopicDetailScreen() {
 
         {activeTab === 'videos' && (
           <View className="pb-4">
-            <VideoLessons topicId={topicId as string} topicName={topic.name} />
+            <VideoLessons 
+              topicId={topicId as string} 
+              topicName={topic.name}
+              onVideoProgress={setVideoProgress}
+            />
           </View>
         )}
 
@@ -184,9 +190,46 @@ export default function TopicDetailScreen() {
           </View>
         )}
 
-        {activeTab === 'notes' && userId && (
+        {activeTab === 'notes' && (
           <View className="pb-4">
-            <StudyNotes topicId={topicId as string} topicName={topic.name} userId={userId} />
+            <View className={`${THEME_CLASSES.card} items-center py-8`}>
+              <View className="bg-accent-primary/10 rounded-full p-6 mb-4">
+                <Ionicons name="sparkles" size={48} color="#8b5cf6" />
+              </View>
+              <Text className={`${THEME_CLASSES.heading2} mb-2 text-center`}>
+                AI-Generated Study Notes
+              </Text>
+              <Text className={`${THEME_CLASSES.body} text-center mb-6 px-4`}>
+                Get personalized, comprehensive notes tailored to your learning progress and performance
+              </Text>
+              
+              <View className="w-full px-4 space-y-3 mb-6">
+                <View className="flex-row items-center">
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text className="text-text-secondary text-sm ml-2">Progressive unlocking based on your progress</Text>
+                </View>
+                <View className="flex-row items-center">
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text className="text-text-secondary text-sm ml-2">Available in English or Hinglish</Text>
+                </View>
+                <View className="flex-row items-center">
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text className="text-text-secondary text-sm ml-2">Multiple formats: Comprehensive, Formulas, Quick Revision</Text>
+                </View>
+                <View className="flex-row items-center">
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Text className="text-text-secondary text-sm ml-2">Personalized based on your weak areas</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setShowAINotes(true)}
+                className={THEME_CLASSES.buttonPrimary}
+              >
+                <Ionicons name="sparkles" size={20} color="#fff" />
+                <Text className="text-white font-bold ml-2">Generate AI Notes</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -200,6 +243,30 @@ export default function TopicDetailScreen() {
         onClose={() => setShowMicroIntervention(false)}
         interventionData={interventionData}
         currentTopicName={topic.name}
+      />
+
+      <AINotesModal
+        visible={showAINotes}
+        onClose={() => setShowAINotes(false)}
+        userId={userId || ''}
+        topicId={topicId as string}
+        topicName={topic.name}
+        subject={topic.subject}
+        difficulty={topic.difficulty as 'beginner' | 'intermediate' | 'advanced'}
+        progress={{
+          videoProgress: videoProgress || 0,
+          quizAttempts: topicProgress?.progress?.quiz_attempts || 0,
+          masteryLevel: topicProgress?.progress?.mastery_level || 0
+        }}
+        weakAreas={topicProgress?.progress?.conceptual_gaps?.map((g: any) => g.prerequisite_name) || []}
+        quizPerformance={
+          topicProgress?.progress?.quiz_attempts && topicProgress?.progress?.quiz_attempts > 0
+            ? {
+                score: topicProgress.progress.quiz_average_score || 0,
+                missedConcepts: topicProgress.progress.conceptual_gaps?.map((g: any) => g.prerequisite_name) || []
+              }
+            : undefined
+        }
       />
     </SafeAreaView>
   );
