@@ -1,8 +1,8 @@
 import { THEME_CLASSES } from '@/src/config/theme.config';
-import { getVideosForTopic, getYouTubeThumbnail, VideoLesson } from '@/src/config/video-lessons.config';
+import { getYouTubeThumbnail, VideoLesson, videoLessonsService } from '@/src/services/video-lessons.service';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 interface VideoLessonsProps {
@@ -17,8 +17,28 @@ export function VideoLessons({ topicId, topicName, onVideoProgress }: VideoLesso
   const [playingVideo, setPlayingVideo] = useState<VideoLesson | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(new Set());
+  const [videos, setVideos] = useState<VideoLesson[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const videos = getVideosForTopic(topicId);
+  useEffect(() => {
+    loadVideos();
+  }, [topicId]);
+
+  const loadVideos = async () => {
+    setLoading(true);
+    const fetchedVideos = await videoLessonsService.getVideosByTopic(topicId);
+    setVideos(fetchedVideos);
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <View className="py-8 items-center">
+        <ActivityIndicator size="large" color="#8b5cf6" />
+        <Text className={`${THEME_CLASSES.bodySmall} mt-2`}>Loading videos...</Text>
+      </View>
+    );
+  }
 
   if (videos.length === 0) {
     return (
@@ -121,14 +141,14 @@ export function VideoLessons({ topicId, topicName, onVideoProgress }: VideoLesso
           <View className="gap-3">
             {filteredVideos.map(video => (
               <TouchableOpacity
-                key={video.id}
+                key={video.$id}
                 onPress={() => handleVideoPress(video)}
                 className="bg-background-secondary rounded-lg overflow-hidden border border-border-secondary active:bg-background-tertiary"
               >
                 {/* Thumbnail */}
                 <View className="relative">
                   <Image
-                    source={{ uri: getYouTubeThumbnail(video.youtubeId, 'medium') }}
+                    source={{ uri: getYouTubeThumbnail(video.youtube_id, 'medium') }}
                     className="w-full h-40"
                     resizeMode="cover"
                   />
@@ -191,11 +211,11 @@ export function VideoLessons({ topicId, topicName, onVideoProgress }: VideoLesso
               <YoutubePlayer
                 height={300}
                 play={isPlaying}
-                videoId={playingVideo.youtubeId}
+                videoId={playingVideo.youtube_id}
                 onChangeState={(state: string) => {
                   if (state === 'ended') {
                     setIsPlaying(false);
-                    handleVideoEnd(playingVideo.youtubeId);
+                    handleVideoEnd(playingVideo.youtube_id);
                   }
                 }}
               />

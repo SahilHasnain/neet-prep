@@ -22,6 +22,7 @@ export const COLLECTIONS = {
   DAILY_TASKS: "daily_tasks",
   DIAGNOSTIC_QUESTIONS: "diagnostic_questions",
   AI_NOTES: "ai_notes",
+  VIDEO_LESSONS: "video_lessons",
 } as const;
 
 // Function IDs (if needed in future)
