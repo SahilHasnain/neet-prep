@@ -6,7 +6,7 @@
   "scripts": {
     "format": "prettier --write .",
     "install:functions": "npm install",
-    "build": "echo 'no build script'"
+    "build": "node init && echo 'no build script'"
   },
   "dependencies": {
     "groq-sdk": "^0.7.0",
