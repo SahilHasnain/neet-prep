@@ -26,9 +26,9 @@
     "delete:flashcard-storage": "ts-node scripts/delete-flashcard-storage.ts",
     "fix:study-path-permissions": "ts-node scripts/fix-study-path-permissions.ts",
     "fix:card-reviews": "ts-node scripts/fix-card-reviews-permissions.ts",
-    "build:dev": "eas build --profile development",
-    "build:prev": "eas build --profile preview",
-    "build:prod": "eas build --profile production"
+    "build:dev": "eas build --platform android --profile development",
+    "build:prev": "eas build --platform android --profile preview",
+    "build:prod": "eas build --platform android --profile production"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
