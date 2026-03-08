@@ -225,6 +225,9 @@ function VideoModal({
   });
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [videoCount, setVideoCount] = useState(1);
+  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [showAiPanel, setShowAiPanel] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,6 +268,50 @@ function VideoModal({
     }
   };
 
+  // Get AI video suggestions
+  const handleGetAiSuggestions = async () => {
+    if (!formData.topic_id) {
+      alert("Please select a topic first");
+      return;
+    }
+
+    setLoadingAi(true);
+    try {
+      const res = await fetch("/api/ai-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId: formData.topic_id }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setAiSuggestions(data.suggestions);
+        setShowAiPanel(true);
+      } else {
+        alert(`AI failed: ${data.error}`);
+      }
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
+  // Select an AI suggestion
+  const handleSelectSuggestion = (suggestion: any) => {
+    setFormData({
+      ...formData,
+      title: suggestion.title,
+      channel: suggestion.channelTitle,
+      youtube_id: suggestion.id,
+      duration: suggestion.duration,
+      description: suggestion.description.substring(0, 200),
+      difficulty: suggestion.difficulty,
+    });
+    setYoutubeUrl(`https://www.youtube.com/watch?v=${suggestion.id}`);
+    setShowAiPanel(false);
+  };
+
   // Extract YouTube ID from URL
   const handleYoutubeUrlChange = (url: string) => {
     setYoutubeUrl(url);
@@ -276,12 +323,45 @@ function VideoModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-[#1a1a1a] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[--color-border-secondary]">
-        <div className="p-6 border-b border-[--color-border-subtle] bg-[#0a0a0a]">
-          <h2 className="text-2xl font-bold">{video ? "Edit Video" : "Add Video"}</h2>
-        </div>
+      <div className="bg-[#1a1a1a] rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[--color-border-secondary] flex">
+        {/* Main Form */}
+        <div className="flex-1 p-6">
+          <div className="pb-4 border-b border-[--color-border-subtle] bg-[#0a0a0a] -m-6 mb-6 p-6">
+            <h2 className="text-2xl font-bold">{video ? "Edit Video" : "Add Video"}</h2>
+          </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* AI Suggestion Button */}
+          {!video && formData.topic_id && (
+            <div className="p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-purple-300 mb-1">✨ AI-Powered Video Discovery</h3>
+                  <p className="text-sm text-[--color-text-secondary]">
+                    Let AI find the best educational videos for this topic
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGetAiSuggestions}
+                  disabled={loadingAi}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
+                >
+                  {loadingAi ? (
+                    <>
+                      <span className="animate-spin">⚙️</span>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      🔍 Find Videos
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Topic Selection */}
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -493,6 +573,53 @@ function VideoModal({
             </button>
           </div>
         </form>
+        </div>
+
+        {/* AI Suggestions Panel */}
+        {showAiPanel && (
+          <div className="w-96 border-l border-[--color-border-secondary] bg-[#0a0a0a] overflow-y-auto">
+            <div className="p-4 border-b border-[--color-border-subtle] flex items-center justify-between sticky top-0 bg-[#0a0a0a] z-10">
+              <h3 className="font-semibold">AI Suggestions ({aiSuggestions.length})</h3>
+              <button
+                onClick={() => setShowAiPanel(false)}
+                className="text-[--color-text-tertiary] hover:text-[--color-text-primary]"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              {aiSuggestions.map((suggestion) => (
+                <div
+                  key={suggestion.id}
+                  className="p-3 bg-[#1a1a1a] border border-[--color-border-secondary] rounded-lg hover:border-[--color-accent-primary] transition cursor-pointer"
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                >
+                  <img
+                    src={suggestion.thumbnailUrl}
+                    alt={suggestion.title}
+                    className="w-full h-32 object-cover rounded mb-2"
+                  />
+                  <h4 className="font-medium text-sm mb-1 line-clamp-2">{suggestion.title}</h4>
+                  <div className="text-xs text-[--color-text-secondary] space-y-1">
+                    <div>📺 {suggestion.channelTitle}</div>
+                    <div>⏱️ {suggestion.duration}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-[--color-accent-success]/20 text-[--color-accent-success] rounded">
+                        Score: {suggestion.score}
+                      </span>
+                      <span className="px-2 py-0.5 bg-[--color-accent-primary]/20 text-[--color-accent-primary] rounded capitalize">
+                        {suggestion.difficulty}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[--color-text-tertiary] mt-2 line-clamp-2">
+                    {suggestion.reasoning}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
