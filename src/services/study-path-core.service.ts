@@ -7,7 +7,6 @@ import { ID, Query } from 'react-native-appwrite';
 import { COLLECTIONS, DATABASE_ID } from '../config/appwrite.config';
 import type { StudyPath } from '../types/study-path.types';
 import { databases } from './appwrite';
-import { DailyTasksService } from './daily-tasks.service';
 import { TopicProgressService } from './topic-progress.service';
 
 export class StudyPathCoreService {
@@ -71,13 +70,6 @@ export class StudyPathCoreService {
       topicSequence,
       aiPath.priorityLevel
     );
-
-    // Generate initial daily tasks
-    try {
-      await DailyTasksService.generateDailyTasks(userId, doc.path_id as string, 2);
-    } catch (error) {
-      console.error('Error generating initial daily tasks:', error);
-    }
 
     return {
       ...doc,

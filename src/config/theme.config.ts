@@ -78,14 +78,6 @@ export const STATUS_COLORS = {
   archived: COLORS.text.disabled,
 } as const;
 
-// Task type colors
-export const TASK_TYPE_COLORS = {
-  study: COLORS.accent.primary,
-  practice: COLORS.accent.success,
-  review: COLORS.accent.info,
-  quiz: COLORS.accent.warning,
-} as const;
-
 // Difficulty colors
 export const DIFFICULTY_COLORS = {
   easy: COLORS.accent.success,
@@ -206,11 +198,6 @@ export const getSubjectColor = (subject: 'Physics' | 'Chemistry' | 'Biology') =>
 // Helper function to get status color
 export const getStatusColor = (status: keyof typeof STATUS_COLORS) => {
   return STATUS_COLORS[status] || COLORS.text.disabled;
-};
-
-// Helper function to get task type color
-export const getTaskTypeColor = (taskType: keyof typeof TASK_TYPE_COLORS) => {
-  return TASK_TYPE_COLORS[taskType] || COLORS.text.disabled;
 };
 
 // Helper function to get difficulty color

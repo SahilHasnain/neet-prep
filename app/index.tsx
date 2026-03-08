@@ -160,17 +160,17 @@ export default function Index() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => router.push("/study-path/daily" as any)}
+                onPress={() => router.push("/diagnostic/" as any)}
                 className="flex-1 bg-background-secondary rounded-xl p-4 border border-border-subtle active:bg-interactive-hover"
               >
                 <View className="w-12 h-12 rounded-full bg-accent-secondary/20 items-center justify-center mb-2">
-                  <Ionicons name="calendar" size={24} color="#3b82f6" />
+                  <Ionicons name="analytics" size={24} color="#3b82f6" />
                 </View>
                 <Text className={`${THEME_CLASSES.heading3} mb-1`}>
-                  Daily Tasks
+                  Diagnostic
                 </Text>
                 <Text className={THEME_CLASSES.caption}>
-                  Today's plan
+                  Test yourself
                 </Text>
               </TouchableOpacity>
             </View>

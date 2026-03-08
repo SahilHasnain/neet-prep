@@ -15,7 +15,6 @@ export const COLLECTIONS = {
   DIAGNOSTIC_RESULTS: "diagnostic_results",
   STUDY_PATHS: "study_paths",
   TOPIC_PROGRESS: "topic_progress",
-  DAILY_TASKS: "daily_tasks",
   DIAGNOSTIC_QUESTIONS: "diagnostic_questions",
   AI_NOTES: "ai_notes",
 } as const;

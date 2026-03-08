@@ -167,40 +167,21 @@ export default function StudyPathScreen() {
           </Text>
           
           <View className="flex-row gap-3 mb-3">
-            {/* Daily Tasks - Primary */}
+            {/* Retake Diagnostic */}
             <TouchableOpacity
-              onPress={() => router.push('/study-path/daily' as any)}
+              onPress={() => router.push('/diagnostic' as any)}
               className="flex-1 bg-accent-primary rounded-xl p-4 active:opacity-90"
             >
               <View className="flex-row items-center justify-between mb-2">
                 <View className="w-10 h-10 rounded-xl bg-white/20 items-center justify-center">
-                  <Ionicons name="calendar" size={20} color="#fff" />
+                  <Ionicons name="refresh" size={20} color="#fff" />
                 </View>
                 <Ionicons name="arrow-forward" size={18} color="#fff" />
               </View>
               <Text className="text-base font-bold text-white mb-1">
-                Today's Tasks
-              </Text>
-              <Text className="text-xs text-white/80">
-                Your daily study plan
-              </Text>
-            </TouchableOpacity>
-
-            {/* Retake Diagnostic */}
-            <TouchableOpacity
-              onPress={() => router.push('/diagnostic' as any)}
-              className="flex-1 bg-background-secondary border border-border-subtle rounded-xl p-4 active:bg-background-tertiary"
-            >
-              <View className="flex-row items-center justify-between mb-2">
-                <View className="w-10 h-10 rounded-xl bg-biology/20 items-center justify-center">
-                  <Ionicons name="refresh" size={20} color="#ec4899" />
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#717171" />
-              </View>
-              <Text className="text-base font-bold text-text-primary mb-1">
                 Retake Test
               </Text>
-              <Text className="text-xs text-text-tertiary">
+              <Text className="text-xs text-white/80">
                 Update your path
               </Text>
             </TouchableOpacity>

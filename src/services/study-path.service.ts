@@ -4,8 +4,7 @@
  * Delegates to specialized services for specific functionality
  */
 
-import type { DailyTask, DiagnosticResult, StudyPath, TopicProgress } from '../types/study-path.types';
-import { DailyTasksService } from './daily-tasks.service';
+import type { DiagnosticResult, StudyPath, TopicProgress } from '../types/study-path.types';
 import { DiagnosticService } from './diagnostic.service';
 import { StudyPathCoreService } from './study-path-core.service';
 import { TopicProgressService } from './topic-progress.service';
@@ -86,38 +85,5 @@ export class StudyPathService {
     topicId: string
   ): Promise<void> {
     return TopicProgressService.completeTopic(userId, pathId, topicId);
-  }
-
-  // ============================================
-  // Daily Task Operations
-  // ============================================
-
-  static async generateDailyTasks(
-    userId: string,
-    pathId: string,
-    dailyStudyHours: number = 2
-  ): Promise<void> {
-    return DailyTasksService.generateDailyTasks(userId, pathId, dailyStudyHours);
-  }
-
-  static async getDailyTasks(
-    userId: string,
-    date: Date = new Date()
-  ): Promise<DailyTask[]> {
-    return DailyTasksService.getDailyTasks(userId, date);
-  }
-
-  static async completeTask(taskId: string): Promise<void> {
-    return DailyTasksService.completeTask(taskId);
-  }
-
-  static async getTaskStats(userId: string, pathId: string): Promise<{
-    totalTasks: number;
-    completedTasks: number;
-    pendingTasks: number;
-    completionRate: number;
-    streak: number;
-  }> {
-    return DailyTasksService.getTaskStats(userId, pathId);
   }
 }

@@ -64,21 +64,6 @@ export interface ConceptualGap {
   resolved?: boolean;
 }
 
-export interface DailyTask {
-  task_id: string;
-  user_id: string;
-  path_id: string;
-  topic_id: string;
-  task_type: 'study' | 'practice' | 'review' | 'quiz';
-  title: string;
-  description?: string;
-  estimated_minutes: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'skipped';
-  scheduled_date: string;
-  completed_at?: string;
-  created_at: string;
-}
-
 export interface TopicWithProgress extends TopicNode {
   progress?: TopicProgress;
   isLocked: boolean;
@@ -106,16 +91,10 @@ export interface PathGenerationRequest {
   userId: string;
   focusAreas?: ('Physics' | 'Chemistry' | 'Biology')[];
   targetDate?: string; // NEET exam date
-  dailyStudyHours?: number;
 }
 
 export interface PathGenerationResponse {
   path: StudyPath;
   topicSequence: TopicWithProgress[];
   estimatedCompletionDate: string;
-  dailySchedule: {
-    date: string;
-    topics: string[];
-    estimatedHours: number;
-  }[];
 }
