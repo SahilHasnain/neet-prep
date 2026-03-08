@@ -4,12 +4,52 @@
  */
 
 import { useEffect, useState } from "react";
-import { LabelService } from "../services/label.service";
-import type {
-  CreateLabelDTO,
-  DiagramLabel,
-  UpdateLabelDTO,
-} from "../types/flashcard.types";
+
+// Placeholder types until label service is implemented
+export interface DiagramLabel {
+  label_id: string;
+  card_id: string;
+  x: number;
+  y: number;
+  text: string;
+  created_at: string;
+}
+
+export interface CreateLabelDTO {
+  card_id: string;
+  x: number;
+  y: number;
+  text: string;
+}
+
+export interface UpdateLabelDTO {
+  x?: number;
+  y?: number;
+  text?: string;
+}
+
+// Placeholder service until implemented
+const LabelService = {
+  async getCardLabels(cardId: string): Promise<DiagramLabel[]> {
+    console.warn('LabelService not implemented yet');
+    return [];
+  },
+  async createLabel(data: CreateLabelDTO): Promise<DiagramLabel> {
+    console.warn('LabelService not implemented yet');
+    throw new Error('Not implemented');
+  },
+  async updateLabel(labelId: string, data: UpdateLabelDTO): Promise<DiagramLabel> {
+    console.warn('LabelService not implemented yet');
+    throw new Error('Not implemented');
+  },
+  async deleteLabel(labelId: string): Promise<void> {
+    console.warn('LabelService not implemented yet');
+  },
+  async createLabelsBulk(labelsData: CreateLabelDTO[]): Promise<DiagramLabel[]> {
+    console.warn('LabelService not implemented yet');
+    return [];
+  }
+};
 
 export function useLabels(cardId: string) {
   const [labels, setLabels] = useState<DiagramLabel[]>([]);
@@ -30,7 +70,7 @@ export function useLabels(cardId: string) {
   };
 
   const createLabel = async (
-    data: CreateLabelDTO,
+    data: CreateLabelDTO
   ): Promise<DiagramLabel | null> => {
     try {
       const label = await LabelService.createLabel(data);

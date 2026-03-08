@@ -10,7 +10,9 @@ export const APPWRITE_CONFIG = {
 } as const;
 
 // AI Configuration
-export const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY!;
+// Note: GROQ_API_KEY is now fetched dynamically from Appwrite
+// Use ApiKeysService.getApiKey('GROQ_API_KEY') instead
+export const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY || '';
 
 // Database and Collection IDs
 export const DATABASE_ID = "flashcard_db";

@@ -1,9 +1,9 @@
 "use client";
 
-import { VideoLesson } from "@/../../shared/types/video.types";
-import { TOPICS, getTopicName } from "@/lib/topics";
-import { extractYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 import { useEffect, useState } from "react";
+import { VideoLesson } from "../../../shared/types/video.types";
+import { TOPICS, getTopicName } from "../../lib/topics";
+import { extractYouTubeId, getYouTubeThumbnail } from "../../lib/youtube";
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<VideoLesson[]>([]);
@@ -295,9 +295,9 @@ function VideoModal({
               className="w-full px-3 py-2 bg-[#0a0a0a] border border-[--color-border-secondary] rounded focus:outline-none focus:border-[--color-accent-primary] disabled:opacity-50"
             >
               <option value="">Select a topic...</option>
-              {Object.entries(TOPICS).map(([subject, topics]) => (
+              {Object.entries(TOPICS).map(([subject, topicsList]) => (
                 <optgroup key={subject} label={subject}>
-                  {topics.map((topic) => (
+                  {(topicsList as Array<{id: string; name: string}>).map((topic) => (
                     <option key={topic.id} value={topic.id}>
                       {topic.id} - {topic.name}
                     </option>

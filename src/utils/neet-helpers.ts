@@ -3,9 +3,9 @@
  */
 
 import {
-  NEET_AI_PROMPTS,
-  NEET_SUBJECTS,
-  NEET_TOPICS,
+    NEET_AI_PROMPTS,
+    NEET_SUBJECTS,
+    NEET_TOPICS,
 } from "../config/neet.config";
 
 export function getSubjectFromCategory(category: string): string {
@@ -24,7 +24,7 @@ export function getSubjectFromCategory(category: string): string {
   return "General";
 }
 
-export function getTopicsForSubject(subject: string): string[] {
+export function getTopicsForSubject(subject: string): readonly string[] {
   switch (subject) {
     case NEET_SUBJECTS.PHYSICS:
       return NEET_TOPICS.PHYSICS;

@@ -450,7 +450,7 @@ export function AINotesModal({
 
             {/* Generate Button */}
             <TouchableOpacity
-              onPress={handleGenerate}
+              onPress={() => handleGenerate()}
               className={`${THEME_CLASSES.buttonPrimary} mt-4`}
             >
               <Ionicons name="sparkles" size={20} color="#fff" />

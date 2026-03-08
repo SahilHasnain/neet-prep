@@ -18,6 +18,8 @@
     "setup:ai-study-path": "ts-node scripts/add-ai-study-path-fields.ts",
     "setup:topic-id": "ts-node scripts/add-topic-id-to-decks.ts",
     "setup:ai-notes": "ts-node scripts/setup-ai-notes-collection.ts",
+    "setup:api-keys": "ts-node scripts/setup-api-keys-collection.ts",
+    "migrate:api-key": "ts-node scripts/migrate-api-key.ts",
     "migrate:decks-to-topics": "ts-node scripts/migrate-decks-to-topics.ts",
     "delete:all-decks": "ts-node scripts/delete-all-decks.ts",
     "delete:flashcard-collections": "ts-node scripts/delete-flashcard-collections.ts",

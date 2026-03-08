@@ -78,7 +78,7 @@ async function setupStudyNotesCollection() {
       DATABASE_ID,
       COLLECTION_ID,
       'user_topic_idx',
-      'key',
+      'key' as any,
       ['user_id', 'topic_id']
     );
 
@@ -88,7 +88,7 @@ async function setupStudyNotesCollection() {
       DATABASE_ID,
       COLLECTION_ID,
       'highlighted_idx',
-      'key',
+      'key' as any,
       ['user_id', 'is_highlighted']
     );
 

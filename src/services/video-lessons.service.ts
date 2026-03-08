@@ -38,7 +38,7 @@ export const videoLessonsService = {
           Query.orderAsc("order_index"),
         ]
       );
-      return response.documents as VideoLesson[];
+      return response.documents as unknown as VideoLesson[];
     } catch (error) {
       console.error("Error fetching videos:", error);
       return [];
@@ -53,7 +53,7 @@ export const videoLessonsService = {
         COLLECTION_ID,
         [Query.equal("video_id", videoId)]
       );
-      return response.documents[0] as VideoLesson || null;
+      return response.documents[0] as unknown as VideoLesson || null;
     } catch (error) {
       console.error("Error fetching video:", error);
       return null;
@@ -73,7 +73,7 @@ export const videoLessonsService = {
         updated_at: now,
       }
     );
-    return response as VideoLesson;
+    return response as unknown as VideoLesson;
   },
 
   // Update video (admin only)
@@ -87,7 +87,7 @@ export const videoLessonsService = {
         updated_at: new Date().toISOString(),
       }
     );
-    return response as VideoLesson;
+    return response as unknown as VideoLesson;
   },
 
   // Delete video (admin only)
@@ -108,7 +108,7 @@ export const videoLessonsService = {
         COLLECTION_ID,
         [Query.orderAsc("topic_id"), Query.orderAsc("order_index")]
       );
-      return response.documents as VideoLesson[];
+      return response.documents as unknown as VideoLesson[];
     } catch (error) {
       console.error("Error fetching all videos:", error);
       return [];

@@ -2,8 +2,8 @@
  * Videos API Route
  */
 
-import { videoService } from "@/lib/video.service";
 import { NextRequest, NextResponse } from "next/server";
+import { videoService } from "../../../lib/video.service";
 
 export async function GET(request: NextRequest) {
   try {

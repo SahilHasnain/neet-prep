@@ -48,9 +48,9 @@ export default {
         "expo-splash-screen",
         {
           image: "./assets/images/neuro-splash.png",
-          imageWidth: 200,
+          imageWidth: 1024,
           resizeMode: "contain",
-          backgroundColor: "#ffffff",
+          backgroundColor: "#000000",
           dark: {
             backgroundColor: "#000000",
           },

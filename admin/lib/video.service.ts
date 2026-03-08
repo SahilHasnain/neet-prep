@@ -13,7 +13,7 @@ export const videoService = {
       Query.orderAsc("order_index"),
       Query.limit(1000),
     ]);
-    return response.documents as VideoLesson[];
+    return response.documents as unknown as VideoLesson[];
   },
 
   async getByTopic(topicId: string): Promise<VideoLesson[]> {
@@ -21,7 +21,7 @@ export const videoService = {
       Query.equal("topic_id", topicId),
       Query.orderAsc("order_index"),
     ]);
-    return response.documents as VideoLesson[];
+    return response.documents as unknown as VideoLesson[];
   },
 
   async create(video: Omit<VideoLesson, "$id" | "created_at" | "updated_at">): Promise<VideoLesson> {
@@ -36,7 +36,7 @@ export const videoService = {
         updated_at: now,
       }
     );
-    return response as VideoLesson;
+    return response as unknown as VideoLesson;
   },
 
   async update(id: string, updates: Partial<VideoLesson>): Promise<VideoLesson> {
@@ -44,7 +44,7 @@ export const videoService = {
       ...updates,
       updated_at: new Date().toISOString(),
     });
-    return response as VideoLesson;
+    return response as unknown as VideoLesson;
   },
 
   async delete(id: string): Promise<void> {

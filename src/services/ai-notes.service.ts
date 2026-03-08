@@ -5,7 +5,7 @@
  */
 
 import { ID, Query } from 'react-native-appwrite';
-import { COLLECTIONS, DATABASE_ID, GROQ_API_KEY } from '../config/appwrite.config';
+import { COLLECTIONS, DATABASE_ID } from '../config/appwrite.config';
 import { databases } from './appwrite';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -189,11 +189,21 @@ export class AINotesService {
 
   private static async callGroqAPI(prompt: string, maxTokens: number = 3000): Promise<string> {
     try {
+      // Import ApiKeysService dynamically
+      const { ApiKeysService } = await import('./api-keys.service');
+      
+      // Fetch API key from Appwrite
+      const apiKey = await ApiKeysService.getApiKey('GROQ_API_KEY');
+      
+      if (!apiKey) {
+        throw new Error('GROQ API key not found in Appwrite');
+      }
+
       const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${GROQ_API_KEY}`
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: MODEL,

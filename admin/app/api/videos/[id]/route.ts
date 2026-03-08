@@ -2,8 +2,8 @@
  * Single Video API Route
  */
 
-import { videoService } from "@/lib/video.service";
 import { NextRequest, NextResponse } from "next/server";
+import { videoService } from "../../../../lib/video.service";
 
 export async function PATCH(
   request: NextRequest,
