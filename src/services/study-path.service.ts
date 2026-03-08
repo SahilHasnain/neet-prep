@@ -60,10 +60,6 @@ export class StudyPathService {
     return StudyPathCoreService.getAllUserStudyPaths(userId);
   }
 
-  static async revertToPreviousPath(userId: string): Promise<StudyPath | null> {
-    return StudyPathCoreService.revertToPreviousPath(userId);
-  }
-
   // ============================================
   // Topic Progress Operations
   // ============================================

@@ -23,8 +23,8 @@ export class StudyPathCoreService {
     chemistryScore: number,
     biologyScore: number
   ): Promise<StudyPath> {
-    // Archive any existing active study path
-    await this.archiveActiveStudyPath(userId);
+    // Delete any existing active study path and its progress records
+    await this.deleteActiveStudyPath(userId);
 
     // Get all available topics from knowledge graph
     const { KNOWLEDGE_GRAPH } = await import('../config/knowledge-graph.config');
@@ -134,25 +134,49 @@ export class StudyPathCoreService {
   }
 
   /**
-   * Archive the current active study path
+   * Delete the current active study path and all its progress records
    */
-  private static async archiveActiveStudyPath(userId: string): Promise<void> {
+  private static async deleteActiveStudyPath(userId: string): Promise<void> {
     try {
       const existingPath = await this.getUserStudyPath(userId);
       if (existingPath) {
-        await databases.updateDocument(
+        console.log(`Deleting existing study path ${existingPath.path_id}`);
+        
+        // Delete all topic progress records for this path
+        const progressRecords = await databases.listDocuments(
+          DATABASE_ID,
+          COLLECTIONS.TOPIC_PROGRESS,
+          [
+            Query.equal('path_id', existingPath.path_id),
+            Query.limit(100)
+          ]
+        );
+
+        console.log(`Deleting ${progressRecords.documents.length} progress records`);
+        
+        for (const record of progressRecords.documents) {
+          try {
+            await databases.deleteDocument(
+              DATABASE_ID,
+              COLLECTIONS.TOPIC_PROGRESS,
+              record.$id
+            );
+          } catch (error) {
+            console.error(`Failed to delete progress record ${record.$id}:`, error);
+          }
+        }
+
+        // Delete the study path itself
+        await databases.deleteDocument(
           DATABASE_ID,
           COLLECTIONS.STUDY_PATHS,
-          existingPath.path_id,
-          {
-            status: 'archived',
-            updated_at: new Date().toISOString()
-          }
+          existingPath.path_id
         );
-        console.log(`Archived study path ${existingPath.path_id}`);
+        
+        console.log(`Deleted study path ${existingPath.path_id}`);
       }
     } catch (error) {
-      console.error('Error archiving study path:', error);
+      console.error('Error deleting study path:', error);
     }
   }
 
@@ -181,7 +205,7 @@ export class StudyPathCoreService {
   }
 
   /**
-   * Get all study paths for user (including archived)
+   * Get all study paths for user
    */
   static async getAllUserStudyPaths(userId: string): Promise<StudyPath[]> {
     const response = await databases.listDocuments(
@@ -198,65 +222,5 @@ export class StudyPathCoreService {
       ...doc,
       topic_sequence: JSON.parse(doc.topic_sequence as string)
     })) as unknown as StudyPath[];
-  }
-
-  /**
-   * Revert to the most recent archived study path
-   */
-  static async revertToPreviousPath(userId: string): Promise<StudyPath | null> {
-    try {
-      // Get current active path
-      const currentPath = await this.getUserStudyPath(userId);
-      
-      // Get most recent archived path
-      const archivedPaths = await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.STUDY_PATHS,
-        [
-          Query.equal('user_id', userId),
-          Query.equal('status', 'archived'),
-          Query.orderDesc('created_at'),
-          Query.limit(1)
-        ]
-      );
-
-      if (archivedPaths.documents.length === 0) {
-        return null;
-      }
-
-      const previousPath = archivedPaths.documents[0];
-
-      // Archive current path
-      if (currentPath) {
-        await databases.updateDocument(
-          DATABASE_ID,
-          COLLECTIONS.STUDY_PATHS,
-          currentPath.path_id,
-          {
-            status: 'replaced',
-            updated_at: new Date().toISOString()
-          }
-        );
-      }
-
-      // Reactivate previous path
-      await databases.updateDocument(
-        DATABASE_ID,
-        COLLECTIONS.STUDY_PATHS,
-        previousPath.$id,
-        {
-          status: 'active',
-          updated_at: new Date().toISOString()
-        }
-      );
-
-      return {
-        ...previousPath,
-        topic_sequence: JSON.parse(previousPath.topic_sequence as string)
-      } as unknown as StudyPath;
-    } catch (error) {
-      console.error('Error reverting to previous path:', error);
-      return null;
-    }
   }
 }

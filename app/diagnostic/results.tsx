@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getTopicById } from '../../src/config/knowledge-graph.config';
 import { THEME_CLASSES } from '../../src/config/theme.config';
 import { StudyPathAIService } from '../../src/services/study-path-ai.service';
 import { StudyPathService } from '../../src/services/study-path.service';
 import { getOrCreateUserId } from '../../src/utils/user-id';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DiagnosticResultsScreen() {
   const params = useLocalSearchParams();
@@ -109,7 +109,7 @@ export default function DiagnosticResultsScreen() {
     if (hasExistingPath) {
       Alert.alert(
         'Replace Study Path?',
-        'You already have an active study path. Generating a new one will archive your current path. You can revert to it later if needed.',
+        'You already have an active study path. Generating a new one will replace your current path and all progress will be lost.',
         [
           {
             text: 'Cancel',

@@ -44,6 +44,23 @@ export class TopicProgressService {
       const priority = priorityLevels?.[topicId] || 'medium';
 
       try {
+        // Check if progress already exists for this user/path/topic combination
+        const existing = await databases.listDocuments(
+          DATABASE_ID,
+          COLLECTIONS.TOPIC_PROGRESS,
+          [
+            Query.equal('user_id', userId),
+            Query.equal('path_id', pathId),
+            Query.equal('topic_id', topicId),
+            Query.limit(1)
+          ]
+        );
+
+        if (existing.documents.length > 0) {
+          console.log(`Progress already exists for topic ${topicId}, skipping creation`);
+          continue;
+        }
+
         const docId = ID.unique();
         await databases.createDocument(
           DATABASE_ID,
@@ -64,7 +81,12 @@ export class TopicProgressService {
         );
         console.log(`Created progress for topic ${topicId} with status: ${status}`);
       } catch (error: any) {
-        console.error(`Error creating progress for ${topicId}:`, error);
+        // If document already exists, log but continue
+        if (error.code === 409 || error.message?.includes('already exists')) {
+          console.log(`Progress for ${topicId} already exists (conflict), continuing...`);
+        } else {
+          console.error(`Error creating progress for ${topicId}:`, error);
+        }
       }
     }
   }
@@ -79,7 +101,15 @@ export class TopicProgressService {
       [Query.equal('path_id', pathId), Query.limit(100)]
     );
 
-    return response.documents.map(doc => this.deserializeTopicProgress(doc));
+    console.log(`Fetched ${response.documents.length} progress documents for path ${pathId}`);
+    
+    const deserialized = response.documents.map(doc => {
+      const progress = this.deserializeTopicProgress(doc);
+      console.log(`  - Topic ${progress.topic_id}: status=${progress.status}, progress_id=${progress.progress_id}`);
+      return progress;
+    });
+    
+    return deserialized;
   }
 
   /**
@@ -124,9 +154,17 @@ export class TopicProgressService {
       ]
     );
 
+    console.log(`Looking for progress record for topic ${topicId}. Found ${progressList.documents.length} documents.`);
+
     if (progressList.documents.length > 0) {
       const progress = progressList.documents[0];
-      await databases.updateDocument(
+      console.log(`Found progress document for ${topicId}:`, {
+        docId: progress.$id,
+        progressId: progress.progress_id,
+        currentStatus: progress.status
+      });
+      
+      const updated = await databases.updateDocument(
         DATABASE_ID,
         COLLECTIONS.TOPIC_PROGRESS,
         progress.$id,
@@ -135,10 +173,18 @@ export class TopicProgressService {
           completed_at: new Date().toISOString()
         }
       );
+      
+      console.log(`Updated topic ${topicId} to completed. New status:`, updated.status);
+      
+      // Small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } else {
+      console.error(`ERROR: No progress record found for topic ${topicId}! Cannot mark as completed.`);
+      throw new Error(`No progress record found for topic ${topicId}. The topic may not be in your study path.`);
     }
 
-    // Unlock dependent topics
-    await this.unlockDependentTopics(pathId, topicId);
+    // Unlock dependent topics - pass the completed topic ID
+    await this.unlockDependentTopics(userId, pathId, topicId);
 
     // Update study path overall progress
     await this.updateStudyPathProgress(pathId);
@@ -147,9 +193,8 @@ export class TopicProgressService {
   /**
    * Unlock topics that depend on the completed topic
    */
-  private static async unlockDependentTopics(pathId: string, completedTopicId: string): Promise<void> {
-    // Get all progress for this path
-    const allProgress = await this.getTopicProgress(pathId);
+  private static async unlockDependentTopics(userId: string, pathId: string, completedTopicId: string): Promise<void> {
+    console.log(`Starting unlock process for dependents of ${completedTopicId}`);
     
     // Get the study path to know which topics are in the sequence
     const studyPath = await databases.getDocument(
@@ -159,27 +204,53 @@ export class TopicProgressService {
     );
     const topicSequence = JSON.parse(studyPath.topic_sequence as string) as string[];
     const topicsInPath = new Set(topicSequence);
+    
+    console.log(`Study path contains ${topicSequence.length} topics:`, topicSequence);
+    console.log(`Is ${completedTopicId} in the path?`, topicsInPath.has(completedTopicId));
+    
+    // Get all progress for this path - fetch fresh data after completion
+    const allProgress = await this.getTopicProgress(pathId);
+    
+    // Verify the completed topic is actually marked as completed
+    const completedProgress = allProgress.find(p => p.topic_id === completedTopicId);
+    console.log(`Completed topic ${completedTopicId} status:`, completedProgress?.status);
+    
+    if (!completedProgress) {
+      console.error(`ERROR: No progress record found for completed topic ${completedTopicId}!`);
+      return;
+    }
 
     // Get dependent topics
     const dependents = getDependents(completedTopicId);
+    console.log(`Found ${dependents.length} dependents for ${completedTopicId}:`, dependents.map(d => d.id));
 
     for (const dependent of dependents) {
       // Skip if this dependent topic is not in the current study path
       if (!topicsInPath.has(dependent.id)) {
+        console.log(`Skipping ${dependent.id} - not in current path`);
         continue;
       }
 
       const prereqs = getPrerequisites(dependent.id);
+      console.log(`Checking prerequisites for ${dependent.id}:`, prereqs.map(p => p.id));
       
       // Check if all prerequisites are completed (only those in the path)
       const prereqsInPath = prereqs.filter(p => topicsInPath.has(p.id));
+      console.log(`Prerequisites in path for ${dependent.id}:`, prereqsInPath.map(p => p.id));
+      
       const allPrereqsCompleted = prereqsInPath.every(prereq => {
         const prereqProgress = allProgress.find(p => p.topic_id === prereq.id);
-        return prereqProgress?.status === 'completed';
+        const isCompleted = prereqProgress?.status === 'completed';
+        console.log(`  - ${prereq.id}: ${prereqProgress?.status} (completed: ${isCompleted})`);
+        return isCompleted;
       });
+
+      console.log(`All prerequisites completed for ${dependent.id}: ${allPrereqsCompleted}`);
 
       if (allPrereqsCompleted) {
         const depProgress = allProgress.find(p => p.topic_id === dependent.id);
+        console.log(`Dependent ${dependent.id} current status: ${depProgress?.status}`);
+        
         if (depProgress && depProgress.status === 'locked') {
           await databases.updateDocument(
             DATABASE_ID,
@@ -187,7 +258,9 @@ export class TopicProgressService {
             depProgress.progress_id,
             { status: 'unlocked' }
           );
-          console.log(`Unlocked topic ${dependent.id} after completing ${completedTopicId}`);
+          console.log(`✓ Unlocked topic ${dependent.id} after completing ${completedTopicId}`);
+        } else if (depProgress) {
+          console.log(`Skipping ${dependent.id} - already ${depProgress.status}`);
         }
       }
     }
@@ -218,10 +291,24 @@ export class TopicProgressService {
    * Helper to deserialize topic progress from database
    */
   private static deserializeTopicProgress(doc: any): TopicProgress {
-    const progress = doc as unknown as TopicProgress;
-    if (progress.conceptual_gaps && typeof progress.conceptual_gaps === 'string') {
-      progress.conceptual_gaps = JSON.parse(progress.conceptual_gaps as any);
-    }
+    // Map Appwrite document to TopicProgress interface
+    const progress: TopicProgress = {
+      progress_id: doc.progress_id || doc.$id,
+      user_id: doc.user_id,
+      path_id: doc.path_id,
+      topic_id: doc.topic_id,
+      status: doc.status,
+      mastery_level: doc.mastery_level,
+      time_spent_minutes: doc.time_spent_minutes,
+      quiz_attempts: doc.quiz_attempts,
+      quiz_average_score: doc.quiz_average_score,
+      priority: doc.priority,
+      completed_at: doc.completed_at,
+      conceptual_gaps: doc.conceptual_gaps && typeof doc.conceptual_gaps === 'string' 
+        ? JSON.parse(doc.conceptual_gaps) 
+        : doc.conceptual_gaps
+    };
+    
     return progress;
   }
 }

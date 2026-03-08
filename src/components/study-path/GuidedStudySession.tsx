@@ -7,7 +7,7 @@ import { THEME_CLASSES } from '@/src/config/theme.config';
 import type { QuizQuestion } from '@/src/hooks/useGuidedSession';
 import { useGuidedSession } from '@/src/hooks/useGuidedSession';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { ActiveRecallPhase } from './session/ActiveRecallPhase';
 import { ConfidenceRating } from './session/ConfidenceRating';
@@ -21,7 +21,6 @@ interface GuidedStudySessionProps {
   topicId: string;
   topicName: string;
   subject: string;
-  videoUrl?: string; // Pass video URL directly instead of navigation
   generateQuestions: () => Promise<QuizQuestion[]>;
   onSessionComplete: (masteryGained: number, timeSpent: number) => void;
 }
@@ -32,10 +31,12 @@ export function GuidedStudySession({
   topicId,
   topicName,
   subject,
-  videoUrl,
   generateQuestions,
   onSessionComplete
 }: GuidedStudySessionProps) {
+  const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
+  const [loadingVideo, setLoadingVideo] = useState(true);
+  
   const {
     phase,
     setPhase,
@@ -60,6 +61,31 @@ export function GuidedStudySession({
     handleCompleteSession,
     resetSession
   } = useGuidedSession(generateQuestions, onSessionComplete);
+
+  // Load video from database
+  useEffect(() => {
+    if (visible && topicId) {
+      loadVideoUrl();
+    }
+  }, [visible, topicId]);
+
+  const loadVideoUrl = async () => {
+    setLoadingVideo(true);
+    try {
+      const { videoLessonsService, getYouTubeUrl } = await import('@/src/services/video-lessons.service');
+      const videos = await videoLessonsService.getVideosByTopic(topicId);
+      if (videos.length > 0) {
+        setVideoUrl(getYouTubeUrl(videos[0].youtube_id));
+      } else {
+        setVideoUrl(undefined);
+      }
+    } catch (error) {
+      console.error('Error loading video:', error);
+      setVideoUrl(undefined);
+    } finally {
+      setLoadingVideo(false);
+    }
+  };
 
   // Timer logic
   useEffect(() => {
@@ -177,11 +203,20 @@ export function GuidedStudySession({
         <ScrollView className="flex-1 px-4 py-6" showsVerticalScrollIndicator={false}>
           {phase === 'intro' && <SessionIntro onStart={handleStartSession} />}
           
-          {phase === 'video' && videoUrl && (
+          {phase === 'video' && loadingVideo && (
+            <View className="flex-1 justify-center items-center min-h-[400px]">
+              <ActivityIndicator size="large" color="#8b5cf6" />
+              <Text className={`${THEME_CLASSES.body} mt-4 text-center`}>
+                Loading video...
+              </Text>
+            </View>
+          )}
+          
+          {phase === 'video' && !loadingVideo && videoUrl && (
             <VideoPhase videoUrl={videoUrl} onComplete={handleVideoComplete} />
           )}
           
-          {phase === 'video' && !videoUrl && (
+          {phase === 'video' && !loadingVideo && !videoUrl && (
             <View className="flex-1 justify-center items-center min-h-[400px]">
               <Ionicons name="alert-circle" size={48} color="#ef4444" />
               <Text className={`${THEME_CLASSES.body} mt-4 text-center`}>

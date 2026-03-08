@@ -1,73 +1,36 @@
 import { THEME_CLASSES } from '@/src/config/theme.config';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStudyPath } from '../../src/hooks/useStudyPath';
 import { getOrCreateUserId } from '../../src/utils/user-id';
 
 export default function StudyPathScreen() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [showRevertOption, setShowRevertOption] = useState(false);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     getOrCreateUserId().then(setUserId);
   }, []);
 
-  useEffect(() => {
-    if (userId) {
-      checkForArchivedPaths();
-    }
-  }, [userId]);
+  const { studyPath, topicsWithProgress, loading, error, refresh } = useStudyPath(userId || '');
 
-  const checkForArchivedPaths = async () => {
-    if (!userId) return;
-    try {
-      const { StudyPathService } = await import('../../src/services/study-path.service');
-      const allPaths = await StudyPathService.getAllUserStudyPaths(userId);
-      const hasArchived = allPaths.some(p => p.status === 'archived');
-      setShowRevertOption(hasArchived);
-    } catch (error) {
-      console.error('Error checking archived paths:', error);
-    }
-  };
-
-  const handleRevertPath = async () => {
-    if (!userId) return;
-
-    Alert.alert(
-      'Revert to Previous Path?',
-      'This will restore your previous study path and archive the current one.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Revert',
-          onPress: async () => {
-            try {
-              const { StudyPathService } = await import('../../src/services/study-path.service');
-              const reverted = await StudyPathService.revertToPreviousPath(userId);
-              
-              if (reverted) {
-                Alert.alert('Success', 'Previous study path restored');
-                // Refresh the screen
-                router.replace('/study-path' as any);
-              } else {
-                Alert.alert('Error', 'No previous path found to revert to');
-              }
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to revert path');
-            }
-          }
-        }
-      ]
-    );
-  };
-
-  const { studyPath, topicsWithProgress, loading, error } = useStudyPath(userId || '');
+  // Refresh when screen comes into focus (but not on first render)
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+      
+      if (userId) {
+        refresh();
+      }
+    }, [userId])
+  );
 
   if (loading) {
     return (
@@ -186,29 +149,6 @@ export default function StudyPathScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Revert Option */}
-          {showRevertOption && (
-            <TouchableOpacity
-              onPress={handleRevertPath}
-              className="flex-row items-center justify-between p-4 bg-background-secondary border border-accent-warning/30 rounded-xl active:bg-background-tertiary"
-            >
-              <View className="flex-row items-center flex-1">
-                <View className="w-10 h-10 rounded-xl bg-accent-warning/20 items-center justify-center mr-3">
-                  <Ionicons name="arrow-undo" size={20} color="#f59e0b" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-semibold text-text-primary">
-                    Revert to Previous Path
-                  </Text>
-                  <Text className="text-xs text-text-tertiary">
-                    Restore your previous study path
-                  </Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#717171" />
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* Enhanced Topics List */}
